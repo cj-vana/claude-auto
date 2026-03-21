@@ -51,14 +51,10 @@ export async function listOpenPRsWithFeedback(
  * @param repoPath - Path to the git repository
  * @returns Object with owner (login) and name of the repository
  */
-export async function getRepoOwnerName(
-	repoPath: string,
-): Promise<{ owner: string; name: string }> {
-	const { stdout } = await execCommand(
-		"gh",
-		["repo", "view", "--json", "owner,name"],
-		{ cwd: repoPath },
-	);
+export async function getRepoOwnerName(repoPath: string): Promise<{ owner: string; name: string }> {
+	const { stdout } = await execCommand("gh", ["repo", "view", "--json", "owner,name"], {
+		cwd: repoPath,
+	});
 
 	const data = JSON.parse(stdout);
 	return { owner: data.owner.login, name: data.name };
@@ -84,11 +80,9 @@ export async function getUnresolvedThreads(
 
 	const query = `query { repository(owner: "${owner}", name: "${name}") { pullRequest(number: ${prNumber}) { reviewThreads(first: 100) { nodes { id isResolved comments(first: 10) { nodes { body author { login } } } } } } } }`;
 
-	const { stdout } = await execCommand(
-		"gh",
-		["api", "graphql", "-f", `query=${query}`],
-		{ cwd: repoPath },
-	);
+	const { stdout } = await execCommand("gh", ["api", "graphql", "-f", `query=${query}`], {
+		cwd: repoPath,
+	});
 
 	const data = JSON.parse(stdout);
 	const nodes = data.data.repository.pullRequest.reviewThreads.nodes;
@@ -97,19 +91,23 @@ export async function getUnresolvedThreads(
 		.filter((thread: { isResolved: boolean }) => !thread.isResolved)
 		.filter((thread: { comments: { nodes: Array<{ author: { login: string } }> } }) => {
 			// Filter out threads where ALL comments are from bots
-			const hasHumanComment = thread.comments.nodes.some(
-				(c) => !c.author.login.endsWith("[bot]"),
-			);
+			const hasHumanComment = thread.comments.nodes.some((c) => !c.author.login.endsWith("[bot]"));
 			return hasHumanComment;
 		})
-		.map((thread: { id: string; isResolved: boolean; comments: { nodes: Array<{ body: string; author: { login: string } }> } }) => ({
-			id: thread.id,
-			isResolved: thread.isResolved,
-			comments: thread.comments.nodes.map((c) => ({
-				body: c.body,
-				author: { login: c.author.login },
-			})),
-		}));
+		.map(
+			(thread: {
+				id: string;
+				isResolved: boolean;
+				comments: { nodes: Array<{ body: string; author: { login: string } }> };
+			}) => ({
+				id: thread.id,
+				isResolved: thread.isResolved,
+				comments: thread.comments.nodes.map((c) => ({
+					body: c.body,
+					author: { login: c.author.login },
+				})),
+			}),
+		);
 }
 
 /**
@@ -126,11 +124,7 @@ export async function postPRComment(
 	body: string,
 ): Promise<void> {
 	try {
-		await execCommand(
-			"gh",
-			["pr", "comment", String(prNumber), "--body", body],
-			{ cwd: repoPath },
-		);
+		await execCommand("gh", ["pr", "comment", String(prNumber), "--body", body], { cwd: repoPath });
 	} catch (err) {
 		console.warn(
 			`[claude-auto] Failed to post PR comment on #${prNumber}: ${err instanceof Error ? err.message : String(err)}`,

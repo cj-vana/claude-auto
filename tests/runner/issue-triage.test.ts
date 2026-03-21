@@ -5,21 +5,23 @@ vi.mock("../../src/util/exec.js", () => ({
 	execCommand: vi.fn(),
 }));
 
+import { type ScoredIssue, triageIssues } from "../../src/runner/issue-triage.js";
 import { execCommand } from "../../src/util/exec.js";
-import { triageIssues, type ScoredIssue } from "../../src/runner/issue-triage.js";
 
 const mockExecCommand = vi.mocked(execCommand);
 
 /** Helper to create a gh issue JSON object */
-function makeIssue(overrides: Partial<{
-	number: number;
-	title: string;
-	body: string | null;
-	labels: Array<{ name: string }>;
-	assignees: Array<{ login: string }>;
-	createdAt: string;
-	comments: Array<unknown>;
-}> = {}) {
+function makeIssue(
+	overrides: Partial<{
+		number: number;
+		title: string;
+		body: string | null;
+		labels: Array<{ name: string }>;
+		assignees: Array<{ login: string }>;
+		createdAt: string;
+		comments: Array<unknown>;
+	}> = {},
+) {
 	return {
 		number: 1,
 		title: "Test issue",

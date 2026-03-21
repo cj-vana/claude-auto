@@ -1,21 +1,21 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
 import { readFileSync } from "node:fs";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock the exec module
 vi.mock("../../src/util/exec.js", () => ({
 	execCommand: vi.fn(),
 }));
 
-import { execCommand } from "../../src/util/exec.js";
 import {
-	pullLatest,
-	createBranch,
-	hasChanges,
-	pushBranch,
-	createPR,
 	checkoutExistingBranch,
+	createBranch,
+	createPR,
+	hasChanges,
+	pullLatest,
+	pushBranch,
 } from "../../src/runner/git-ops.js";
 import { GitOpsError } from "../../src/util/errors.js";
+import { execCommand } from "../../src/util/exec.js";
 
 const mockExecCommand = vi.mocked(execCommand);
 
@@ -157,9 +157,7 @@ describe("git-ops module", () => {
 		it("throws GitOpsError on failure", async () => {
 			mockExecCommand.mockRejectedValueOnce(new Error("auth failed"));
 
-			await expect(
-				pushBranch("/repo", "branch"),
-			).rejects.toThrow(GitOpsError);
+			await expect(pushBranch("/repo", "branch")).rejects.toThrow(GitOpsError);
 		});
 	});
 
@@ -200,9 +198,9 @@ describe("git-ops module", () => {
 		it("throws GitOpsError on failure", async () => {
 			mockExecCommand.mockRejectedValueOnce(new Error("gh not authenticated"));
 
-			await expect(
-				createPR("/repo", "branch", "main", "title", "body"),
-			).rejects.toThrow(GitOpsError);
+			await expect(createPR("/repo", "branch", "main", "title", "body")).rejects.toThrow(
+				GitOpsError,
+			);
 		});
 	});
 
@@ -242,9 +240,7 @@ describe("git-ops module", () => {
 		it("throws GitOpsError on failure", async () => {
 			mockExecCommand.mockRejectedValueOnce(new Error("fetch failed"));
 
-			await expect(
-				checkoutExistingBranch("/repo", "branch"),
-			).rejects.toThrow(GitOpsError);
+			await expect(checkoutExistingBranch("/repo", "branch")).rejects.toThrow(GitOpsError);
 		});
 	});
 

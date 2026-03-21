@@ -1,5 +1,5 @@
-import { execCommand } from "../util/exec.js";
 import { GitOpsError } from "../util/errors.js";
+import { execCommand } from "../util/exec.js";
 
 /**
  * Pull latest changes from remote branch.
@@ -114,7 +114,18 @@ export async function createPR(
 	try {
 		const { stdout } = await execCommand(
 			"gh",
-			["pr", "create", "--head", branchName, "--base", baseBranch, "--title", title, "--body", body],
+			[
+				"pr",
+				"create",
+				"--head",
+				branchName,
+				"--base",
+				baseBranch,
+				"--title",
+				title,
+				"--body",
+				body,
+			],
 			{ cwd: repoPath },
 		);
 		return stdout.trim();

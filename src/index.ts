@@ -1,6 +1,7 @@
 // Phase 1: Config foundation
 
 export { checkRepoCommand } from "./cli/commands/check-repo.js";
+export { costCommand } from "./cli/commands/cost.js";
 export { createCommand } from "./cli/commands/create.js";
 export { editCommand } from "./cli/commands/edit.js";
 export { listCommand } from "./cli/commands/list.js";
@@ -52,6 +53,10 @@ export {
 	type RegisteredJob,
 	type Scheduler,
 } from "./platform/scheduler.js";
+export type { RunContext } from "./runner/context-store.js";
+export { formatContextWindow, loadRunContext, saveRunContext } from "./runner/context-store.js";
+export type { BudgetConfig, CostSummaryRow, DailyCostRow } from "./runner/cost-tracker.js";
+export { checkBudget, getCostSummary } from "./runner/cost-tracker.js";
 export {
 	checkoutExistingBranch,
 	createBranch,
@@ -60,16 +65,27 @@ export {
 	pullLatest,
 	pushBranch,
 } from "./runner/git-ops.js";
+export type { ScoredIssue } from "./runner/issue-triage.js";
+export { triageIssues } from "./runner/issue-triage.js";
 export { acquireLock, STALE_THRESHOLD } from "./runner/lock.js";
-export { formatContextWindow, loadRunContext, saveRunContext } from "./runner/context-store.js";
-export type { RunContext } from "./runner/context-store.js";
-export { checkBudget, getCostSummary } from "./runner/cost-tracker.js";
-export type { BudgetConfig, CostSummaryRow, DailyCostRow } from "./runner/cost-tracker.js";
-export { costCommand } from "./cli/commands/cost.js";
 export { listRunLogs, readRunLog, writeRunLog } from "./runner/logger.js";
 // Phase 3: Runner
 export { executeRun } from "./runner/orchestrator.js";
-export { buildFeedbackPrompt, buildSystemPrompt, buildTriagedWorkPrompt, buildWorkPrompt } from "./runner/prompt-builder.js";
+// Phase 9: PR Intelligence
+export {
+	checkPendingPRFeedback,
+	getFeedbackRound,
+	getRepoOwnerName,
+	getUnresolvedThreads,
+	listOpenPRsWithFeedback,
+	postPRComment,
+} from "./runner/pr-feedback.js";
+export {
+	buildFeedbackPrompt,
+	buildSystemPrompt,
+	buildTriagedWorkPrompt,
+	buildWorkPrompt,
+} from "./runner/prompt-builder.js";
 export { buildAllowedTools, spawnClaude } from "./runner/spawner.js";
 export type {
 	PRFeedbackContext,
@@ -80,10 +96,6 @@ export type {
 	SpawnOptions,
 	SpawnResult,
 } from "./runner/types.js";
-// Phase 9: PR Intelligence
-export { checkPendingPRFeedback, getFeedbackRound, getRepoOwnerName, getUnresolvedThreads, listOpenPRsWithFeedback, postPRComment } from "./runner/pr-feedback.js";
-export { triageIssues } from "./runner/issue-triage.js";
-export type { ScoredIssue } from "./runner/issue-triage.js";
 export {
 	ConfigParseError,
 	ConfigValidationError,

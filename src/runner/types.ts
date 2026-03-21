@@ -22,7 +22,15 @@ export interface SpawnResult {
 	errors?: string[];
 }
 
-export type RunStatus = "success" | "no-changes" | "error" | "locked" | "git-error" | "paused" | "budget-exceeded" | "needs-human-review";
+export type RunStatus =
+	| "success"
+	| "no-changes"
+	| "error"
+	| "locked"
+	| "git-error"
+	| "paused"
+	| "budget-exceeded"
+	| "needs-human-review";
 
 export interface RunResult {
 	status: RunStatus;

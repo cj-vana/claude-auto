@@ -9,9 +9,9 @@ vi.mock("../../src/core/database.js", () => ({
 	closeDatabase: vi.fn(),
 }));
 
-import { getCostSummary } from "../../src/runner/cost-tracker.js";
-import { closeDatabase } from "../../src/core/database.js";
 import { costCommand } from "../../src/cli/commands/cost.js";
+import { closeDatabase } from "../../src/core/database.js";
+import { getCostSummary } from "../../src/runner/cost-tracker.js";
 
 const mockedGetCostSummary = vi.mocked(getCostSummary);
 const mockedCloseDatabase = vi.mocked(closeDatabase);
@@ -78,9 +78,7 @@ describe("costCommand", () => {
 	});
 
 	it("costCommand with --json flag outputs JSON array instead of table", async () => {
-		const data = [
-			{ job_id: "job-a", runs: 5, total_cost: 12.5, avg_cost: 2.5, total_turns: 60 },
-		];
+		const data = [{ job_id: "job-a", runs: 5, total_cost: 12.5, avg_cost: 2.5, total_turns: 60 }];
 		mockedGetCostSummary.mockReturnValue(data);
 
 		await costCommand({ json: true });

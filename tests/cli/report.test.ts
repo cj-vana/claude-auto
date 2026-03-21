@@ -1,4 +1,4 @@
-import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { JobConfig } from "../../src/core/types.js";
 import type { RunLogEntry } from "../../src/runner/types.js";
 
@@ -12,9 +12,9 @@ vi.mock("../../src/runner/logger.js", () => ({
 	listRunLogs: vi.fn(),
 }));
 
+import { reportCommand } from "../../src/cli/commands/report.js";
 import { listJobs, readJob } from "../../src/core/job-manager.js";
 import { listRunLogs } from "../../src/runner/logger.js";
-import { reportCommand } from "../../src/cli/commands/report.js";
 
 const mockedListJobs = vi.mocked(listJobs);
 const mockedReadJob = vi.mocked(readJob);
@@ -71,10 +71,34 @@ describe("reportCommand", () => {
 		const job = makeJob();
 		mockedReadJob.mockResolvedValue(job);
 		mockedListRunLogs.mockResolvedValue([
-			makeRunLog({ status: "success", costUsd: 1.5, durationMs: 300000, prUrl: "https://github.com/test/repo/pull/42" }),
-			makeRunLog({ status: "success", costUsd: 2.0, durationMs: 600000, prUrl: "https://github.com/test/repo/pull/43", runId: "run-002" }),
-			makeRunLog({ status: "error", costUsd: 0.5, durationMs: 60000, error: "Failed", runId: "run-003", prUrl: undefined }),
-			makeRunLog({ status: "no-changes", costUsd: 0.3, durationMs: 120000, runId: "run-004", prUrl: undefined }),
+			makeRunLog({
+				status: "success",
+				costUsd: 1.5,
+				durationMs: 300000,
+				prUrl: "https://github.com/test/repo/pull/42",
+			}),
+			makeRunLog({
+				status: "success",
+				costUsd: 2.0,
+				durationMs: 600000,
+				prUrl: "https://github.com/test/repo/pull/43",
+				runId: "run-002",
+			}),
+			makeRunLog({
+				status: "error",
+				costUsd: 0.5,
+				durationMs: 60000,
+				error: "Failed",
+				runId: "run-003",
+				prUrl: undefined,
+			}),
+			makeRunLog({
+				status: "no-changes",
+				costUsd: 0.3,
+				durationMs: 120000,
+				runId: "run-004",
+				prUrl: undefined,
+			}),
 		]);
 
 		await reportCommand({ jobId: "job-abc" });
@@ -101,13 +125,9 @@ describe("reportCommand", () => {
 		mockedListJobs.mockResolvedValue([job1, job2]);
 		mockedListRunLogs.mockImplementation(async (jobId: string) => {
 			if (jobId === "job-1") {
-				return [
-					makeRunLog({ jobId: "job-1", status: "success", costUsd: 1.0 }),
-				];
+				return [makeRunLog({ jobId: "job-1", status: "success", costUsd: 1.0 })];
 			}
-			return [
-				makeRunLog({ jobId: "job-2", status: "error", costUsd: 0.5, prUrl: undefined }),
-			];
+			return [makeRunLog({ jobId: "job-2", status: "error", costUsd: 0.5, prUrl: undefined })];
 		});
 
 		await reportCommand({});
@@ -122,9 +142,7 @@ describe("reportCommand", () => {
 	it("shows 'none' for last PR when no PRs exist", async () => {
 		const job = makeJob();
 		mockedReadJob.mockResolvedValue(job);
-		mockedListRunLogs.mockResolvedValue([
-			makeRunLog({ status: "no-changes", prUrl: undefined }),
-		]);
+		mockedListRunLogs.mockResolvedValue([makeRunLog({ status: "no-changes", prUrl: undefined })]);
 
 		await reportCommand({ jobId: "job-abc" });
 

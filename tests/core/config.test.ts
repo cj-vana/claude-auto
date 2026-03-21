@@ -276,9 +276,7 @@ describe("budget field validation", () => {
 	});
 
 	it("rejects negative dailyUsd", () => {
-		expect(() =>
-			JobConfigSchema.parse({ ...validConfigBase, budget: { dailyUsd: -5 } }),
-		).toThrow();
+		expect(() => JobConfigSchema.parse({ ...validConfigBase, budget: { dailyUsd: -5 } })).toThrow();
 	});
 });
 
@@ -299,20 +297,14 @@ describe("maxFeedbackRounds field validation", () => {
 	});
 
 	it("rejects 0", () => {
-		expect(() =>
-			JobConfigSchema.parse({ ...validConfigBase, maxFeedbackRounds: 0 }),
-		).toThrow();
+		expect(() => JobConfigSchema.parse({ ...validConfigBase, maxFeedbackRounds: 0 })).toThrow();
 	});
 
 	it("rejects negative numbers", () => {
-		expect(() =>
-			JobConfigSchema.parse({ ...validConfigBase, maxFeedbackRounds: -1 }),
-		).toThrow();
+		expect(() => JobConfigSchema.parse({ ...validConfigBase, maxFeedbackRounds: -1 })).toThrow();
 	});
 
 	it("rejects non-integer values", () => {
-		expect(() =>
-			JobConfigSchema.parse({ ...validConfigBase, maxFeedbackRounds: 2.5 }),
-		).toThrow();
+		expect(() => JobConfigSchema.parse({ ...validConfigBase, maxFeedbackRounds: 2.5 })).toThrow();
 	});
 });

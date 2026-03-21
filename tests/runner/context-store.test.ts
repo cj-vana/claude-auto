@@ -3,8 +3,8 @@ import { closeDatabase, getDatabase } from "../../src/core/database.js";
 import {
 	formatContextWindow,
 	loadRunContext,
-	saveRunContext,
 	type RunContext,
+	saveRunContext,
 } from "../../src/runner/context-store.js";
 import type { RunLogEntry } from "../../src/runner/types.js";
 

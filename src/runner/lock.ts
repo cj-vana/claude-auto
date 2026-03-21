@@ -1,5 +1,5 @@
-import lockfile from "proper-lockfile";
 import { mkdir } from "node:fs/promises";
+import lockfile from "proper-lockfile";
 import { paths } from "../util/paths.js";
 
 /** Stale lock threshold: 45 minutes in milliseconds */

@@ -1,4 +1,4 @@
-import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { RunLogEntry } from "../../src/runner/types.js";
 
 // Mock dependencies
@@ -6,8 +6,8 @@ vi.mock("../../src/runner/logger.js", () => ({
 	listRunLogs: vi.fn(),
 }));
 
-import { listRunLogs } from "../../src/runner/logger.js";
 import { logsCommand } from "../../src/cli/commands/logs.js";
+import { listRunLogs } from "../../src/runner/logger.js";
 
 const mockedListRunLogs = vi.mocked(listRunLogs);
 

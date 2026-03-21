@@ -1,7 +1,7 @@
 import type { JobConfig } from "../core/types.js";
 import { formatContextWindow, type RunContext } from "./context-store.js";
-import type { PRFeedbackContext } from "./types.js";
 import type { ScoredIssue } from "./issue-triage.js";
+import type { PRFeedbackContext } from "./types.js";
 
 /**
  * Build the system prompt for Claude, including research instructions
@@ -68,13 +68,17 @@ Concentrate your work on: ${config.focus.join(", ")}.`);
 		guardrailLines.push("- Do NOT add any new dependencies to package.json or equivalent");
 	}
 	if (config.guardrails.noArchitectureChanges) {
-		guardrailLines.push("- Do NOT make architectural changes (new modules, directory restructuring)");
+		guardrailLines.push(
+			"- Do NOT make architectural changes (new modules, directory restructuring)",
+		);
 	}
 	if (config.guardrails.bugFixOnly) {
 		guardrailLines.push("- Only fix bugs. Do NOT add features or make improvements.");
 	}
 	if (config.guardrails.restrictToPaths && config.guardrails.restrictToPaths.length > 0) {
-		guardrailLines.push(`- Only modify files in these paths: ${config.guardrails.restrictToPaths.join(", ")}`);
+		guardrailLines.push(
+			`- Only modify files in these paths: ${config.guardrails.restrictToPaths.join(", ")}`,
+		);
 	}
 
 	if (guardrailLines.length > 0) {
@@ -260,13 +264,17 @@ Concentrate your work on: ${config.focus.join(", ")}.`);
 		guardrailLines.push("- Do NOT add any new dependencies to package.json or equivalent");
 	}
 	if (config.guardrails.noArchitectureChanges) {
-		guardrailLines.push("- Do NOT make architectural changes (new modules, directory restructuring)");
+		guardrailLines.push(
+			"- Do NOT make architectural changes (new modules, directory restructuring)",
+		);
 	}
 	if (config.guardrails.bugFixOnly) {
 		guardrailLines.push("- Only fix bugs. Do NOT add features or make improvements.");
 	}
 	if (config.guardrails.restrictToPaths && config.guardrails.restrictToPaths.length > 0) {
-		guardrailLines.push(`- Only modify files in these paths: ${config.guardrails.restrictToPaths.join(", ")}`);
+		guardrailLines.push(
+			`- Only modify files in these paths: ${config.guardrails.restrictToPaths.join(", ")}`,
+		);
 	}
 	if (guardrailLines.length > 0) {
 		sections.push(`## Guardrails

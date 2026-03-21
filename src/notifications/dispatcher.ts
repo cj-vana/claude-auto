@@ -1,7 +1,7 @@
 import type { JobConfig } from "../core/types.js";
 import type { RunResult } from "../runner/types.js";
-import { buildPayload, shouldNotify, type EventTriggers } from "./types.js";
 import { formatDiscord, formatSlack, formatTelegram } from "./formatters.js";
+import { buildPayload, type EventTriggers, shouldNotify } from "./types.js";
 
 /**
  * Send notifications to all configured providers for a completed run.
@@ -24,9 +24,7 @@ export async function sendNotifications(config: JobConfig, result: RunResult): P
 		};
 		if (shouldNotify(result.status, triggers)) {
 			const body = formatDiscord(payload);
-			promises.push(
-				postWebhook("discord", notifications.discord.webhookUrl, body),
-			);
+			promises.push(postWebhook("discord", notifications.discord.webhookUrl, body));
 		}
 	}
 
@@ -40,9 +38,7 @@ export async function sendNotifications(config: JobConfig, result: RunResult): P
 		};
 		if (shouldNotify(result.status, triggers)) {
 			const body = formatSlack(payload);
-			promises.push(
-				postWebhook("slack", notifications.slack.webhookUrl, body),
-			);
+			promises.push(postWebhook("slack", notifications.slack.webhookUrl, body));
 		}
 	}
 

@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { JobConfig } from "../../src/core/types.js";
-import { GitOpsError } from "../../src/util/errors.js";
 import type { SpawnResult } from "../../src/runner/types.js";
+import { GitOpsError } from "../../src/util/errors.js";
 
 // Mock all dependencies
 vi.mock("nanoid", () => ({
@@ -71,21 +71,33 @@ vi.mock("../../src/runner/issue-triage.js", () => ({
 	triageIssues: vi.fn().mockResolvedValue([]),
 }));
 
-// Import mocked modules after mock declarations
-import { acquireLock } from "../../src/runner/lock.js";
-import { pullLatest, createBranch, hasChanges, pushBranch, createPR, checkoutExistingBranch } from "../../src/runner/git-ops.js";
-import { spawnClaude, buildAllowedTools } from "../../src/runner/spawner.js";
-import { buildWorkPrompt, buildSystemPrompt, buildFeedbackPrompt, buildTriagedWorkPrompt } from "../../src/runner/prompt-builder.js";
-import { writeRunLog } from "../../src/runner/logger.js";
 import { loadJobConfig } from "../../src/core/config.js";
-import { execCommand } from "../../src/util/exec.js";
 import { sendNotifications } from "../../src/notifications/dispatcher.js";
 import { extractIssueNumber, postIssueComment } from "../../src/notifications/issue-comment.js";
-import { checkBudget } from "../../src/runner/cost-tracker.js";
 import { loadRunContext } from "../../src/runner/context-store.js";
-import { checkPendingPRFeedback, postPRComment } from "../../src/runner/pr-feedback.js";
+import { checkBudget } from "../../src/runner/cost-tracker.js";
+import {
+	checkoutExistingBranch,
+	createBranch,
+	createPR,
+	hasChanges,
+	pullLatest,
+	pushBranch,
+} from "../../src/runner/git-ops.js";
 import { triageIssues } from "../../src/runner/issue-triage.js";
+// Import mocked modules after mock declarations
+import { acquireLock } from "../../src/runner/lock.js";
+import { writeRunLog } from "../../src/runner/logger.js";
 import { executeRun } from "../../src/runner/orchestrator.js";
+import { checkPendingPRFeedback, postPRComment } from "../../src/runner/pr-feedback.js";
+import {
+	buildFeedbackPrompt,
+	buildSystemPrompt,
+	buildTriagedWorkPrompt,
+	buildWorkPrompt,
+} from "../../src/runner/prompt-builder.js";
+import { buildAllowedTools, spawnClaude } from "../../src/runner/spawner.js";
+import { execCommand } from "../../src/util/exec.js";
 
 const mockedAcquireLock = vi.mocked(acquireLock);
 const mockedLoadJobConfig = vi.mocked(loadJobConfig);
@@ -191,7 +203,10 @@ describe("executeRun", () => {
 		expect(result.startedAt).toBeDefined();
 		expect(result.completedAt).toBeDefined();
 		expect(result.durationMs).toBeGreaterThanOrEqual(0);
-		expect(mockedWriteRunLog).toHaveBeenCalledWith("test-job", expect.objectContaining({ status: "locked" }));
+		expect(mockedWriteRunLog).toHaveBeenCalledWith(
+			"test-job",
+			expect.objectContaining({ status: "locked" }),
+		);
 		// Should not call any other functions
 		expect(mockedLoadJobConfig).not.toHaveBeenCalled();
 		expect(mockedPullLatest).not.toHaveBeenCalled();
@@ -218,9 +233,15 @@ describe("executeRun", () => {
 		expect(mockedBuildAllowedTools).toHaveBeenCalled();
 		expect(mockedSpawnClaude).toHaveBeenCalled();
 		expect(mockedHasChanges).toHaveBeenCalledWith("/tmp/test-repo");
-		expect(mockedPushBranch).toHaveBeenCalledWith("/tmp/test-repo", "claude-auto/test-job/2026-03-21T00-00-00");
+		expect(mockedPushBranch).toHaveBeenCalledWith(
+			"/tmp/test-repo",
+			"claude-auto/test-job/2026-03-21T00-00-00",
+		);
 		expect(mockedCreatePR).toHaveBeenCalled();
-		expect(mockedWriteRunLog).toHaveBeenCalledWith("test-job", expect.objectContaining({ status: "success" }));
+		expect(mockedWriteRunLog).toHaveBeenCalledWith(
+			"test-job",
+			expect.objectContaining({ status: "success" }),
+		);
 	});
 
 	it("returns no-changes when Claude makes no changes", async () => {
@@ -232,11 +253,16 @@ describe("executeRun", () => {
 		expect(result.prUrl).toBeUndefined();
 		expect(mockedPushBranch).not.toHaveBeenCalled();
 		expect(mockedCreatePR).not.toHaveBeenCalled();
-		expect(mockedWriteRunLog).toHaveBeenCalledWith("test-job", expect.objectContaining({ status: "no-changes" }));
+		expect(mockedWriteRunLog).toHaveBeenCalledWith(
+			"test-job",
+			expect.objectContaining({ status: "no-changes" }),
+		);
 	});
 
 	it("returns git-error on pull failure", async () => {
-		mockedPullLatest.mockRejectedValue(new GitOpsError("pullLatest", "/tmp/test-repo", "merge conflict"));
+		mockedPullLatest.mockRejectedValue(
+			new GitOpsError("pullLatest", "/tmp/test-repo", "merge conflict"),
+		);
 
 		const result = await executeRun("test-job");
 
@@ -254,7 +280,9 @@ describe("executeRun", () => {
 	});
 
 	it("always releases lock even on error", async () => {
-		mockedPullLatest.mockRejectedValue(new GitOpsError("pullLatest", "/tmp/test-repo", "network error"));
+		mockedPullLatest.mockRejectedValue(
+			new GitOpsError("pullLatest", "/tmp/test-repo", "network error"),
+		);
 
 		await executeRun("test-job");
 
@@ -278,8 +306,19 @@ describe("executeRun", () => {
 		await executeRun("test-job");
 
 		// Should attempt to checkout base branch and delete work branch
-		expect(mockedExecCommand).toHaveBeenCalledWith("git", ["-C", "/tmp/test-repo", "checkout", "main"]);
-		expect(mockedExecCommand).toHaveBeenCalledWith("git", ["-C", "/tmp/test-repo", "branch", "-D", "claude-auto/test-job/2026-03-21T00-00-00"]);
+		expect(mockedExecCommand).toHaveBeenCalledWith("git", [
+			"-C",
+			"/tmp/test-repo",
+			"checkout",
+			"main",
+		]);
+		expect(mockedExecCommand).toHaveBeenCalledWith("git", [
+			"-C",
+			"/tmp/test-repo",
+			"branch",
+			"-D",
+			"claude-auto/test-job/2026-03-21T00-00-00",
+		]);
 	});
 
 	it("passes correct SpawnOptions to spawnClaude", async () => {
@@ -431,7 +470,9 @@ describe("executeRun", () => {
 	});
 
 	it("calls sendNotifications after git-error run", async () => {
-		mockedPullLatest.mockRejectedValue(new GitOpsError("pullLatest", "/tmp/test-repo", "merge conflict"));
+		mockedPullLatest.mockRejectedValue(
+			new GitOpsError("pullLatest", "/tmp/test-repo", "merge conflict"),
+		);
 
 		const result = await executeRun("test-job");
 
@@ -498,9 +539,7 @@ describe("executeRun", () => {
 
 		await executeRun("test-job");
 
-		expect(mockedSpawnClaude).toHaveBeenCalledWith(
-			expect.objectContaining({ model: "opus" }),
-		);
+		expect(mockedSpawnClaude).toHaveBeenCalledWith(expect.objectContaining({ model: "opus" }));
 	});
 
 	it("records model in RunResult", async () => {

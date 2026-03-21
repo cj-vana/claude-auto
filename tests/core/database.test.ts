@@ -56,27 +56,27 @@ describe("database singleton", () => {
 
 	it("idx_runs_job_id index exists", () => {
 		const db = getDatabase(":memory:");
-		const indexes = db
-			.prepare("SELECT name FROM sqlite_master WHERE type='index'")
-			.all() as Array<{ name: string }>;
+		const indexes = db.prepare("SELECT name FROM sqlite_master WHERE type='index'").all() as Array<{
+			name: string;
+		}>;
 		const indexNames = indexes.map((i) => i.name);
 		expect(indexNames).toContain("idx_runs_job_id");
 	});
 
 	it("idx_runs_started_at index exists", () => {
 		const db = getDatabase(":memory:");
-		const indexes = db
-			.prepare("SELECT name FROM sqlite_master WHERE type='index'")
-			.all() as Array<{ name: string }>;
+		const indexes = db.prepare("SELECT name FROM sqlite_master WHERE type='index'").all() as Array<{
+			name: string;
+		}>;
 		const indexNames = indexes.map((i) => i.name);
 		expect(indexNames).toContain("idx_runs_started_at");
 	});
 
 	it("idx_runs_job_started index exists", () => {
 		const db = getDatabase(":memory:");
-		const indexes = db
-			.prepare("SELECT name FROM sqlite_master WHERE type='index'")
-			.all() as Array<{ name: string }>;
+		const indexes = db.prepare("SELECT name FROM sqlite_master WHERE type='index'").all() as Array<{
+			name: string;
+		}>;
 		const indexNames = indexes.map((i) => i.name);
 		expect(indexNames).toContain("idx_runs_job_started");
 	});

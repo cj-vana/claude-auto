@@ -1,21 +1,32 @@
 import { nanoid } from "nanoid";
-import { acquireLock } from "./lock.js";
-import { pullLatest, createBranch, hasChanges, pushBranch, createPR, checkoutExistingBranch } from "./git-ops.js";
-import { spawnClaude, buildAllowedTools } from "./spawner.js";
-import { buildSystemPrompt, buildFeedbackPrompt, buildTriagedWorkPrompt } from "./prompt-builder.js";
-import { writeRunLog } from "./logger.js";
 import { loadJobConfig } from "../core/config.js";
-import { paths } from "../util/paths.js";
-import { execCommand } from "../util/exec.js";
-import { GitOpsError } from "../util/errors.js";
+import type { JobConfig } from "../core/types.js";
 import { sendNotifications } from "../notifications/dispatcher.js";
 import { extractIssueNumber, postIssueComment } from "../notifications/issue-comment.js";
-import { checkBudget } from "./cost-tracker.js";
+import { GitOpsError } from "../util/errors.js";
+import { execCommand } from "../util/exec.js";
+import { paths } from "../util/paths.js";
 import { loadRunContext, type RunContext } from "./context-store.js";
-import { checkPendingPRFeedback, postPRComment } from "./pr-feedback.js";
-import { triageIssues } from "./issue-triage.js";
-import type { JobConfig } from "../core/types.js";
+import { checkBudget } from "./cost-tracker.js";
+import {
+	checkoutExistingBranch,
+	createBranch,
+	createPR,
+	hasChanges,
+	pullLatest,
+	pushBranch,
+} from "./git-ops.js";
 import type { ScoredIssue } from "./issue-triage.js";
+import { triageIssues } from "./issue-triage.js";
+import { acquireLock } from "./lock.js";
+import { writeRunLog } from "./logger.js";
+import { checkPendingPRFeedback, postPRComment } from "./pr-feedback.js";
+import {
+	buildFeedbackPrompt,
+	buildSystemPrompt,
+	buildTriagedWorkPrompt,
+} from "./prompt-builder.js";
+import { buildAllowedTools, spawnClaude } from "./spawner.js";
 import type { PRFeedbackContext, RunResult, SpawnResult } from "./types.js";
 
 /**
@@ -264,13 +275,7 @@ export async function executeRun(jobId: string): Promise<RunResult> {
 			await pushBranch(config.repo.path, branchName);
 			const prTitle = `[claude-auto] ${spawnResult.summary.slice(0, 72)}`;
 			const prBody = buildPRBody(spawnResult, config);
-			prUrl = await createPR(
-				config.repo.path,
-				branchName,
-				config.repo.branch,
-				prTitle,
-				prBody,
-			);
+			prUrl = await createPR(config.repo.path, branchName, config.repo.branch, prTitle, prBody);
 		}
 
 		// Extract issue number from summary if present

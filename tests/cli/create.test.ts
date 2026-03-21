@@ -1,4 +1,4 @@
-import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { JobConfig } from "../../src/core/types.js";
 
 // Mock dependencies
@@ -25,16 +25,12 @@ vi.mock("../../src/util/exec.js", () => ({
 	execCommand: vi.fn(),
 }));
 
-import { stat, readFile } from "node:fs/promises";
-import { createJob } from "../../src/core/job-manager.js";
-import { createScheduler } from "../../src/platform/scheduler.js";
-import {
-	validateCronExpression,
-	describeSchedule,
-	getNextRuns,
-} from "../../src/core/schedule.js";
-import { execCommand } from "../../src/util/exec.js";
+import { readFile, stat } from "node:fs/promises";
 import { createCommand } from "../../src/cli/commands/create.js";
+import { createJob } from "../../src/core/job-manager.js";
+import { describeSchedule, getNextRuns, validateCronExpression } from "../../src/core/schedule.js";
+import { createScheduler } from "../../src/platform/scheduler.js";
+import { execCommand } from "../../src/util/exec.js";
 
 const mockedStat = vi.mocked(stat);
 const mockedReadFile = vi.mocked(readFile);
@@ -184,7 +180,12 @@ describe("createCommand", () => {
 			githubRepo: "owner/repo",
 		});
 
-		expect(mockedExecCommand).toHaveBeenCalledWith("gh", ["repo", "clone", "owner/repo", "/tmp/new-repo"]);
+		expect(mockedExecCommand).toHaveBeenCalledWith("gh", [
+			"repo",
+			"clone",
+			"owner/repo",
+			"/tmp/new-repo",
+		]);
 		expect(mockedCreateJob).toHaveBeenCalled();
 	});
 
@@ -302,7 +303,12 @@ describe("createCommand", () => {
 			notifyTelegram: "bottoken123:chatid456",
 		});
 
-		const defaultTriggers = { onSuccess: true, onFailure: true, onNoChanges: false, onLocked: false };
+		const defaultTriggers = {
+			onSuccess: true,
+			onFailure: true,
+			onNoChanges: false,
+			onLocked: false,
+		};
 		expect(mockedCreateJob).toHaveBeenCalledWith(
 			expect.objectContaining({
 				notifications: expect.objectContaining({

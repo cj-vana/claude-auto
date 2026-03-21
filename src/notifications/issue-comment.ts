@@ -41,11 +41,9 @@ export async function postIssueComment(options: PostIssueCommentOptions): Promis
 	const body = buildCommentBody(status, { prUrl, summary, error, jobName });
 
 	try {
-		await execCommand(
-			"gh",
-			["issue", "comment", String(issueNumber), "--body", body],
-			{ cwd: repoPath },
-		);
+		await execCommand("gh", ["issue", "comment", String(issueNumber), "--body", body], {
+			cwd: repoPath,
+		});
 	} catch (err) {
 		console.warn(
 			`[claude-auto] Failed to post issue comment on #${issueNumber}: ${err instanceof Error ? err.message : String(err)}`,

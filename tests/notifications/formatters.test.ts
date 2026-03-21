@@ -1,10 +1,6 @@
 import { describe, expect, it } from "vitest";
+import { formatDiscord, formatSlack, formatTelegram } from "../../src/notifications/formatters.js";
 import type { NotificationPayload } from "../../src/notifications/types.js";
-import {
-	formatDiscord,
-	formatSlack,
-	formatTelegram,
-} from "../../src/notifications/formatters.js";
 
 function makePayload(overrides: Partial<NotificationPayload> = {}): NotificationPayload {
 	return {
@@ -30,7 +26,11 @@ describe("formatDiscord", () => {
 	it("returns object with embeds array for success event", () => {
 		const result = formatDiscord(makePayload()) as {
 			username: string;
-			embeds: Array<{ title: string; color: number; fields: Array<{ name: string; value: string }> }>;
+			embeds: Array<{
+				title: string;
+				color: number;
+				fields: Array<{ name: string; value: string }>;
+			}>;
 		};
 
 		expect(result.embeds).toBeDefined();
@@ -55,7 +55,9 @@ describe("formatDiscord", () => {
 	});
 
 	it("uses red color (0xff0000) for git-error event", () => {
-		const result = formatDiscord(makePayload({ event: "git-error", error: "Force push detected" })) as {
+		const result = formatDiscord(
+			makePayload({ event: "git-error", error: "Force push detected" }),
+		) as {
 			embeds: Array<{ color: number }>;
 		};
 
@@ -79,7 +81,9 @@ describe("formatDiscord", () => {
 	});
 
 	it("includes PR URL field when prUrl is present", () => {
-		const result = formatDiscord(makePayload({ prUrl: "https://github.com/user/repo/pull/42" })) as {
+		const result = formatDiscord(
+			makePayload({ prUrl: "https://github.com/user/repo/pull/42" }),
+		) as {
 			embeds: Array<{ fields: Array<{ name: string; value: string }> }>;
 		};
 
@@ -236,9 +240,7 @@ describe("formatTelegram", () => {
 		const events = ["success", "error", "git-error", "no-changes", "locked"] as const;
 
 		for (const event of events) {
-			expect(() =>
-				formatTelegram(makePayload({ event }), "chat-999"),
-			).not.toThrow();
+			expect(() => formatTelegram(makePayload({ event }), "chat-999")).not.toThrow();
 		}
 	});
 });

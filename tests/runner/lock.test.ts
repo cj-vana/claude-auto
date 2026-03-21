@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { STALE_THRESHOLD, acquireLock } from "../../src/runner/lock.js";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { acquireLock, STALE_THRESHOLD } from "../../src/runner/lock.js";
 
 // Mock proper-lockfile
 vi.mock("proper-lockfile", () => ({
@@ -67,10 +67,7 @@ describe("lock module", () => {
 
 			await acquireLock("my-job");
 
-			expect(lockfile.lock).toHaveBeenCalledWith(
-				paths.jobDir("my-job"),
-				expect.any(Object),
-			);
+			expect(lockfile.lock).toHaveBeenCalledWith(paths.jobDir("my-job"), expect.any(Object));
 		});
 
 		it("ensures the job directory exists before locking", async () => {

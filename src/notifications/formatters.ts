@@ -1,4 +1,4 @@
-import type { NotificationPayload, NotificationEvent } from "./types.js";
+import type { NotificationEvent, NotificationPayload } from "./types.js";
 
 /**
  * Format duration in milliseconds to "Xm Ys" string.
@@ -42,9 +42,10 @@ const SLACK_EMOJI: Record<NotificationEvent, string> = {
 export function formatDiscord(payload: NotificationPayload): object {
 	const title = EVENT_TITLES[payload.event];
 	const color = DISCORD_COLORS[payload.event];
-	const description = payload.event === "error" || payload.event === "git-error"
-		? payload.error ?? "Unknown error"
-		: payload.summary ?? "No summary available";
+	const description =
+		payload.event === "error" || payload.event === "git-error"
+			? (payload.error ?? "Unknown error")
+			: (payload.summary ?? "No summary available");
 
 	const fields: Array<{ name: string; value: string; inline?: boolean }> = [
 		{ name: "Job", value: payload.jobName, inline: true },
@@ -81,9 +82,10 @@ export function formatDiscord(payload: NotificationPayload): object {
 export function formatSlack(payload: NotificationPayload): object {
 	const emoji = SLACK_EMOJI[payload.event];
 	const title = `${emoji} ${EVENT_TITLES[payload.event]}`;
-	const body = payload.event === "error" || payload.event === "git-error"
-		? `*Error:* ${payload.error ?? "Unknown error"}`
-		: `*Summary:* ${payload.summary ?? "No summary available"}`;
+	const body =
+		payload.event === "error" || payload.event === "git-error"
+			? `*Error:* ${payload.error ?? "Unknown error"}`
+			: `*Summary:* ${payload.summary ?? "No summary available"}`;
 
 	const details = [
 		body,
@@ -138,9 +140,10 @@ export function formatSlack(payload: NotificationPayload): object {
  */
 export function formatTelegram(payload: NotificationPayload, chatId: string): object {
 	const title = `<b>${EVENT_TITLES[payload.event]}</b>`;
-	const body = payload.event === "error" || payload.event === "git-error"
-		? `<b>Error:</b> ${escapeHtml(payload.error ?? "Unknown error")}`
-		: `<b>Summary:</b> ${escapeHtml(payload.summary ?? "No summary available")}`;
+	const body =
+		payload.event === "error" || payload.event === "git-error"
+			? `<b>Error:</b> ${escapeHtml(payload.error ?? "Unknown error")}`
+			: `<b>Summary:</b> ${escapeHtml(payload.summary ?? "No summary available")}`;
 
 	const lines = [
 		title,
@@ -171,8 +174,5 @@ export function formatTelegram(payload: NotificationPayload, chatId: string): ob
 }
 
 function escapeHtml(text: string): string {
-	return text
-		.replace(/&/g, "&amp;")
-		.replace(/</g, "&lt;")
-		.replace(/>/g, "&gt;");
+	return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }

@@ -31,17 +31,38 @@ Claude autonomously and continuously improves codebases without human interventi
 
 ### Active
 
-(None — v1.0 complete. Add requirements for next milestone.)
+- [ ] Cross-run context persistence — Claude remembers previous runs to avoid duplicate work
+- [ ] Model selection per job — Sonnet for routine, Opus for complex
+- [ ] Agent teams per job — planner + implementer + reviewer per run
+- [ ] Merge conflict resolution — auto-resolve when target branch diverged
+- [ ] Windows support via Task Scheduler
+- [ ] TUI dashboard for terminal-based job management
+- [ ] Smarter issue triage — complexity scoring, dependency detection, spam filtering
+- [ ] PR feedback loop — Claude reads review comments and iterates on its own PRs
+- [ ] Cost tracking — token usage per run/job, budget dashboards in CLI
 
 ### Out of Scope
 
 - GUI/web dashboard — CLI-first, skill-first
 - Self-hosting infrastructure — runs on user's machine via system cron/launchd
 - Payment/billing — free tool
-- Windows support — macOS/Linux only (WSL as workaround)
-- Cross-run context persistence — defer until single-run reliability proven
 - Auto-merging PRs — human review gate is intentional
 - Real-time streaming — defeats purpose of "wake up to PRs"
+
+## Current Milestone: v1.1
+
+**Goal:** Make Claude a smarter, more capable autonomous contributor — cross-run memory, agent teams, PR iteration, cost awareness, and broader platform support.
+
+**Target features:**
+- Cross-run context persistence
+- Model selection per job
+- Agent teams (planner/implementer/reviewer)
+- Merge conflict resolution
+- Windows Task Scheduler support
+- TUI dashboard
+- Smarter issue triage
+- PR feedback loop
+- Cost tracking
 
 ## Context
 
@@ -57,7 +78,7 @@ Plugin: 8 SKILL.md files including conversational setup wizard.
 - **Runtime**: Claude Code headless mode with --dangerously-skip-permissions
 - **Distribution**: npm package with Claude Code plugin registration
 - **Git safety**: Never force push, never commit to main, always new branch + PR
-- **Platform**: macOS and Linux (cron/launchd)
+- **Platform**: macOS, Linux, and Windows (v1.1 adds Task Scheduler)
 - **Auth**: Relies on user's existing git/gh authentication
 
 ## Key Decisions
@@ -91,4 +112,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-21 after v1.0 milestone*
+*Last updated: 2026-03-21 after v1.1 milestone start*

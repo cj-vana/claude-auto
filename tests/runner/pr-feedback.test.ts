@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock the exec module
 vi.mock("../../src/util/exec.js", () => ({
@@ -10,16 +10,16 @@ vi.mock("../../src/core/database.js", () => ({
 	getDatabase: vi.fn(),
 }));
 
-import { execCommand } from "../../src/util/exec.js";
 import { getDatabase } from "../../src/core/database.js";
 import {
-	listOpenPRsWithFeedback,
+	checkPendingPRFeedback,
+	getFeedbackRound,
 	getRepoOwnerName,
 	getUnresolvedThreads,
+	listOpenPRsWithFeedback,
 	postPRComment,
-	getFeedbackRound,
-	checkPendingPRFeedback,
 } from "../../src/runner/pr-feedback.js";
+import { execCommand } from "../../src/util/exec.js";
 
 const mockExecCommand = vi.mocked(execCommand);
 const mockGetDatabase = vi.mocked(getDatabase);
@@ -66,7 +66,16 @@ describe("pr-feedback module", () => {
 
 			expect(mockExecCommand).toHaveBeenCalledWith(
 				"gh",
-				["pr", "list", "--author", "@me", "--state", "open", "--json", "number,headRefName,reviewDecision,title,url"],
+				[
+					"pr",
+					"list",
+					"--author",
+					"@me",
+					"--state",
+					"open",
+					"--json",
+					"number,headRefName,reviewDecision,title,url",
+				],
 				{ cwd: "/repo" },
 			);
 		});
@@ -100,11 +109,9 @@ describe("pr-feedback module", () => {
 			const result = await getRepoOwnerName("/repo");
 
 			expect(result).toEqual({ owner: "myorg", name: "myrepo" });
-			expect(mockExecCommand).toHaveBeenCalledWith(
-				"gh",
-				["repo", "view", "--json", "owner,name"],
-				{ cwd: "/repo" },
-			);
+			expect(mockExecCommand).toHaveBeenCalledWith("gh", ["repo", "view", "--json", "owner,name"], {
+				cwd: "/repo",
+			});
 		});
 	});
 
@@ -128,18 +135,14 @@ describe("pr-feedback module", () => {
 											id: "thread-1",
 											isResolved: false,
 											comments: {
-												nodes: [
-													{ body: "Fix this bug", author: { login: "reviewer1" } },
-												],
+												nodes: [{ body: "Fix this bug", author: { login: "reviewer1" } }],
 											},
 										},
 										{
 											id: "thread-2",
 											isResolved: true,
 											comments: {
-												nodes: [
-													{ body: "Already fixed", author: { login: "reviewer1" } },
-												],
+												nodes: [{ body: "Already fixed", author: { login: "reviewer1" } }],
 											},
 										},
 										{

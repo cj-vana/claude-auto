@@ -1,15 +1,12 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock the exec module
 vi.mock("../../src/util/exec.js", () => ({
 	execCommand: vi.fn(),
 }));
 
+import { extractIssueNumber, postIssueComment } from "../../src/notifications/issue-comment.js";
 import { execCommand } from "../../src/util/exec.js";
-import {
-	extractIssueNumber,
-	postIssueComment,
-} from "../../src/notifications/issue-comment.js";
 
 const mockExecCommand = vi.mocked(execCommand);
 
@@ -184,8 +181,6 @@ describe("postIssueComment", () => {
 			jobName: "Job F",
 		});
 
-		expect(warnSpy).toHaveBeenCalledWith(
-			expect.stringContaining("[claude-auto]"),
-		);
+		expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining("[claude-auto]"));
 	});
 });

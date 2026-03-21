@@ -1,4 +1,4 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 describe("parseCommand", () => {
 	let parseCommand: typeof import("../../src/cli/router.js").parseCommand;
@@ -141,10 +141,13 @@ describe("formatTable", () => {
 	});
 
 	it("pads columns to match widest content", () => {
-		const result = formatTable(["Name", "Value"], [
-			["short", "x"],
-			["much longer name", "y"],
-		]);
+		const result = formatTable(
+			["Name", "Value"],
+			[
+				["short", "x"],
+				["much longer name", "y"],
+			],
+		);
 		const lines = result.split("\n").filter(Boolean);
 		// All lines should have the same length (padded)
 		expect(lines.length).toBeGreaterThanOrEqual(3); // header + separator + 2 rows

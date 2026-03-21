@@ -1,4 +1,4 @@
-import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { RunLogEntry } from "../../src/runner/types.js";
 
 // Mock dependencies
@@ -19,8 +19,8 @@ vi.mock("node:fs/promises", () => ({
 }));
 
 import { readdir, readFile } from "node:fs/promises";
-import { writeFileSafe } from "../../src/util/fs.js";
 import { listRunLogs, readRunLog, writeRunLog } from "../../src/runner/logger.js";
+import { writeFileSafe } from "../../src/util/fs.js";
 
 const mockedWriteFileSafe = vi.mocked(writeFileSafe);
 const mockedReaddir = vi.mocked(readdir);

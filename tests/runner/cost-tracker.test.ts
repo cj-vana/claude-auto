@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { closeDatabase, getDatabase } from "../../src/core/database.js";
-import { checkBudget, getCostSummary } from "../../src/runner/cost-tracker.js";
 import type { BudgetConfig, CostSummaryRow, DailyCostRow } from "../../src/runner/cost-tracker.js";
+import { checkBudget, getCostSummary } from "../../src/runner/cost-tracker.js";
 
 /**
  * Insert a test run row directly into the in-memory database.

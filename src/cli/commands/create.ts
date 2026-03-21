@@ -76,7 +76,10 @@ export async function createCommand(args: ParsedCommand["args"]): Promise<void> 
 	const noArchitectureChanges = Boolean(args.noArchChanges);
 	const bugFixOnly = Boolean(args.bugFixOnly);
 	const restrictToPaths = args.restrictPaths
-		? String(args.restrictPaths).split(",").map((s) => s.trim()).filter(Boolean)
+		? String(args.restrictPaths)
+				.split(",")
+				.map((s) => s.trim())
+				.filter(Boolean)
 		: undefined;
 
 	// Parse notifications (provide default trigger values matching Zod schema defaults)

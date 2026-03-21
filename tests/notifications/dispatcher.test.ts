@@ -1,8 +1,8 @@
-import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { JobConfig } from "../../src/core/types.js";
-import type { RunResult } from "../../src/runner/types.js";
-import { shouldNotify } from "../../src/notifications/types.js";
 import { sendNotifications } from "../../src/notifications/dispatcher.js";
+import { shouldNotify } from "../../src/notifications/types.js";
+import type { RunResult } from "../../src/runner/types.js";
 
 // Save and restore original fetch
 const originalFetch = globalThis.fetch;

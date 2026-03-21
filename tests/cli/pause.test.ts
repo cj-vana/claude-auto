@@ -1,4 +1,4 @@
-import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { JobConfig } from "../../src/core/types.js";
 
 // Mock dependencies
@@ -11,9 +11,9 @@ vi.mock("../../src/platform/scheduler.js", () => ({
 	createScheduler: vi.fn(),
 }));
 
+import { pauseCommand } from "../../src/cli/commands/pause.js";
 import { readJob, updateJob } from "../../src/core/job-manager.js";
 import { createScheduler } from "../../src/platform/scheduler.js";
-import { pauseCommand } from "../../src/cli/commands/pause.js";
 
 const mockedReadJob = vi.mocked(readJob);
 const mockedUpdateJob = vi.mocked(updateJob);

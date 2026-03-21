@@ -1,9 +1,9 @@
+import { closeDatabase } from "../../core/database.js";
 import {
-	getCostSummary,
 	type CostSummaryRow,
 	type DailyCostRow,
+	getCostSummary,
 } from "../../runner/cost-tracker.js";
-import { closeDatabase } from "../../core/database.js";
 import { formatTable } from "../format.js";
 
 /**
@@ -70,10 +70,7 @@ export async function costCommand(
 
 			console.log("\nCost Summary\n");
 			console.log(
-				formatTable(
-					["Job ID", "Runs", "Total Cost (USD)", "Avg Cost", "Turns"],
-					tableRows,
-				),
+				formatTable(["Job ID", "Runs", "Total Cost (USD)", "Avg Cost", "Turns"], tableRows),
 			);
 
 			const grandTotal = rows.reduce((sum, r) => sum + r.total_cost, 0);

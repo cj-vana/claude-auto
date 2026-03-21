@@ -1,4 +1,4 @@
-import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { JobConfig } from "../../src/core/types.js";
 import type { RunLogEntry } from "../../src/runner/types.js";
 
@@ -17,10 +17,10 @@ vi.mock("../../src/core/schedule.js", () => ({
 	getNextRuns: vi.fn(),
 }));
 
-import { listJobs } from "../../src/core/job-manager.js";
-import { listRunLogs } from "../../src/runner/logger.js";
-import { describeSchedule, getNextRuns } from "../../src/core/schedule.js";
 import { listCommand } from "../../src/cli/commands/list.js";
+import { listJobs } from "../../src/core/job-manager.js";
+import { describeSchedule, getNextRuns } from "../../src/core/schedule.js";
+import { listRunLogs } from "../../src/runner/logger.js";
 
 const mockedListJobs = vi.mocked(listJobs);
 const mockedListRunLogs = vi.mocked(listRunLogs);
@@ -185,8 +185,16 @@ describe("listCommand", () => {
 	});
 
 	it("displays multiple jobs with different repos as separate rows", async () => {
-		const job1 = makeJob({ id: "job-1", name: "Job One", repo: { path: "/repos/alpha", branch: "main", remote: "origin" } });
-		const job2 = makeJob({ id: "job-2", name: "Job Two", repo: { path: "/repos/beta", branch: "main", remote: "origin" } });
+		const job1 = makeJob({
+			id: "job-1",
+			name: "Job One",
+			repo: { path: "/repos/alpha", branch: "main", remote: "origin" },
+		});
+		const job2 = makeJob({
+			id: "job-2",
+			name: "Job Two",
+			repo: { path: "/repos/beta", branch: "main", remote: "origin" },
+		});
 		mockedListJobs.mockResolvedValue([job1, job2]);
 		mockedDescribeSchedule.mockReturnValue("Every 6 hours");
 		mockedGetNextRuns.mockReturnValue([new Date(Date.now() + 3600000)]);

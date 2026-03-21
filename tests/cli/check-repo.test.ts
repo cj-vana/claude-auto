@@ -1,4 +1,4 @@
-import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock dependencies
 vi.mock("node:fs/promises", () => ({
@@ -10,8 +10,8 @@ vi.mock("../../src/util/exec.js", () => ({
 }));
 
 import { stat } from "node:fs/promises";
-import { execCommand } from "../../src/util/exec.js";
 import { checkRepoCommand } from "../../src/cli/commands/check-repo.js";
+import { execCommand } from "../../src/util/exec.js";
 
 const mockedStat = vi.mocked(stat);
 const mockedExecCommand = vi.mocked(execCommand);
