@@ -9,9 +9,9 @@ Requirements for v1.1 release. Each maps to roadmap phases.
 
 ### Cross-Run Intelligence
 
-- [ ] **CTXT-01**: Each run persists structured context (files modified, PR URL, issue number, summary) to a local SQLite database
-- [ ] **CTXT-02**: Each run loads context from prior runs and injects it into Claude's system prompt as a rolling window
-- [ ] **CTXT-03**: Claude avoids duplicate work by checking what was done in previous runs before picking new work
+- [x] **CTXT-01**: Each run persists structured context (files modified, PR URL, issue number, summary) to a local SQLite database
+- [x] **CTXT-02**: Each run loads context from prior runs and injects it into Claude's system prompt as a rolling window
+- [x] **CTXT-03**: Claude avoids duplicate work by checking what was done in previous runs before picking new work
 
 ### PR Feedback Loop
 
@@ -41,7 +41,7 @@ Requirements for v1.1 release. Each maps to roadmap phases.
 
 ### Cost Tracking
 
-- [ ] **COST-01**: Each run records token usage and cost from Claude's JSON output to the SQLite database
+- [x] **COST-01**: Each run records token usage and cost from Claude's JSON output to the SQLite database
 - [ ] **COST-02**: User can view cost summaries per job and across all jobs via CLI (claude-auto cost)
 - [x] **COST-03**: User can set daily, weekly, or monthly budget caps per job
 - [ ] **COST-04**: When a budget cap is reached, scheduled runs skip with a "budget exceeded" status and notification
@@ -92,9 +92,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CTXT-01 | Phase 8 | Pending |
-| CTXT-02 | Phase 8 | Pending |
-| CTXT-03 | Phase 8 | Pending |
+| CTXT-01 | Phase 8 | Complete |
+| CTXT-02 | Phase 8 | Complete |
+| CTXT-03 | Phase 8 | Complete |
 | PRFB-01 | Phase 9 | Pending |
 | PRFB-02 | Phase 9 | Pending |
 | PRFB-03 | Phase 9 | Pending |
@@ -109,7 +109,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | MODL-01 | Phase 8 | Complete |
 | MODL-02 | Phase 8 | Complete |
 | MODL-03 | Phase 8 | Complete |
-| COST-01 | Phase 8 | Pending |
+| COST-01 | Phase 8 | Complete |
 | COST-02 | Phase 8 | Pending |
 | COST-03 | Phase 8 | Complete |
 | COST-04 | Phase 8 | Pending |

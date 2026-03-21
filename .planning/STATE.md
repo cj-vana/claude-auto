@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Intelligence & Platform
 status: unknown
-stopped_at: Completed 08-01-PLAN.md
-last_updated: "2026-03-21T22:26:47.866Z"
+stopped_at: Completed 08-02-PLAN.md
+last_updated: "2026-03-21T22:27:00.670Z"
 progress:
   total_phases: 11
   completed_phases: 7
@@ -53,6 +53,7 @@ Plan: 3 of 3
 
 *Updated after each plan completion*
 | Phase 08 P01 | 3min | 2 tasks | 5 files |
+| Phase 08 P02 | 3m34s | 2 tasks | 11 files |
 
 ## Accumulated Context
 
@@ -68,6 +69,9 @@ Recent decisions affecting current work:
 - [Roadmap v1.1]: Store structured facts in context DB (issues, PRs, branches), never raw Claude narrative (prevents hallucination amplification)
 - [Phase 08]: Model field uses z.union of z.enum (5 aliases) + z.string().regex(/^claude-/) for extensible model ID validation
 - [Phase 08]: Budget fields are schema-only; enforcement deferred to cost tracking plan (08-02)
+- [Phase 08]: Database singleton with optional dbPath for test isolation (in-memory SQLite)
+- [Phase 08]: Dual-write (JSON + SQLite) is best-effort: DB failure never blocks run logging
+- [Phase 08]: formatContextWindow excludes narrative summaries to prevent hallucination amplification
 
 ### Pending Todos
 
@@ -81,6 +85,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-21T22:26:33.721Z
-Stopped at: Completed 08-01-PLAN.md
+Last session: 2026-03-21T22:27:00.668Z
+Stopped at: Completed 08-02-PLAN.md
 Resume file: None
