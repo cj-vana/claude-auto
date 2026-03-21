@@ -15,9 +15,9 @@ Requirements for v1.1 release. Each maps to roadmap phases.
 
 ### PR Feedback Loop
 
-- [ ] **PRFB-01**: Before picking new work, Claude checks for open PRs with unaddressed review comments via gh
-- [ ] **PRFB-02**: When review comments exist, Claude checks out the existing PR branch and addresses the feedback
-- [ ] **PRFB-03**: PR feedback iteration has a configurable max rounds (default 3) to prevent infinite loops
+- [x] **PRFB-01**: Before picking new work, Claude checks for open PRs with unaddressed review comments via gh
+- [x] **PRFB-02**: When review comments exist, Claude checks out the existing PR branch and addresses the feedback
+- [x] **PRFB-03**: PR feedback iteration has a configurable max rounds (default 3) to prevent infinite loops
 - [ ] **PRFB-04**: After addressing feedback, Claude pushes to the same branch and comments on the PR with what changed
 
 ### Issue Triage
@@ -95,9 +95,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CTXT-01 | Phase 8 | Complete |
 | CTXT-02 | Phase 8 | Complete |
 | CTXT-03 | Phase 8 | Complete |
-| PRFB-01 | Phase 9 | Pending |
-| PRFB-02 | Phase 9 | Pending |
-| PRFB-03 | Phase 9 | Pending |
+| PRFB-01 | Phase 9 | Complete |
+| PRFB-02 | Phase 9 | Complete |
+| PRFB-03 | Phase 9 | Complete |
 | PRFB-04 | Phase 9 | Pending |
 | TRIG-01 | Phase 9 | Complete |
 | TRIG-02 | Phase 9 | Complete |
