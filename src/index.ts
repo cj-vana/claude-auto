@@ -58,3 +58,9 @@ export type {
 	RunStatus,
 	RunLogEntry,
 } from "./runner/types.js";
+// Phase 4: Notifications
+export { sendNotifications } from "./notifications/dispatcher.js";
+export { formatDiscord, formatSlack, formatTelegram } from "./notifications/formatters.js";
+export { extractIssueNumber, postIssueComment } from "./notifications/issue-comment.js";
+export type { NotificationEvent, NotificationPayload, EventTriggers } from "./notifications/types.js";
+export { shouldNotify, buildPayload } from "./notifications/types.js";

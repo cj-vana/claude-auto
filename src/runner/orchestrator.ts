@@ -8,6 +8,8 @@ import { loadJobConfig } from "../core/config.js";
 import { paths } from "../util/paths.js";
 import { execCommand } from "../util/exec.js";
 import { GitOpsError } from "../util/errors.js";
+import { sendNotifications } from "../notifications/dispatcher.js";
+import { extractIssueNumber, postIssueComment } from "../notifications/issue-comment.js";
 import type { JobConfig } from "../core/types.js";
 import type { RunResult, SpawnResult } from "./types.js";
 
@@ -107,6 +109,9 @@ export async function executeRun(jobId: string): Promise<RunResult> {
 			);
 		}
 
+		// Extract issue number from summary if present
+		const issueNumber = spawnResult.summary ? extractIssueNumber(spawnResult.summary) : undefined;
+
 		const result: RunResult = {
 			status: changed ? "success" : "no-changes",
 			jobId,
@@ -120,9 +125,24 @@ export async function executeRun(jobId: string): Promise<RunResult> {
 			numTurns: spawnResult.numTurns,
 			sessionId: spawnResult.sessionId,
 			branchName,
+			issueNumber,
 		};
 
 		await writeRunLog(jobId, result);
+
+		// Best-effort notifications (never fail the run)
+		await sendNotifications(config, result).catch(() => {});
+		if (issueNumber) {
+			await postIssueComment({
+				repoPath: config.repo.path,
+				issueNumber,
+				status: result.status,
+				prUrl: result.prUrl,
+				summary: result.summary,
+				jobName: config.name,
+			}).catch(() => {});
+		}
+
 		return result;
 	} catch (error) {
 		const isGitError = error instanceof GitOpsError;
@@ -138,6 +158,21 @@ export async function executeRun(jobId: string): Promise<RunResult> {
 		};
 
 		await writeRunLog(jobId, result).catch(() => {}); // Don't fail on log write error
+
+		// Best-effort notifications on error
+		if (config) {
+			await sendNotifications(config, result).catch(() => {});
+			const errorIssueNumber = result.summary ? extractIssueNumber(result.summary) : undefined;
+			if (errorIssueNumber) {
+				await postIssueComment({
+					repoPath: config.repo.path,
+					issueNumber: errorIssueNumber,
+					status: result.status,
+					error: result.error,
+					jobName: config.name,
+				}).catch(() => {});
+			}
+		}
 
 		// Cleanup: if we created a branch but failed, try to go back to base branch
 		if (branchName && config) {
