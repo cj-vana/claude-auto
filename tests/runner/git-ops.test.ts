@@ -13,6 +13,7 @@ import {
 	hasChanges,
 	pushBranch,
 	createPR,
+	checkoutExistingBranch,
 } from "../../src/runner/git-ops.js";
 import { GitOpsError } from "../../src/util/errors.js";
 
@@ -201,6 +202,48 @@ describe("git-ops module", () => {
 
 			await expect(
 				createPR("/repo", "branch", "main", "title", "body"),
+			).rejects.toThrow(GitOpsError);
+		});
+	});
+
+	describe("checkoutExistingBranch", () => {
+		it("calls fetch, checkout, reset --hard in order", async () => {
+			await checkoutExistingBranch("/repo/path", "claude-auto/job/2026-01-01T00-00-00");
+
+			expect(mockExecCommand).toHaveBeenCalledTimes(3);
+
+			// First: fetch
+			expect(mockExecCommand).toHaveBeenNthCalledWith(1, "git", [
+				"-C",
+				"/repo/path",
+				"fetch",
+				"origin",
+				"claude-auto/job/2026-01-01T00-00-00",
+			]);
+
+			// Second: checkout
+			expect(mockExecCommand).toHaveBeenNthCalledWith(2, "git", [
+				"-C",
+				"/repo/path",
+				"checkout",
+				"claude-auto/job/2026-01-01T00-00-00",
+			]);
+
+			// Third: reset --hard
+			expect(mockExecCommand).toHaveBeenNthCalledWith(3, "git", [
+				"-C",
+				"/repo/path",
+				"reset",
+				"--hard",
+				"origin/claude-auto/job/2026-01-01T00-00-00",
+			]);
+		});
+
+		it("throws GitOpsError on failure", async () => {
+			mockExecCommand.mockRejectedValueOnce(new Error("fetch failed"));
+
+			await expect(
+				checkoutExistingBranch("/repo", "branch"),
 			).rejects.toThrow(GitOpsError);
 		});
 	});

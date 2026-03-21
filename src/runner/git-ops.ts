@@ -77,6 +77,30 @@ export async function pushBranch(repoPath: string, branchName: string): Promise<
 }
 
 /**
+ * Checkout an existing branch (e.g., a PR branch) and reset to match remote.
+ * Used for PR feedback iteration -- safely switches to the existing PR branch.
+ *
+ * Steps:
+ * 1. Fetch the latest state of the branch from origin
+ * 2. Checkout the branch (may already exist locally or be created from remote tracking)
+ * 3. Hard reset to match origin exactly (safe because claude-auto never has local-only state)
+ */
+export async function checkoutExistingBranch(repoPath: string, branchName: string): Promise<void> {
+	try {
+		await execCommand("git", ["-C", repoPath, "fetch", "origin", branchName]);
+		await execCommand("git", ["-C", repoPath, "checkout", branchName]);
+		await execCommand("git", ["-C", repoPath, "reset", "--hard", `origin/${branchName}`]);
+	} catch (err) {
+		throw new GitOpsError(
+			"checkoutExistingBranch",
+			repoPath,
+			err instanceof Error ? err.message : String(err),
+			err instanceof Error ? err : undefined,
+		);
+	}
+}
+
+/**
  * Create a pull request via GitHub CLI.
  * Returns the PR URL.
  */
