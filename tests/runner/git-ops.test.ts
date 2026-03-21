@@ -7,9 +7,12 @@ vi.mock("../../src/util/exec.js", () => ({
 }));
 
 import {
+	attemptRebase,
+	checkDivergence,
 	checkoutExistingBranch,
 	createBranch,
 	createPR,
+	getDiffFromBase,
 	hasChanges,
 	pullLatest,
 	pushBranch,
@@ -241,6 +244,140 @@ describe("git-ops module", () => {
 			mockExecCommand.mockRejectedValueOnce(new Error("fetch failed"));
 
 			await expect(checkoutExistingBranch("/repo", "branch")).rejects.toThrow(GitOpsError);
+		});
+	});
+
+	describe("checkDivergence", () => {
+		it("returns false when merge-base --is-ancestor succeeds (no divergence)", async () => {
+			// fetch succeeds, merge-base succeeds (exit 0 = is ancestor = not diverged)
+			mockExecCommand.mockResolvedValueOnce({ stdout: "", stderr: "" }); // fetch
+			mockExecCommand.mockResolvedValueOnce({ stdout: "", stderr: "" }); // merge-base
+
+			const result = await checkDivergence("/repo/path", "main", "origin");
+			expect(result).toBe(false);
+		});
+
+		it("returns true when merge-base --is-ancestor fails (diverged)", async () => {
+			// fetch succeeds, merge-base fails (non-zero exit = not ancestor = diverged)
+			mockExecCommand.mockResolvedValueOnce({ stdout: "", stderr: "" }); // fetch
+			mockExecCommand.mockRejectedValueOnce(new Error("not ancestor")); // merge-base
+
+			const result = await checkDivergence("/repo/path", "main", "origin");
+			expect(result).toBe(true);
+		});
+
+		it("fetches remote base branch before checking", async () => {
+			await checkDivergence("/repo/path", "main", "origin");
+
+			expect(mockExecCommand).toHaveBeenNthCalledWith(1, "git", [
+				"-C",
+				"/repo/path",
+				"fetch",
+				"origin",
+				"main",
+			]);
+
+			expect(mockExecCommand).toHaveBeenNthCalledWith(2, "git", [
+				"-C",
+				"/repo/path",
+				"merge-base",
+				"--is-ancestor",
+				"origin/main",
+				"HEAD",
+			]);
+		});
+	});
+
+	describe("attemptRebase", () => {
+		it("returns { diverged: false, rebased: false, conflicts: [] } when not diverged", async () => {
+			// fetch succeeds, merge-base succeeds (not diverged)
+			mockExecCommand.mockResolvedValueOnce({ stdout: "", stderr: "" }); // fetch
+			mockExecCommand.mockResolvedValueOnce({ stdout: "", stderr: "" }); // merge-base
+
+			const result = await attemptRebase("/repo/path", "main", "origin");
+			expect(result).toEqual({ diverged: false, rebased: false, conflicts: [] });
+		});
+
+		it("returns { diverged: true, rebased: true, conflicts: [] } on successful rebase", async () => {
+			// fetch succeeds, merge-base fails (diverged), rebase succeeds
+			mockExecCommand.mockResolvedValueOnce({ stdout: "", stderr: "" }); // fetch
+			mockExecCommand.mockRejectedValueOnce(new Error("not ancestor")); // merge-base
+			mockExecCommand.mockResolvedValueOnce({ stdout: "", stderr: "" }); // rebase
+
+			const result = await attemptRebase("/repo/path", "main", "origin");
+			expect(result).toEqual({ diverged: true, rebased: true, conflicts: [] });
+		});
+
+		it("calls git rebase --abort and returns conflict list when rebase fails", async () => {
+			// fetch succeeds, merge-base fails (diverged), rebase fails, diff shows conflicts, abort
+			mockExecCommand.mockResolvedValueOnce({ stdout: "", stderr: "" }); // fetch
+			mockExecCommand.mockRejectedValueOnce(new Error("not ancestor")); // merge-base
+			mockExecCommand.mockRejectedValueOnce(new Error("conflict")); // rebase
+			mockExecCommand.mockResolvedValueOnce({ stdout: "src/file1.ts\nsrc/file2.ts\n", stderr: "" }); // diff --name-only
+			mockExecCommand.mockResolvedValueOnce({ stdout: "", stderr: "" }); // rebase --abort
+
+			const result = await attemptRebase("/repo/path", "main", "origin");
+			expect(result).toEqual({
+				diverged: true,
+				rebased: false,
+				conflicts: ["src/file1.ts", "src/file2.ts"],
+			});
+
+			// Verify rebase --abort was called
+			expect(mockExecCommand).toHaveBeenCalledWith("git", [
+				"-C",
+				"/repo/path",
+				"rebase",
+				"--abort",
+			]);
+		});
+
+		it("rebase --abort is called even when diff --name-only fails", async () => {
+			// fetch succeeds, merge-base fails (diverged), rebase fails, diff fails, abort
+			mockExecCommand.mockResolvedValueOnce({ stdout: "", stderr: "" }); // fetch
+			mockExecCommand.mockRejectedValueOnce(new Error("not ancestor")); // merge-base
+			mockExecCommand.mockRejectedValueOnce(new Error("conflict")); // rebase
+			mockExecCommand.mockRejectedValueOnce(new Error("diff failed")); // diff --name-only
+			mockExecCommand.mockResolvedValueOnce({ stdout: "", stderr: "" }); // rebase --abort
+
+			const result = await attemptRebase("/repo/path", "main", "origin");
+			expect(result.diverged).toBe(true);
+			expect(result.rebased).toBe(false);
+			expect(result.conflicts).toEqual([]);
+
+			// Verify rebase --abort was still called
+			expect(mockExecCommand).toHaveBeenCalledWith("git", [
+				"-C",
+				"/repo/path",
+				"rebase",
+				"--abort",
+			]);
+		});
+	});
+
+	describe("getDiffFromBase", () => {
+		it("returns diff output string between base and HEAD", async () => {
+			mockExecCommand.mockResolvedValueOnce({
+				stdout: "diff --git a/src/file.ts b/src/file.ts\n+added line\n",
+				stderr: "",
+			});
+
+			const result = await getDiffFromBase("/repo/path", "main");
+			expect(result).toBe("diff --git a/src/file.ts b/src/file.ts\n+added line");
+
+			expect(mockExecCommand).toHaveBeenCalledWith("git", [
+				"-C",
+				"/repo/path",
+				"diff",
+				"main...HEAD",
+			]);
+		});
+
+		it("returns empty string on error (best-effort)", async () => {
+			mockExecCommand.mockRejectedValueOnce(new Error("diff failed"));
+
+			const result = await getDiffFromBase("/repo/path", "main");
+			expect(result).toBe("");
 		});
 	});
 
