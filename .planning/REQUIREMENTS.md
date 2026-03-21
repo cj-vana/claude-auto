@@ -23,12 +23,12 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Autonomous Execution
 
-- [ ] **EXEC-01**: Each cron run spawns Claude Code in headless mode with --dangerously-skip-permissions
-- [ ] **EXEC-02**: Claude researches current codebase implementation at the start of every run before doing any work
-- [ ] **EXEC-03**: Work follows priority chain: open GitHub issues/feature requests → bugs Claude discovers → features Claude wants to add
-- [ ] **EXEC-04**: Claude proactively scans for pre-existing bugs before considering new features
-- [ ] **EXEC-05**: Claude evaluates issue complexity and solvability, skips spam/unclear issues, picks best candidate for autonomous resolution
-- [ ] **EXEC-06**: Claude updates relevant documentation as part of every PR
+- [x] **EXEC-01**: Each cron run spawns Claude Code in headless mode with --dangerously-skip-permissions
+- [x] **EXEC-02**: Claude researches current codebase implementation at the start of every run before doing any work
+- [x] **EXEC-03**: Work follows priority chain: open GitHub issues/feature requests → bugs Claude discovers → features Claude wants to add
+- [x] **EXEC-04**: Claude proactively scans for pre-existing bugs before considering new features
+- [x] **EXEC-05**: Claude evaluates issue complexity and solvability, skips spam/unclear issues, picks best candidate for autonomous resolution
+- [x] **EXEC-06**: Claude updates relevant documentation as part of every PR
 
 ### Git & PR Workflow
 
@@ -48,9 +48,9 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Safety & Guardrails
 
-- [ ] **SAFE-01**: Each run has a configurable max turns limit to prevent runaway sessions
-- [ ] **SAFE-02**: User can optionally configure scope restrictions (no new deps, no architecture changes, bug-fix only, specific directories only)
-- [ ] **SAFE-03**: Full trust by default — guardrails are opt-in, not default
+- [x] **SAFE-01**: Each run has a configurable max turns limit to prevent runaway sessions
+- [x] **SAFE-02**: User can optionally configure scope restrictions (no new deps, no architecture changes, bug-fix only, specific directories only)
+- [x] **SAFE-03**: Full trust by default — guardrails are opt-in, not default
 
 ### Notifications
 
@@ -60,7 +60,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Reporting
 
-- [ ] **REPT-01**: Each run produces an append-only local log (start time, duration, what was attempted, what was committed, PR URL, errors)
+- [x] **REPT-01**: Each run produces an append-only local log (start time, duration, what was attempted, what was committed, PR URL, errors)
 - [ ] **REPT-02**: Run summary reports aggregate what was analyzed, attempted, and produced
 
 ### Distribution
@@ -113,12 +113,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SCHED-01 | Phase 2 | Complete |
 | SCHED-02 | Phase 2 | Complete |
 | SCHED-03 | Phase 2 | Complete |
-| EXEC-01 | Phase 3 | Pending |
-| EXEC-02 | Phase 3 | Pending |
-| EXEC-03 | Phase 3 | Pending |
-| EXEC-04 | Phase 3 | Pending |
-| EXEC-05 | Phase 3 | Pending |
-| EXEC-06 | Phase 3 | Pending |
+| EXEC-01 | Phase 3 | Complete |
+| EXEC-02 | Phase 3 | Complete |
+| EXEC-03 | Phase 3 | Complete |
+| EXEC-04 | Phase 3 | Complete |
+| EXEC-05 | Phase 3 | Complete |
+| EXEC-06 | Phase 3 | Complete |
 | GIT-01 | Phase 3 | Complete |
 | GIT-02 | Phase 3 | Complete |
 | GIT-03 | Phase 3 | Complete |
@@ -129,13 +129,13 @@ Which phases cover which requirements. Updated during roadmap creation.
 | JOB-03 | Phase 5 | Pending |
 | JOB-04 | Phase 5 | Pending |
 | JOB-05 | Phase 5 | Pending |
-| SAFE-01 | Phase 3 | Pending |
-| SAFE-02 | Phase 3 | Pending |
-| SAFE-03 | Phase 3 | Pending |
+| SAFE-01 | Phase 3 | Complete |
+| SAFE-02 | Phase 3 | Complete |
+| SAFE-03 | Phase 3 | Complete |
 | NOTF-01 | Phase 4 | Pending |
 | NOTF-02 | Phase 4 | Pending |
 | NOTF-03 | Phase 4 | Pending |
-| REPT-01 | Phase 3 | Pending |
+| REPT-01 | Phase 3 | Complete |
 | REPT-02 | Phase 5 | Pending |
 | DIST-01 | Phase 6 | Pending |
 | DIST-02 | Phase 6 | Pending |
