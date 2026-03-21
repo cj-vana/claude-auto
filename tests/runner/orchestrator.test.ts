@@ -1,0 +1,243 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type { JobConfig } from "../../src/core/types.js";
+import { GitOpsError } from "../../src/util/errors.js";
+import type { SpawnResult } from "../../src/runner/types.js";
+
+// Mock all dependencies
+vi.mock("nanoid", () => ({
+	nanoid: vi.fn(() => "test-run-id12"),
+}));
+
+vi.mock("../../src/runner/lock.js", () => ({
+	acquireLock: vi.fn(),
+}));
+
+vi.mock("../../src/runner/git-ops.js", () => ({
+	pullLatest: vi.fn(),
+	createBranch: vi.fn(),
+	hasChanges: vi.fn(),
+	pushBranch: vi.fn(),
+	createPR: vi.fn(),
+}));
+
+vi.mock("../../src/runner/spawner.js", () => ({
+	spawnClaude: vi.fn(),
+	buildAllowedTools: vi.fn(),
+}));
+
+vi.mock("../../src/runner/prompt-builder.js", () => ({
+	buildWorkPrompt: vi.fn(),
+	buildSystemPrompt: vi.fn(),
+}));
+
+vi.mock("../../src/runner/logger.js", () => ({
+	writeRunLog: vi.fn(),
+}));
+
+vi.mock("../../src/core/config.js", () => ({
+	loadJobConfig: vi.fn(),
+}));
+
+vi.mock("../../src/util/exec.js", () => ({
+	execCommand: vi.fn(),
+}));
+
+// Import mocked modules after mock declarations
+import { acquireLock } from "../../src/runner/lock.js";
+import { pullLatest, createBranch, hasChanges, pushBranch, createPR } from "../../src/runner/git-ops.js";
+import { spawnClaude, buildAllowedTools } from "../../src/runner/spawner.js";
+import { buildWorkPrompt, buildSystemPrompt } from "../../src/runner/prompt-builder.js";
+import { writeRunLog } from "../../src/runner/logger.js";
+import { loadJobConfig } from "../../src/core/config.js";
+import { execCommand } from "../../src/util/exec.js";
+import { executeRun } from "../../src/runner/orchestrator.js";
+
+const mockedAcquireLock = vi.mocked(acquireLock);
+const mockedLoadJobConfig = vi.mocked(loadJobConfig);
+const mockedPullLatest = vi.mocked(pullLatest);
+const mockedCreateBranch = vi.mocked(createBranch);
+const mockedHasChanges = vi.mocked(hasChanges);
+const mockedPushBranch = vi.mocked(pushBranch);
+const mockedCreatePR = vi.mocked(createPR);
+const mockedSpawnClaude = vi.mocked(spawnClaude);
+const mockedBuildAllowedTools = vi.mocked(buildAllowedTools);
+const mockedBuildWorkPrompt = vi.mocked(buildWorkPrompt);
+const mockedBuildSystemPrompt = vi.mocked(buildSystemPrompt);
+const mockedWriteRunLog = vi.mocked(writeRunLog);
+const mockedExecCommand = vi.mocked(execCommand);
+
+function makeDefaultConfig(): JobConfig {
+	return {
+		id: "test-job",
+		name: "Test Job",
+		repo: { path: "/tmp/test-repo", branch: "main", remote: "origin" },
+		schedule: { cron: "0 */6 * * *", timezone: "UTC" },
+		focus: ["open-issues", "bug-discovery"],
+		guardrails: {
+			maxTurns: 50,
+			maxBudgetUsd: 5.0,
+			noNewDependencies: false,
+			noArchitectureChanges: false,
+			bugFixOnly: false,
+		},
+		notifications: {},
+		enabled: true,
+	};
+}
+
+function makeDefaultSpawnResult(overrides: Partial<SpawnResult> = {}): SpawnResult {
+	return {
+		success: true,
+		result: "I fixed the bug in utils.ts",
+		summary: "Fixed null check bug in utils.ts",
+		sessionId: "session-abc-123",
+		costUsd: 1.5,
+		numTurns: 12,
+		durationMs: 45000,
+		isError: false,
+		subtype: "success",
+		...overrides,
+	};
+}
+
+const mockReleaseLock = vi.fn().mockResolvedValue(undefined);
+
+describe("executeRun", () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+
+		// Default mocks: everything succeeds
+		mockedAcquireLock.mockResolvedValue(mockReleaseLock);
+		mockedLoadJobConfig.mockResolvedValue(makeDefaultConfig());
+		mockedPullLatest.mockResolvedValue(undefined);
+		mockedCreateBranch.mockResolvedValue("claude-auto/test-job/2026-03-21T00-00-00");
+		mockedHasChanges.mockResolvedValue(true);
+		mockedPushBranch.mockResolvedValue(undefined);
+		mockedCreatePR.mockResolvedValue("https://github.com/test/repo/pull/42");
+		mockedSpawnClaude.mockResolvedValue(makeDefaultSpawnResult());
+		mockedBuildAllowedTools.mockReturnValue(["Read", "Edit", "Write"]);
+		mockedBuildWorkPrompt.mockReturnValue("Do some work");
+		mockedBuildSystemPrompt.mockReturnValue("You are an autonomous agent");
+		mockedWriteRunLog.mockResolvedValue(undefined);
+		mockedExecCommand.mockResolvedValue({ stdout: "", stderr: "" });
+	});
+
+	afterEach(() => {
+		vi.restoreAllMocks();
+	});
+
+	it("returns locked status when lock unavailable", async () => {
+		mockedAcquireLock.mockResolvedValue(null);
+
+		const result = await executeRun("test-job");
+
+		expect(result.status).toBe("locked");
+		expect(result.jobId).toBe("test-job");
+		expect(result.runId).toBeDefined();
+		expect(result.startedAt).toBeDefined();
+		expect(result.completedAt).toBeDefined();
+		expect(result.durationMs).toBeGreaterThanOrEqual(0);
+		expect(mockedWriteRunLog).toHaveBeenCalledWith("test-job", expect.objectContaining({ status: "locked" }));
+		// Should not call any other functions
+		expect(mockedLoadJobConfig).not.toHaveBeenCalled();
+		expect(mockedPullLatest).not.toHaveBeenCalled();
+	});
+
+	it("executes full success path with PR", async () => {
+		const result = await executeRun("test-job");
+
+		expect(result.status).toBe("success");
+		expect(result.prUrl).toBe("https://github.com/test/repo/pull/42");
+		expect(result.summary).toBe("Fixed null check bug in utils.ts");
+		expect(result.costUsd).toBe(1.5);
+		expect(result.numTurns).toBe(12);
+		expect(result.sessionId).toBe("session-abc-123");
+		expect(result.branchName).toBe("claude-auto/test-job/2026-03-21T00-00-00");
+
+		// Verify call order
+		expect(mockedAcquireLock).toHaveBeenCalledWith("test-job");
+		expect(mockedLoadJobConfig).toHaveBeenCalled();
+		expect(mockedPullLatest).toHaveBeenCalledWith("/tmp/test-repo", "main", "origin");
+		expect(mockedCreateBranch).toHaveBeenCalledWith("/tmp/test-repo", "test-job");
+		expect(mockedBuildWorkPrompt).toHaveBeenCalled();
+		expect(mockedBuildSystemPrompt).toHaveBeenCalled();
+		expect(mockedBuildAllowedTools).toHaveBeenCalled();
+		expect(mockedSpawnClaude).toHaveBeenCalled();
+		expect(mockedHasChanges).toHaveBeenCalledWith("/tmp/test-repo");
+		expect(mockedPushBranch).toHaveBeenCalledWith("/tmp/test-repo", "claude-auto/test-job/2026-03-21T00-00-00");
+		expect(mockedCreatePR).toHaveBeenCalled();
+		expect(mockedWriteRunLog).toHaveBeenCalledWith("test-job", expect.objectContaining({ status: "success" }));
+	});
+
+	it("returns no-changes when Claude makes no changes", async () => {
+		mockedHasChanges.mockResolvedValue(false);
+
+		const result = await executeRun("test-job");
+
+		expect(result.status).toBe("no-changes");
+		expect(result.prUrl).toBeUndefined();
+		expect(mockedPushBranch).not.toHaveBeenCalled();
+		expect(mockedCreatePR).not.toHaveBeenCalled();
+		expect(mockedWriteRunLog).toHaveBeenCalledWith("test-job", expect.objectContaining({ status: "no-changes" }));
+	});
+
+	it("returns git-error on pull failure", async () => {
+		mockedPullLatest.mockRejectedValue(new GitOpsError("pullLatest", "/tmp/test-repo", "merge conflict"));
+
+		const result = await executeRun("test-job");
+
+		expect(result.status).toBe("git-error");
+		expect(result.error).toContain("pullLatest");
+	});
+
+	it("returns error on spawn failure", async () => {
+		mockedSpawnClaude.mockRejectedValue(new Error("Claude process crashed"));
+
+		const result = await executeRun("test-job");
+
+		expect(result.status).toBe("error");
+		expect(result.error).toBe("Claude process crashed");
+	});
+
+	it("always releases lock even on error", async () => {
+		mockedPullLatest.mockRejectedValue(new GitOpsError("pullLatest", "/tmp/test-repo", "network error"));
+
+		await executeRun("test-job");
+
+		expect(mockReleaseLock).toHaveBeenCalled();
+	});
+
+	it("always writes run log even on error", async () => {
+		mockedSpawnClaude.mockRejectedValue(new Error("spawn failed"));
+
+		await executeRun("test-job");
+
+		expect(mockedWriteRunLog).toHaveBeenCalledWith(
+			"test-job",
+			expect.objectContaining({ status: "error" }),
+		);
+	});
+
+	it("cleans up branch on error after branch creation", async () => {
+		mockedSpawnClaude.mockRejectedValue(new Error("spawn failed"));
+
+		await executeRun("test-job");
+
+		// Should attempt to checkout base branch and delete work branch
+		expect(mockedExecCommand).toHaveBeenCalledWith("git", ["-C", "/tmp/test-repo", "checkout", "main"]);
+		expect(mockedExecCommand).toHaveBeenCalledWith("git", ["-C", "/tmp/test-repo", "branch", "-D", "claude-auto/test-job/2026-03-21T00-00-00"]);
+	});
+
+	it("passes correct SpawnOptions to spawnClaude", async () => {
+		await executeRun("test-job");
+
+		expect(mockedSpawnClaude).toHaveBeenCalledWith({
+			cwd: "/tmp/test-repo",
+			prompt: "Do some work",
+			maxTurns: 50,
+			maxBudgetUsd: 5.0,
+			allowedTools: ["Read", "Edit", "Write"],
+			appendSystemPrompt: "You are an autonomous agent",
+		});
+	});
+});
