@@ -42,9 +42,9 @@ Requirements for v1.1 release. Each maps to roadmap phases.
 ### Cost Tracking
 
 - [x] **COST-01**: Each run records token usage and cost from Claude's JSON output to the SQLite database
-- [ ] **COST-02**: User can view cost summaries per job and across all jobs via CLI (claude-auto cost)
+- [x] **COST-02**: User can view cost summaries per job and across all jobs via CLI (claude-auto cost)
 - [x] **COST-03**: User can set daily, weekly, or monthly budget caps per job
-- [ ] **COST-04**: When a budget cap is reached, scheduled runs skip with a "budget exceeded" status and notification
+- [x] **COST-04**: When a budget cap is reached, scheduled runs skip with a "budget exceeded" status and notification
 
 ### Merge Conflict Resolution
 
@@ -110,9 +110,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | MODL-02 | Phase 8 | Complete |
 | MODL-03 | Phase 8 | Complete |
 | COST-01 | Phase 8 | Complete |
-| COST-02 | Phase 8 | Pending |
+| COST-02 | Phase 8 | Complete |
 | COST-03 | Phase 8 | Complete |
-| COST-04 | Phase 8 | Pending |
+| COST-04 | Phase 8 | Complete |
 | MRGC-01 | Phase 10 | Pending |
 | MRGC-02 | Phase 10 | Pending |
 | MRGC-03 | Phase 10 | Pending |

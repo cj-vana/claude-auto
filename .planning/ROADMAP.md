@@ -163,7 +163,7 @@ Plans:
 Plans:
 - [x] 08-01-PLAN.md -- Model selection schema + spawner --model flag + budget schema
 - [x] 08-02-PLAN.md -- SQLite persistence layer + cross-run context store + prompt context injection
-- [ ] 08-03-PLAN.md -- Cost tracking CLI command + budget enforcement + orchestrator integration
+- [x] 08-03-PLAN.md -- Cost tracking CLI command + budget enforcement + orchestrator integration
 
 ### Phase 9: PR Intelligence
 **Goal**: Claude autonomously iterates on its own PRs based on reviewer feedback and picks work it can actually complete by scoring issue complexity
