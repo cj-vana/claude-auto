@@ -1,0 +1,13 @@
+id: test-job-123
+name: my-test-repo
+repo:
+  path: /tmp/test-repo
+  branch: main
+  remote: origin
+schedule:
+  cron: "0 */6 * * *"
+  timezone: America/Chicago
+focus:
+  - open-issues
+  - bug-discovery
+enabled: true

@@ -1,0 +1,7 @@
+id: broken
+name: broken-job
+repo:
+  path: /tmp
+  branch: main
+  invalid_indent:
+ bad: true

@@ -1,0 +1,15 @@
+# Job configuration for test repo
+id: commented-job
+name: commented-test
+repo:
+  path: /tmp/test-repo
+  branch: main  # Target branch for PRs
+  remote: origin
+schedule:
+  cron: "0 */6 * * *"  # Every 6 hours
+  timezone: UTC
+# Focus areas for autonomous work
+focus:
+  - open-issues
+  - bug-discovery
+enabled: true
