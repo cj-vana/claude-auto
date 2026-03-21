@@ -7,8 +7,8 @@
 		"node": ">=22.0.0"
 	},
 	"bin": {
-		"claude-auto": "./dist/cli.js",
-		"claude-auto-run": "./dist/runner.js"
+		"claude-auto": "./dist/claude-auto.js",
+		"claude-auto-run": "./dist/claude-auto-run.js"
 	},
 	"exports": {
 		".": {
