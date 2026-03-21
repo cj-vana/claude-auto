@@ -19,6 +19,8 @@ export async function sendNotifications(config: JobConfig, result: RunResult): P
 		const triggers: EventTriggers = {
 			onSuccess: notifications.discord.onSuccess,
 			onFailure: notifications.discord.onFailure,
+			onNoChanges: notifications.discord.onNoChanges,
+			onLocked: notifications.discord.onLocked,
 		};
 		if (shouldNotify(result.status, triggers)) {
 			const body = formatDiscord(payload);
@@ -31,8 +33,10 @@ export async function sendNotifications(config: JobConfig, result: RunResult): P
 	// Slack
 	if (notifications.slack) {
 		const triggers: EventTriggers = {
+			onSuccess: notifications.slack.onSuccess,
 			onFailure: notifications.slack.onFailure,
-			// Slack schema only has onFailure -- treat missing onSuccess as default true
+			onNoChanges: notifications.slack.onNoChanges,
+			onLocked: notifications.slack.onLocked,
 		};
 		if (shouldNotify(result.status, triggers)) {
 			const body = formatSlack(payload);
@@ -45,8 +49,10 @@ export async function sendNotifications(config: JobConfig, result: RunResult): P
 	// Telegram
 	if (notifications.telegram) {
 		const triggers: EventTriggers = {
+			onSuccess: notifications.telegram.onSuccess,
 			onFailure: notifications.telegram.onFailure,
-			// Telegram schema only has onFailure -- treat missing onSuccess as default true
+			onNoChanges: notifications.telegram.onNoChanges,
+			onLocked: notifications.telegram.onLocked,
 		};
 		if (shouldNotify(result.status, triggers)) {
 			const body = formatTelegram(payload, notifications.telegram.chatId);

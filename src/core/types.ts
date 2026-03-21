@@ -39,19 +39,27 @@ export const JobConfigSchema = z.object({
 					webhookUrl: z.string().url(),
 					onSuccess: z.boolean().default(true),
 					onFailure: z.boolean().default(true),
+					onNoChanges: z.boolean().default(false),
+					onLocked: z.boolean().default(false),
 				})
 				.optional(),
 			slack: z
 				.object({
 					webhookUrl: z.string().url(),
+					onSuccess: z.boolean().default(true),
 					onFailure: z.boolean().default(true),
+					onNoChanges: z.boolean().default(false),
+					onLocked: z.boolean().default(false),
 				})
 				.optional(),
 			telegram: z
 				.object({
 					botToken: z.string(),
 					chatId: z.string(),
+					onSuccess: z.boolean().default(true),
 					onFailure: z.boolean().default(true),
+					onNoChanges: z.boolean().default(false),
+					onLocked: z.boolean().default(false),
 				})
 				.optional(),
 		})

@@ -37,6 +37,7 @@ export interface RunResult {
 	sessionId?: string;
 	error?: string;
 	branchName?: string;
+	issueNumber?: number;
 }
 
 export interface RunLogEntry extends RunResult {}
