@@ -18,6 +18,7 @@ vi.mock("../../src/runner/git-ops.js", () => ({
 	hasChanges: vi.fn(),
 	pushBranch: vi.fn(),
 	createPR: vi.fn(),
+	checkoutExistingBranch: vi.fn(),
 }));
 
 vi.mock("../../src/runner/spawner.js", () => ({
@@ -28,6 +29,8 @@ vi.mock("../../src/runner/spawner.js", () => ({
 vi.mock("../../src/runner/prompt-builder.js", () => ({
 	buildWorkPrompt: vi.fn(),
 	buildSystemPrompt: vi.fn(),
+	buildFeedbackPrompt: vi.fn(),
+	buildTriagedWorkPrompt: vi.fn(),
 }));
 
 vi.mock("../../src/runner/logger.js", () => ({
@@ -59,11 +62,20 @@ vi.mock("../../src/runner/context-store.js", () => ({
 	loadRunContext: vi.fn(),
 }));
 
+vi.mock("../../src/runner/pr-feedback.js", () => ({
+	checkPendingPRFeedback: vi.fn(),
+	postPRComment: vi.fn().mockResolvedValue(undefined),
+}));
+
+vi.mock("../../src/runner/issue-triage.js", () => ({
+	triageIssues: vi.fn().mockResolvedValue([]),
+}));
+
 // Import mocked modules after mock declarations
 import { acquireLock } from "../../src/runner/lock.js";
-import { pullLatest, createBranch, hasChanges, pushBranch, createPR } from "../../src/runner/git-ops.js";
+import { pullLatest, createBranch, hasChanges, pushBranch, createPR, checkoutExistingBranch } from "../../src/runner/git-ops.js";
 import { spawnClaude, buildAllowedTools } from "../../src/runner/spawner.js";
-import { buildWorkPrompt, buildSystemPrompt } from "../../src/runner/prompt-builder.js";
+import { buildWorkPrompt, buildSystemPrompt, buildFeedbackPrompt, buildTriagedWorkPrompt } from "../../src/runner/prompt-builder.js";
 import { writeRunLog } from "../../src/runner/logger.js";
 import { loadJobConfig } from "../../src/core/config.js";
 import { execCommand } from "../../src/util/exec.js";
@@ -71,6 +83,8 @@ import { sendNotifications } from "../../src/notifications/dispatcher.js";
 import { extractIssueNumber, postIssueComment } from "../../src/notifications/issue-comment.js";
 import { checkBudget } from "../../src/runner/cost-tracker.js";
 import { loadRunContext } from "../../src/runner/context-store.js";
+import { checkPendingPRFeedback, postPRComment } from "../../src/runner/pr-feedback.js";
+import { triageIssues } from "../../src/runner/issue-triage.js";
 import { executeRun } from "../../src/runner/orchestrator.js";
 
 const mockedAcquireLock = vi.mocked(acquireLock);
@@ -91,6 +105,12 @@ const mockedExtractIssueNumber = vi.mocked(extractIssueNumber);
 const mockedPostIssueComment = vi.mocked(postIssueComment);
 const mockedCheckBudget = vi.mocked(checkBudget);
 const mockedLoadRunContext = vi.mocked(loadRunContext);
+const mockedCheckPendingPRFeedback = vi.mocked(checkPendingPRFeedback);
+const mockedPostPRComment = vi.mocked(postPRComment);
+const mockedTriageIssues = vi.mocked(triageIssues);
+const mockedCheckoutExistingBranch = vi.mocked(checkoutExistingBranch);
+const mockedBuildFeedbackPrompt = vi.mocked(buildFeedbackPrompt);
+const mockedBuildTriagedWorkPrompt = vi.mocked(buildTriagedWorkPrompt);
 
 function makeDefaultConfig(): JobConfig {
 	return {
@@ -148,6 +168,12 @@ describe("executeRun", () => {
 		mockedExecCommand.mockResolvedValue({ stdout: "", stderr: "" });
 		mockedCheckBudget.mockReturnValue(false);
 		mockedLoadRunContext.mockReturnValue([]);
+		mockedCheckPendingPRFeedback.mockResolvedValue(null);
+		mockedPostPRComment.mockResolvedValue(undefined);
+		mockedTriageIssues.mockResolvedValue([]);
+		mockedCheckoutExistingBranch.mockResolvedValue(undefined);
+		mockedBuildFeedbackPrompt.mockReturnValue("Address PR feedback");
+		mockedBuildTriagedWorkPrompt.mockReturnValue("Do triaged work");
 	});
 
 	afterEach(() => {
@@ -187,7 +213,7 @@ describe("executeRun", () => {
 		expect(mockedLoadJobConfig).toHaveBeenCalled();
 		expect(mockedPullLatest).toHaveBeenCalledWith("/tmp/test-repo", "main", "origin");
 		expect(mockedCreateBranch).toHaveBeenCalledWith("/tmp/test-repo", "test-job");
-		expect(mockedBuildWorkPrompt).toHaveBeenCalled();
+		expect(mockedBuildTriagedWorkPrompt).toHaveBeenCalled();
 		expect(mockedBuildSystemPrompt).toHaveBeenCalled();
 		expect(mockedBuildAllowedTools).toHaveBeenCalled();
 		expect(mockedSpawnClaude).toHaveBeenCalled();
@@ -261,11 +287,12 @@ describe("executeRun", () => {
 
 		expect(mockedSpawnClaude).toHaveBeenCalledWith({
 			cwd: "/tmp/test-repo",
-			prompt: "Do some work",
+			prompt: "Do triaged work",
 			maxTurns: 50,
 			maxBudgetUsd: 5.0,
 			allowedTools: ["Read", "Edit", "Write"],
 			appendSystemPrompt: "You are an autonomous agent",
+			model: undefined,
 		});
 	});
 
@@ -439,7 +466,7 @@ describe("executeRun", () => {
 		);
 	});
 
-	it("calls loadRunContext and passes result to buildWorkPrompt", async () => {
+	it("calls loadRunContext and passes result to buildTriagedWorkPrompt", async () => {
 		const mockContext = [
 			{
 				id: "run-1",
@@ -456,8 +483,9 @@ describe("executeRun", () => {
 		await executeRun("test-job");
 
 		expect(mockedLoadRunContext).toHaveBeenCalledWith("test-job");
-		expect(mockedBuildWorkPrompt).toHaveBeenCalledWith(
+		expect(mockedBuildTriagedWorkPrompt).toHaveBeenCalledWith(
 			expect.objectContaining({ id: "test-job" }),
+			[],
 			mockContext,
 		);
 	});
@@ -484,5 +512,174 @@ describe("executeRun", () => {
 		const result = await executeRun("test-job");
 
 		expect(result.model).toBe("sonnet");
+	});
+
+	// --- PR Feedback Priority tests ---
+
+	it("checks for PR feedback before creating new branch", async () => {
+		const feedbackCtx = {
+			number: 42,
+			title: "Fix auth bug",
+			headRefName: "claude-auto/test-job/2026-03-20T00-00-00",
+			url: "https://github.com/test/repo/pull/42",
+			reviewDecision: "CHANGES_REQUESTED",
+			unresolvedThreads: [
+				{
+					id: "thread-1",
+					isResolved: false,
+					comments: [{ body: "Fix this", author: { login: "reviewer" } }],
+				},
+			],
+			currentRound: 0,
+		};
+		mockedCheckPendingPRFeedback.mockResolvedValue(feedbackCtx);
+
+		const result = await executeRun("test-job");
+
+		// Should checkout existing branch, not create new
+		expect(mockedCheckoutExistingBranch).toHaveBeenCalledWith(
+			"/tmp/test-repo",
+			"claude-auto/test-job/2026-03-20T00-00-00",
+		);
+		expect(mockedCreateBranch).not.toHaveBeenCalled();
+
+		// Should use feedback prompt
+		expect(mockedBuildFeedbackPrompt).toHaveBeenCalled();
+		expect(mockedBuildTriagedWorkPrompt).not.toHaveBeenCalled();
+
+		// Should post PR comment after push
+		expect(mockedPostPRComment).toHaveBeenCalledWith(
+			"/tmp/test-repo",
+			42,
+			expect.stringContaining("Feedback Addressed"),
+		);
+
+		// Result should have feedback info
+		expect(result.feedbackRound).toBe(1);
+		expect(result.prNumber).toBe(42);
+		expect(result.status).toBe("success");
+	});
+
+	it("returns needs-human-review when max rounds exceeded", async () => {
+		const feedbackCtx = {
+			number: 42,
+			title: "Fix auth bug",
+			headRefName: "claude-auto/test-job/2026-03-20T00-00-00",
+			url: "https://github.com/test/repo/pull/42",
+			reviewDecision: "CHANGES_REQUESTED",
+			unresolvedThreads: [
+				{
+					id: "thread-1",
+					isResolved: false,
+					comments: [{ body: "Fix this", author: { login: "reviewer" } }],
+				},
+			],
+			currentRound: 3, // nextRound will be 4, which exceeds default max of 3
+		};
+		mockedCheckPendingPRFeedback.mockResolvedValue(feedbackCtx);
+
+		const result = await executeRun("test-job");
+
+		expect(result.status).toBe("needs-human-review");
+		expect(result.prNumber).toBe(42);
+		expect(result.feedbackRound).toBe(4);
+
+		// Should post "max iterations" message
+		expect(mockedPostPRComment).toHaveBeenCalledWith(
+			"/tmp/test-repo",
+			42,
+			expect.stringContaining("maximum feedback iteration limit"),
+		);
+
+		// Should NOT spawn Claude
+		expect(mockedSpawnClaude).not.toHaveBeenCalled();
+		expect(mockedCheckoutExistingBranch).not.toHaveBeenCalled();
+	});
+
+	it("falls through to triaged work when no PR feedback", async () => {
+		mockedCheckPendingPRFeedback.mockResolvedValue(null);
+		const scoredIssues = [
+			{ number: 10, title: "Bug fix", body: "Fix it", labels: ["bug"], score: 80 },
+		];
+		mockedTriageIssues.mockResolvedValue(scoredIssues);
+
+		await executeRun("test-job");
+
+		// Should use triaged work prompt
+		expect(mockedBuildTriagedWorkPrompt).toHaveBeenCalledWith(
+			expect.objectContaining({ id: "test-job" }),
+			scoredIssues,
+			expect.any(Array),
+		);
+		expect(mockedBuildFeedbackPrompt).not.toHaveBeenCalled();
+
+		// Should create a new branch (normal flow)
+		expect(mockedCreateBranch).toHaveBeenCalled();
+	});
+
+	it("falls through to generic work prompt when triage returns empty", async () => {
+		mockedCheckPendingPRFeedback.mockResolvedValue(null);
+		mockedTriageIssues.mockResolvedValue([]);
+
+		await executeRun("test-job");
+
+		expect(mockedBuildTriagedWorkPrompt).toHaveBeenCalledWith(
+			expect.objectContaining({ id: "test-job" }),
+			[],
+			expect.any(Array),
+		);
+	});
+
+	it("PR feedback check is best-effort (errors fall through)", async () => {
+		mockedCheckPendingPRFeedback.mockRejectedValue(new Error("gh not found"));
+
+		const result = await executeRun("test-job");
+
+		// Should proceed with normal work flow
+		expect(result.status).toBe("success");
+		expect(mockedCreateBranch).toHaveBeenCalled();
+	});
+
+	it("triage is best-effort (errors fall through)", async () => {
+		mockedCheckPendingPRFeedback.mockResolvedValue(null);
+		mockedTriageIssues.mockRejectedValue(new Error("gh not found"));
+
+		const result = await executeRun("test-job");
+
+		// Should proceed with empty triage
+		expect(result.status).toBe("success");
+		expect(mockedBuildTriagedWorkPrompt).toHaveBeenCalledWith(
+			expect.objectContaining({ id: "test-job" }),
+			[],
+			expect.any(Array),
+		);
+	});
+
+	it("does not cleanup feedback branch on error", async () => {
+		const feedbackCtx = {
+			number: 42,
+			title: "Fix auth bug",
+			headRefName: "claude-auto/test-job/2026-03-20T00-00-00",
+			url: "https://github.com/test/repo/pull/42",
+			reviewDecision: "CHANGES_REQUESTED",
+			unresolvedThreads: [
+				{
+					id: "thread-1",
+					isResolved: false,
+					comments: [{ body: "Fix this", author: { login: "reviewer" } }],
+				},
+			],
+			currentRound: 0,
+		};
+		mockedCheckPendingPRFeedback.mockResolvedValue(feedbackCtx);
+		mockedSpawnClaude.mockRejectedValue(new Error("spawn failed"));
+
+		await executeRun("test-job");
+
+		// Should NOT delete the feedback branch (it belongs to existing PR)
+		expect(mockedExecCommand).not.toHaveBeenCalledWith(
+			"git",
+			expect.arrayContaining(["branch", "-D"]),
+		);
 	});
 });

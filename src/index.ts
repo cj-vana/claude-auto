@@ -53,6 +53,7 @@ export {
 	type Scheduler,
 } from "./platform/scheduler.js";
 export {
+	checkoutExistingBranch,
 	createBranch,
 	createPR,
 	hasChanges,
@@ -68,15 +69,21 @@ export { costCommand } from "./cli/commands/cost.js";
 export { listRunLogs, readRunLog, writeRunLog } from "./runner/logger.js";
 // Phase 3: Runner
 export { executeRun } from "./runner/orchestrator.js";
-export { buildSystemPrompt, buildWorkPrompt } from "./runner/prompt-builder.js";
+export { buildFeedbackPrompt, buildSystemPrompt, buildTriagedWorkPrompt, buildWorkPrompt } from "./runner/prompt-builder.js";
 export { buildAllowedTools, spawnClaude } from "./runner/spawner.js";
 export type {
+	PRFeedbackContext,
+	ReviewThread,
 	RunLogEntry,
 	RunResult,
 	RunStatus,
 	SpawnOptions,
 	SpawnResult,
 } from "./runner/types.js";
+// Phase 9: PR Intelligence
+export { checkPendingPRFeedback, getFeedbackRound, getRepoOwnerName, getUnresolvedThreads, listOpenPRsWithFeedback, postPRComment } from "./runner/pr-feedback.js";
+export { triageIssues } from "./runner/issue-triage.js";
+export type { ScoredIssue } from "./runner/issue-triage.js";
 export {
 	ConfigParseError,
 	ConfigValidationError,

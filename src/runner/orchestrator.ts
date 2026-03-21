@@ -1,8 +1,8 @@
 import { nanoid } from "nanoid";
 import { acquireLock } from "./lock.js";
-import { pullLatest, createBranch, hasChanges, pushBranch, createPR } from "./git-ops.js";
+import { pullLatest, createBranch, hasChanges, pushBranch, createPR, checkoutExistingBranch } from "./git-ops.js";
 import { spawnClaude, buildAllowedTools } from "./spawner.js";
-import { buildWorkPrompt, buildSystemPrompt } from "./prompt-builder.js";
+import { buildSystemPrompt, buildFeedbackPrompt, buildTriagedWorkPrompt } from "./prompt-builder.js";
 import { writeRunLog } from "./logger.js";
 import { loadJobConfig } from "../core/config.js";
 import { paths } from "../util/paths.js";
@@ -12,8 +12,11 @@ import { sendNotifications } from "../notifications/dispatcher.js";
 import { extractIssueNumber, postIssueComment } from "../notifications/issue-comment.js";
 import { checkBudget } from "./cost-tracker.js";
 import { loadRunContext, type RunContext } from "./context-store.js";
+import { checkPendingPRFeedback, postPRComment } from "./pr-feedback.js";
+import { triageIssues } from "./issue-triage.js";
 import type { JobConfig } from "../core/types.js";
-import type { RunResult, SpawnResult } from "./types.js";
+import type { ScoredIssue } from "./issue-triage.js";
+import type { PRFeedbackContext, RunResult, SpawnResult } from "./types.js";
 
 /**
  * Format a duration in milliseconds to a human-readable "Xm Ys" string.
@@ -39,8 +42,9 @@ function buildPRBody(spawnResult: SpawnResult, config: JobConfig): string {
 /**
  * Execute a full autonomous run cycle for a job.
  *
- * Sequence: lock -> config -> git pull -> branch -> spawn Claude ->
- * check changes -> push/PR -> log -> unlock
+ * Sequence: lock -> config -> enabled check -> budget check -> pullLatest ->
+ * check PR feedback (priority) -> if feedback: iterate on PR -> else: triage issues ->
+ * create branch -> spawn Claude -> check changes -> push/PR -> log -> unlock
  *
  * @param jobId - The job identifier to run
  * @returns RunResult with status indicating outcome
@@ -66,6 +70,7 @@ export async function executeRun(jobId: string): Promise<RunResult> {
 	}
 
 	let branchName: string | undefined;
+	let isFeedbackBranch = false;
 	let config: JobConfig | undefined;
 
 	try {
@@ -108,6 +113,110 @@ export async function executeRun(jobId: string): Promise<RunResult> {
 		// Step 3: Pull latest
 		await pullLatest(config.repo.path, config.repo.branch, config.repo.remote);
 
+		// Step 3.5: Check for pending PR feedback (PRFB-01)
+		let feedback: PRFeedbackContext | null = null;
+		try {
+			feedback = await checkPendingPRFeedback(
+				config.repo.path,
+				config.id,
+				config.maxFeedbackRounds ?? 3,
+			);
+		} catch {
+			// PR feedback check is best-effort; fall through to normal work
+		}
+
+		if (feedback) {
+			// --- PR FEEDBACK PATH (PRFB-02) ---
+			const nextRound = feedback.currentRound + 1;
+			const maxRounds = config.maxFeedbackRounds ?? 3;
+
+			// Check if max rounds exceeded BEFORE doing work (defense-in-depth)
+			if (nextRound > maxRounds) {
+				// Post "needs human review" comment and return
+				await postPRComment(
+					config.repo.path,
+					feedback.number,
+					`Claude Auto has reached the maximum feedback iteration limit (${maxRounds} rounds). This PR needs human review.\n\n---\n*Automated by claude-auto*`,
+				).catch(() => {});
+
+				const result: RunResult = {
+					status: "needs-human-review",
+					jobId,
+					runId,
+					startedAt,
+					completedAt: new Date().toISOString(),
+					durationMs: Date.now() - startTime,
+					prNumber: feedback.number,
+					feedbackRound: nextRound,
+					model: config.model,
+				};
+				await writeRunLog(jobId, result);
+				await sendNotifications(config, result).catch(() => {});
+				return result;
+			}
+
+			// Checkout existing PR branch (PRFB-02)
+			await checkoutExistingBranch(config.repo.path, feedback.headRefName);
+			branchName = feedback.headRefName;
+			isFeedbackBranch = true;
+
+			// Load context and build feedback prompt
+			let runContext: RunContext[] = [];
+			try {
+				runContext = loadRunContext(jobId);
+			} catch {
+				// Context loading is best-effort
+			}
+
+			const feedbackPrompt = buildFeedbackPrompt(config, feedback, runContext);
+			const systemPrompt = buildSystemPrompt(config);
+			const allowedTools = buildAllowedTools(config);
+
+			// Spawn Claude to address feedback
+			const spawnResult = await spawnClaude({
+				cwd: config.repo.path,
+				prompt: feedbackPrompt,
+				maxTurns: config.guardrails.maxTurns,
+				maxBudgetUsd: config.guardrails.maxBudgetUsd,
+				allowedTools,
+				appendSystemPrompt: systemPrompt,
+				model: config.model,
+			});
+
+			// Push to same branch (PRFB-04)
+			const changed = await hasChanges(config.repo.path);
+			if (changed) {
+				await pushBranch(config.repo.path, feedback.headRefName);
+				// Post PR comment summarizing changes (PRFB-04)
+				const commentBody = `## Feedback Addressed (Round ${nextRound}/${maxRounds})\n\n${spawnResult.summary}\n\n---\n*Automated by claude-auto*`;
+				await postPRComment(config.repo.path, feedback.number, commentBody).catch(() => {});
+			}
+
+			const result: RunResult = {
+				status: changed ? "success" : "no-changes",
+				jobId,
+				runId,
+				startedAt,
+				completedAt: new Date().toISOString(),
+				durationMs: Date.now() - startTime,
+				prUrl: feedback.url,
+				summary: spawnResult.summary,
+				costUsd: spawnResult.costUsd,
+				numTurns: spawnResult.numTurns,
+				sessionId: spawnResult.sessionId,
+				branchName: feedback.headRefName,
+				prNumber: feedback.number,
+				feedbackRound: nextRound,
+				model: config.model,
+			};
+
+			await writeRunLog(jobId, result);
+			await sendNotifications(config, result).catch(() => {});
+			return result;
+		}
+
+		// --- NORMAL WORK PATH (with triage enhancement) ---
+
 		// Step 4: Create work branch
 		branchName = await createBranch(config.repo.path, jobId);
 
@@ -119,8 +228,19 @@ export async function executeRun(jobId: string): Promise<RunResult> {
 			// Context loading is best-effort
 		}
 
-		// Step 5: Build prompt and tools
-		const workPrompt = buildWorkPrompt(config, runContext);
+		// Step 4.6: Triage issues (TRIG-01, TRIG-02, TRIG-03)
+		let triaged: ScoredIssue[] = [];
+		try {
+			const previousIssues = runContext
+				.filter((c) => c.issue_number != null)
+				.map((c) => c.issue_number as number);
+			triaged = await triageIssues(config.repo.path, previousIssues);
+		} catch {
+			// Triage is best-effort; fall through to generic prompt
+		}
+
+		// Step 5: Build prompt (use triaged version)
+		const workPrompt = buildTriagedWorkPrompt(config, triaged, runContext);
 		const systemPrompt = buildSystemPrompt(config);
 		const allowedTools = buildAllowedTools(config);
 
@@ -219,8 +339,8 @@ export async function executeRun(jobId: string): Promise<RunResult> {
 			}
 		}
 
-		// Cleanup: if we created a branch but failed, try to go back to base branch
-		if (branchName && config) {
+		// Cleanup: if we created a branch (not a feedback branch) but failed, try to go back to base branch
+		if (branchName && config && !isFeedbackBranch) {
 			try {
 				await execCommand("git", ["-C", config.repo.path, "checkout", config.repo.branch]);
 				await execCommand("git", ["-C", config.repo.path, "branch", "-D", branchName]);
