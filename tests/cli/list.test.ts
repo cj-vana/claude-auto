@@ -139,6 +139,51 @@ describe("listCommand", () => {
 		expect(output).toContain("--");
 	});
 
+	it("outputs valid JSON array when --json flag is passed", async () => {
+		const job1 = makeJob({ id: "job-1", name: "Job One" });
+		const job2 = makeJob({ id: "job-2", name: "Job Two" });
+		mockedListJobs.mockResolvedValue([job1, job2]);
+		mockedDescribeSchedule.mockReturnValue("Every 6 hours");
+		mockedGetNextRuns.mockReturnValue([new Date(Date.now() + 3600000)]);
+		mockedListRunLogs.mockResolvedValue([]);
+
+		await listCommand({ json: true });
+
+		const output = logSpy.mock.calls.map((c) => c[0]).join("\n");
+		const parsed = JSON.parse(output);
+		expect(Array.isArray(parsed)).toBe(true);
+		expect(parsed).toHaveLength(2);
+	});
+
+	it("outputs JSON objects with expected fields", async () => {
+		const job = makeJob();
+		mockedListJobs.mockResolvedValue([job]);
+		mockedDescribeSchedule.mockReturnValue("Every 6 hours");
+		mockedGetNextRuns.mockReturnValue([new Date(Date.now() + 3600000)]);
+		mockedListRunLogs.mockResolvedValue([makeRunLog()]);
+
+		await listCommand({ json: true });
+
+		const output = logSpy.mock.calls.map((c) => c[0]).join("\n");
+		const parsed = JSON.parse(output);
+		expect(parsed[0]).toHaveProperty("id");
+		expect(parsed[0]).toHaveProperty("name");
+		expect(parsed[0]).toHaveProperty("status");
+		expect(parsed[0]).toHaveProperty("repo");
+		expect(parsed[0]).toHaveProperty("schedule");
+		expect(parsed[0]).toHaveProperty("lastRun");
+		expect(parsed[0]).toHaveProperty("nextRun");
+	});
+
+	it("outputs '[]' when --json flag is passed with no jobs", async () => {
+		mockedListJobs.mockResolvedValue([]);
+
+		await listCommand({ json: true });
+
+		const output = logSpy.mock.calls.map((c) => c[0]).join("\n");
+		expect(output).toBe("[]");
+	});
+
 	it("displays multiple jobs with different repos as separate rows", async () => {
 		const job1 = makeJob({ id: "job-1", name: "Job One", repo: { path: "/repos/alpha", branch: "main", remote: "origin" } });
 		const job2 = makeJob({ id: "job-2", name: "Job Two", repo: { path: "/repos/beta", branch: "main", remote: "origin" } });
