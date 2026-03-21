@@ -16,4 +16,5 @@ export const paths = {
 	plistPath: (jobId: string) =>
 		join(homedir(), "Library", "LaunchAgents", `com.claude-auto.${jobId}.plist`),
 	crontabLock: join(BASE_DIR, ".crontab.lock"),
+	database: join(BASE_DIR, "claude-auto.db"),
 } as const;
