@@ -28,10 +28,10 @@ Requirements for v1.1 release. Each maps to roadmap phases.
 
 ### Agent Pipeline
 
-- [ ] **PIPE-01**: User can enable a multi-stage pipeline per job: plan -> implement -> review
+- [x] **PIPE-01**: User can enable a multi-stage pipeline per job: plan -> implement -> review
 - [ ] **PIPE-02**: Each pipeline stage spawns a separate Claude instance with a stage-specific system prompt
 - [ ] **PIPE-03**: Review stage checks implementation against the plan and can request changes before PR creation
-- [ ] **PIPE-04**: Pipeline stages use configurable models (e.g., Haiku for plan, Opus for implement, Sonnet for review)
+- [x] **PIPE-04**: Pipeline stages use configurable models (e.g., Haiku for plan, Opus for implement, Sonnet for review)
 
 ### Model Selection
 
@@ -48,9 +48,9 @@ Requirements for v1.1 release. Each maps to roadmap phases.
 
 ### Merge Conflict Resolution
 
-- [ ] **MRGC-01**: Before starting work, Claude checks if the PR branch has diverged from the target branch
-- [ ] **MRGC-02**: When conflicts exist, Claude attempts to rebase or merge the target branch and resolve conflicts
-- [ ] **MRGC-03**: If conflict resolution fails, Claude reports the failure in the run log and notification
+- [x] **MRGC-01**: Before starting work, Claude checks if the PR branch has diverged from the target branch
+- [x] **MRGC-02**: When conflicts exist, Claude attempts to rebase or merge the target branch and resolve conflicts
+- [x] **MRGC-03**: If conflict resolution fails, Claude reports the failure in the run log and notification
 
 ### Windows Support
 
@@ -102,10 +102,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | TRIG-01 | Phase 9 | Complete |
 | TRIG-02 | Phase 9 | Complete |
 | TRIG-03 | Phase 9 | Complete |
-| PIPE-01 | Phase 10 | Pending |
+| PIPE-01 | Phase 10 | Complete |
 | PIPE-02 | Phase 10 | Pending |
 | PIPE-03 | Phase 10 | Pending |
-| PIPE-04 | Phase 10 | Pending |
+| PIPE-04 | Phase 10 | Complete |
 | MODL-01 | Phase 8 | Complete |
 | MODL-02 | Phase 8 | Complete |
 | MODL-03 | Phase 8 | Complete |
@@ -113,9 +113,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | COST-02 | Phase 8 | Complete |
 | COST-03 | Phase 8 | Complete |
 | COST-04 | Phase 8 | Complete |
-| MRGC-01 | Phase 10 | Pending |
-| MRGC-02 | Phase 10 | Pending |
-| MRGC-03 | Phase 10 | Pending |
+| MRGC-01 | Phase 10 | Complete |
+| MRGC-02 | Phase 10 | Complete |
+| MRGC-03 | Phase 10 | Complete |
 | WNDW-01 | Phase 11 | Pending |
 | WNDW-02 | Phase 11 | Pending |
 | WNDW-03 | Phase 11 | Pending |

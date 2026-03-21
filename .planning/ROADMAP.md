@@ -195,7 +195,7 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 10-01-PLAN.md -- Pipeline config schema, pipeline/merge types, divergence detection and rebase in git-ops
+- [x] 10-01-PLAN.md -- Pipeline config schema, pipeline/merge types, divergence detection and rebase in git-ops
 - [ ] 10-02-PLAN.md -- Pipeline prompt builders, review verdict parser, pipeline orchestration module
 - [ ] 10-03-PLAN.md -- Orchestrator pipeline path, merge conflict handling, barrel exports
 
@@ -231,5 +231,5 @@ Phases execute in numeric order: 8 -> 9 -> 10 -> 11 (Phase 11 can begin after Ph
 | 7. Polish & Tech Debt | v1.0 | 1/1 | Complete | 2026-03-21 |
 | 8. Foundation | v1.1 | 0/3 | Planned | - |
 | 9. PR Intelligence | v1.1 | 0/3 | Planned | - |
-| 10. Agent Pipeline | v1.1 | 0/3 | Planned | - |
+| 10. Agent Pipeline | v1.1 | 1/3 | In Progress|  |
 | 11. Platform & UX | v1.1 | 0/? | Not started | - |
