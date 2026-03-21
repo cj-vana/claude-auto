@@ -1,0 +1,10 @@
+{
+  "name": "claude-auto",
+  "version": "0.1.0",
+  "description": "Autonomous Claude Code cron jobs for continuous codebase improvement. Set up scheduled jobs where Claude autonomously works on your repos — you wake up to PRs.",
+  "author": {
+    "name": "claude-auto contributors"
+  },
+  "license": "MIT",
+  "keywords": ["autonomous", "cron", "scheduling", "coding-agent"]
+}
