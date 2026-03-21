@@ -308,3 +308,70 @@ describe("maxFeedbackRounds field validation", () => {
 		expect(() => JobConfigSchema.parse({ ...validConfigBase, maxFeedbackRounds: 2.5 })).toThrow();
 	});
 });
+
+describe("pipeline config validation", () => {
+	it("accepts pipeline config with all defaults (enabled: false, default models, maxReviewRounds: 1)", () => {
+		const result = JobConfigSchema.parse({
+			...validConfigBase,
+			pipeline: {},
+		});
+		expect(result.pipeline).toBeDefined();
+		expect(result.pipeline!.enabled).toBe(false);
+		expect(result.pipeline!.planModel).toBe("haiku");
+		expect(result.pipeline!.implementModel).toBe("opus");
+		expect(result.pipeline!.reviewModel).toBe("sonnet");
+		expect(result.pipeline!.maxReviewRounds).toBe(1);
+	});
+
+	it("accepts pipeline config with enabled: true and custom models", () => {
+		const result = JobConfigSchema.parse({
+			...validConfigBase,
+			pipeline: {
+				enabled: true,
+				planModel: "opus",
+				implementModel: "sonnet",
+				reviewModel: "haiku",
+				maxReviewRounds: 3,
+			},
+		});
+		expect(result.pipeline!.enabled).toBe(true);
+		expect(result.pipeline!.planModel).toBe("opus");
+		expect(result.pipeline!.implementModel).toBe("sonnet");
+		expect(result.pipeline!.reviewModel).toBe("haiku");
+		expect(result.pipeline!.maxReviewRounds).toBe(3);
+	});
+
+	it("rejects pipeline config with invalid model string (not alias, not claude-*)", () => {
+		expect(() =>
+			JobConfigSchema.parse({
+				...validConfigBase,
+				pipeline: { planModel: "gpt-4" },
+			}),
+		).toThrow();
+	});
+
+	it("rejects pipeline config with maxReviewRounds: 0 (must be positive)", () => {
+		expect(() =>
+			JobConfigSchema.parse({
+				...validConfigBase,
+				pipeline: { maxReviewRounds: 0 },
+			}),
+		).toThrow();
+	});
+
+	it("accepts config without pipeline field (optional, backward compatible)", () => {
+		const result = JobConfigSchema.parse({ ...validConfigBase });
+		expect(result.pipeline).toBeUndefined();
+	});
+
+	it("accepts pipeline config with enabled: true and full model ID planModel: 'claude-3-5-haiku-latest'", () => {
+		const result = JobConfigSchema.parse({
+			...validConfigBase,
+			pipeline: {
+				enabled: true,
+				planModel: "claude-3-5-haiku-latest",
+			},
+		});
+		expect(result.pipeline!.planModel).toBe("claude-3-5-haiku-latest");
+	});
+});

@@ -192,11 +192,12 @@ Plans:
   3. The review stage catches issues in the implementation and requests changes before a PR is created -- not every run produces a PR
   4. When a PR branch has diverged from the target branch, Claude attempts to rebase and resolve conflicts before starting new work
   5. If merge conflict resolution fails, the run logs the failure clearly and notifies the user instead of silently producing broken code
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 10-01: TBD
-- [ ] 10-02: TBD
+- [ ] 10-01-PLAN.md -- Pipeline config schema, pipeline/merge types, divergence detection and rebase in git-ops
+- [ ] 10-02-PLAN.md -- Pipeline prompt builders, review verdict parser, pipeline orchestration module
+- [ ] 10-03-PLAN.md -- Orchestrator pipeline path, merge conflict handling, barrel exports
 
 ### Phase 11: Platform & UX
 **Goal**: Claude Auto runs on Windows via Task Scheduler and users can monitor all jobs through an interactive terminal dashboard
@@ -230,5 +231,5 @@ Phases execute in numeric order: 8 -> 9 -> 10 -> 11 (Phase 11 can begin after Ph
 | 7. Polish & Tech Debt | v1.0 | 1/1 | Complete | 2026-03-21 |
 | 8. Foundation | v1.1 | 0/3 | Planned | - |
 | 9. PR Intelligence | v1.1 | 0/3 | Planned | - |
-| 10. Agent Pipeline | v1.1 | 0/? | Not started | - |
+| 10. Agent Pipeline | v1.1 | 0/3 | Planned | - |
 | 11. Platform & UX | v1.1 | 0/? | Not started | - |
