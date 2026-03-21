@@ -29,8 +29,8 @@ Requirements for v1.1 release. Each maps to roadmap phases.
 ### Agent Pipeline
 
 - [x] **PIPE-01**: User can enable a multi-stage pipeline per job: plan -> implement -> review
-- [ ] **PIPE-02**: Each pipeline stage spawns a separate Claude instance with a stage-specific system prompt
-- [ ] **PIPE-03**: Review stage checks implementation against the plan and can request changes before PR creation
+- [x] **PIPE-02**: Each pipeline stage spawns a separate Claude instance with a stage-specific system prompt
+- [x] **PIPE-03**: Review stage checks implementation against the plan and can request changes before PR creation
 - [x] **PIPE-04**: Pipeline stages use configurable models (e.g., Haiku for plan, Opus for implement, Sonnet for review)
 
 ### Model Selection
@@ -103,8 +103,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | TRIG-02 | Phase 9 | Complete |
 | TRIG-03 | Phase 9 | Complete |
 | PIPE-01 | Phase 10 | Complete |
-| PIPE-02 | Phase 10 | Pending |
-| PIPE-03 | Phase 10 | Pending |
+| PIPE-02 | Phase 10 | Complete |
+| PIPE-03 | Phase 10 | Complete |
 | PIPE-04 | Phase 10 | Complete |
 | MODL-01 | Phase 8 | Complete |
 | MODL-02 | Phase 8 | Complete |
