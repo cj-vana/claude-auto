@@ -10,6 +10,7 @@ import {
 	updateConfigField,
 	writeConfigDocument,
 } from "../../src/core/config.js";
+import { JobConfigSchema } from "../../src/core/types.js";
 import { ConfigParseError, ConfigValidationError } from "../../src/util/errors.js";
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
@@ -195,5 +196,87 @@ describe("readConfigDocument + updateConfigField + writeConfigDocument", () => {
 		const rawContent = await readFile(destPath, "utf-8");
 		expect(rawContent).toContain("# Job configuration for test repo");
 		expect(rawContent).toContain("# Target branch for PRs");
+	});
+});
+
+const validConfigBase = {
+	id: "test-job-123",
+	name: "my-test-repo",
+	repo: { path: "/tmp/test-repo", branch: "main", remote: "origin" },
+	schedule: { cron: "0 */6 * * *", timezone: "America/Chicago" },
+	focus: ["open-issues", "bug-discovery"],
+	enabled: true,
+};
+
+describe("model field validation", () => {
+	it("accepts model: 'opus'", () => {
+		const result = JobConfigSchema.parse({ ...validConfigBase, model: "opus" });
+		expect(result.model).toBe("opus");
+	});
+
+	it("accepts model: 'sonnet'", () => {
+		const result = JobConfigSchema.parse({ ...validConfigBase, model: "sonnet" });
+		expect(result.model).toBe("sonnet");
+	});
+
+	it("accepts model: 'haiku'", () => {
+		const result = JobConfigSchema.parse({ ...validConfigBase, model: "haiku" });
+		expect(result.model).toBe("haiku");
+	});
+
+	it("accepts model: 'opusplan'", () => {
+		const result = JobConfigSchema.parse({ ...validConfigBase, model: "opusplan" });
+		expect(result.model).toBe("opusplan");
+	});
+
+	it("accepts model: 'default'", () => {
+		const result = JobConfigSchema.parse({ ...validConfigBase, model: "default" });
+		expect(result.model).toBe("default");
+	});
+
+	it("accepts full model ID like 'claude-opus-4-6'", () => {
+		const result = JobConfigSchema.parse({ ...validConfigBase, model: "claude-opus-4-6" });
+		expect(result.model).toBe("claude-opus-4-6");
+	});
+
+	it("accepts undefined model (optional field)", () => {
+		const result = JobConfigSchema.parse({ ...validConfigBase });
+		expect(result.model).toBeUndefined();
+	});
+
+	it("rejects invalid model like 'gpt-4'", () => {
+		expect(() => JobConfigSchema.parse({ ...validConfigBase, model: "gpt-4" })).toThrow();
+	});
+});
+
+describe("budget field validation", () => {
+	it("accepts budget with dailyUsd", () => {
+		const result = JobConfigSchema.parse({ ...validConfigBase, budget: { dailyUsd: 10 } });
+		expect(result.budget?.dailyUsd).toBe(10);
+	});
+
+	it("accepts budget with weeklyUsd and monthlyUsd", () => {
+		const result = JobConfigSchema.parse({
+			...validConfigBase,
+			budget: { weeklyUsd: 50, monthlyUsd: 200 },
+		});
+		expect(result.budget?.weeklyUsd).toBe(50);
+		expect(result.budget?.monthlyUsd).toBe(200);
+	});
+
+	it("accepts empty budget object (all fields optional)", () => {
+		const result = JobConfigSchema.parse({ ...validConfigBase, budget: {} });
+		expect(result.budget).toBeDefined();
+	});
+
+	it("accepts undefined budget (optional field)", () => {
+		const result = JobConfigSchema.parse({ ...validConfigBase });
+		expect(result.budget).toBeUndefined();
+	});
+
+	it("rejects negative dailyUsd", () => {
+		expect(() =>
+			JobConfigSchema.parse({ ...validConfigBase, budget: { dailyUsd: -5 } }),
+		).toThrow();
 	});
 });
