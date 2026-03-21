@@ -51,6 +51,14 @@ vi.mock("../../src/notifications/issue-comment.js", () => ({
 	postIssueComment: vi.fn().mockResolvedValue(undefined),
 }));
 
+vi.mock("../../src/runner/cost-tracker.js", () => ({
+	checkBudget: vi.fn(),
+}));
+
+vi.mock("../../src/runner/context-store.js", () => ({
+	loadRunContext: vi.fn(),
+}));
+
 // Import mocked modules after mock declarations
 import { acquireLock } from "../../src/runner/lock.js";
 import { pullLatest, createBranch, hasChanges, pushBranch, createPR } from "../../src/runner/git-ops.js";
@@ -61,6 +69,8 @@ import { loadJobConfig } from "../../src/core/config.js";
 import { execCommand } from "../../src/util/exec.js";
 import { sendNotifications } from "../../src/notifications/dispatcher.js";
 import { extractIssueNumber, postIssueComment } from "../../src/notifications/issue-comment.js";
+import { checkBudget } from "../../src/runner/cost-tracker.js";
+import { loadRunContext } from "../../src/runner/context-store.js";
 import { executeRun } from "../../src/runner/orchestrator.js";
 
 const mockedAcquireLock = vi.mocked(acquireLock);
@@ -79,6 +89,8 @@ const mockedExecCommand = vi.mocked(execCommand);
 const mockedSendNotifications = vi.mocked(sendNotifications);
 const mockedExtractIssueNumber = vi.mocked(extractIssueNumber);
 const mockedPostIssueComment = vi.mocked(postIssueComment);
+const mockedCheckBudget = vi.mocked(checkBudget);
+const mockedLoadRunContext = vi.mocked(loadRunContext);
 
 function makeDefaultConfig(): JobConfig {
 	return {
@@ -134,6 +146,8 @@ describe("executeRun", () => {
 		mockedBuildSystemPrompt.mockReturnValue("You are an autonomous agent");
 		mockedWriteRunLog.mockResolvedValue(undefined);
 		mockedExecCommand.mockResolvedValue({ stdout: "", stderr: "" });
+		mockedCheckBudget.mockReturnValue(false);
+		mockedLoadRunContext.mockReturnValue([]);
 	});
 
 	afterEach(() => {
@@ -399,5 +413,76 @@ describe("executeRun", () => {
 			expect.objectContaining({ id: "test-job" }),
 			expect.objectContaining({ status: "git-error" }),
 		);
+	});
+
+	// --- Budget, context, and model integration tests ---
+
+	it("returns budget-exceeded when checkBudget returns true", async () => {
+		mockedLoadJobConfig.mockResolvedValue({
+			...makeDefaultConfig(),
+			budget: { dailyUsd: 5 },
+		});
+		mockedCheckBudget.mockReturnValue(true);
+
+		const result = await executeRun("test-job");
+
+		expect(result.status).toBe("budget-exceeded");
+		expect(mockedCheckBudget).toHaveBeenCalledWith("test-job", { dailyUsd: 5 });
+		expect(mockedSpawnClaude).not.toHaveBeenCalled();
+		expect(mockedWriteRunLog).toHaveBeenCalledWith(
+			"test-job",
+			expect.objectContaining({ status: "budget-exceeded" }),
+		);
+		expect(mockedSendNotifications).toHaveBeenCalledWith(
+			expect.objectContaining({ id: "test-job" }),
+			expect.objectContaining({ status: "budget-exceeded" }),
+		);
+	});
+
+	it("calls loadRunContext and passes result to buildWorkPrompt", async () => {
+		const mockContext = [
+			{
+				id: "run-1",
+				status: "success",
+				pr_url: "https://github.com/test/pull/1",
+				branch_name: "auto/fix-1",
+				issue_number: 10,
+				summary: "Fixed issue 10",
+				started_at: "2026-03-20T12:00:00Z",
+			},
+		];
+		mockedLoadRunContext.mockReturnValue(mockContext);
+
+		await executeRun("test-job");
+
+		expect(mockedLoadRunContext).toHaveBeenCalledWith("test-job");
+		expect(mockedBuildWorkPrompt).toHaveBeenCalledWith(
+			expect.objectContaining({ id: "test-job" }),
+			mockContext,
+		);
+	});
+
+	it("passes config.model to spawnClaude options", async () => {
+		mockedLoadJobConfig.mockResolvedValue({
+			...makeDefaultConfig(),
+			model: "opus",
+		});
+
+		await executeRun("test-job");
+
+		expect(mockedSpawnClaude).toHaveBeenCalledWith(
+			expect.objectContaining({ model: "opus" }),
+		);
+	});
+
+	it("records model in RunResult", async () => {
+		mockedLoadJobConfig.mockResolvedValue({
+			...makeDefaultConfig(),
+			model: "sonnet",
+		});
+
+		const result = await executeRun("test-job");
+
+		expect(result.model).toBe("sonnet");
 	});
 });
