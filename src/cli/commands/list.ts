@@ -22,11 +22,15 @@ function truncatePath(fullPath: string, segments = 2): string {
  * Satisfies JOB-01 (list with status/schedule/last run/next run)
  * and JOB-05 (multiple jobs visible as separate entries).
  */
-export async function listCommand(_args: ParsedCommand["args"]): Promise<void> {
+export async function listCommand(args: ParsedCommand["args"]): Promise<void> {
 	const jobs = await listJobs();
 
 	if (jobs.length === 0) {
-		console.log("No jobs configured.");
+		if (args.json) {
+			console.log("[]");
+		} else {
+			console.log("No jobs configured.");
+		}
 		return;
 	}
 
@@ -50,6 +54,20 @@ export async function listCommand(_args: ParsedCommand["args"]): Promise<void> {
 		}
 
 		rows.push([job.id, job.name, status, truncatePath(job.repo.path), schedule, lastRun, nextRun]);
+	}
+
+	if (args.json) {
+		const jsonOutput = jobs.map((job, i) => ({
+			id: job.id,
+			name: job.name,
+			status: job.enabled ? "active" : "paused",
+			repo: job.repo.path,
+			schedule: rows[i][4],
+			lastRun: rows[i][5],
+			nextRun: rows[i][6],
+		}));
+		console.log(JSON.stringify(jsonOutput, null, 2));
+		return;
 	}
 
 	const headers = ["ID", "Name", "Status", "Repo", "Schedule", "Last Run", "Next Run"];
