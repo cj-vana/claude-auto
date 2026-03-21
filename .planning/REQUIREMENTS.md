@@ -41,9 +41,9 @@ Requirements for initial release. Each maps to roadmap phases.
 ### Job Management
 
 - [x] **JOB-01**: User can list all active/paused jobs with status, repo, schedule, last run, and next run
-- [ ] **JOB-02**: User can pause and resume jobs without losing configuration
-- [ ] **JOB-03**: User can edit job configuration via skill command or direct file editing
-- [ ] **JOB-04**: User can remove jobs (cleans up cron/launchd entry, config, optionally logs)
+- [x] **JOB-02**: User can pause and resume jobs without losing configuration
+- [x] **JOB-03**: User can edit job configuration via skill command or direct file editing
+- [x] **JOB-04**: User can remove jobs (cleans up cron/launchd entry, config, optionally logs)
 - [x] **JOB-05**: User can run multiple job instances targeting different repos or different focuses on the same repo
 
 ### Safety & Guardrails
@@ -125,9 +125,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | GIT-04 | Phase 3 | Complete |
 | GIT-05 | Phase 3 | Complete |
 | JOB-01 | Phase 5 | Complete |
-| JOB-02 | Phase 5 | Pending |
-| JOB-03 | Phase 5 | Pending |
-| JOB-04 | Phase 5 | Pending |
+| JOB-02 | Phase 5 | Complete |
+| JOB-03 | Phase 5 | Complete |
+| JOB-04 | Phase 5 | Complete |
 | JOB-05 | Phase 5 | Complete |
 | SAFE-01 | Phase 3 | Complete |
 | SAFE-02 | Phase 3 | Complete |

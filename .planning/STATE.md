@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 05-01-PLAN.md
-last_updated: "2026-03-21T20:29:30.623Z"
+stopped_at: Completed 05-02-PLAN.md
+last_updated: "2026-03-21T20:36:44.722Z"
 progress:
   total_phases: 6
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 11
-  completed_plans: 10
+  completed_plans: 11
 ---
 
 # Project State
@@ -56,6 +56,7 @@ Plan: 2 of 2
 | Phase 04 P01 | 3min | 2 tasks | 7 files |
 | Phase 04 P02 | 3min | 2 tasks | 6 files |
 | Phase 05 P01 | 5min | 2 tasks | 14 files |
+| Phase 05 P02 | 4min | 2 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -99,6 +100,9 @@ Recent decisions affecting current work:
 - [Phase 04]: Best-effort notification pattern: .catch(() => {}) ensures run never fails due to notification errors
 - [Phase 05]: Used lazy dynamic imports for CLI command modules to keep startup fast
 - [Phase 05]: Split tsup config into array (library with DTS + bins without DTS) to fix rootDir issue with bin/ entries
+- [Phase 05]: Best-effort scheduler unregister in mutation commands (try/catch since entry may be missing)
+- [Phase 05]: Idempotent pause/resume: no error on double-action, informational message only
+- [Phase 05]: Edit command re-registers scheduler only when schedule/timezone changes AND job is enabled
 
 ### Pending Todos
 
@@ -112,6 +116,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-21T20:29:30.621Z
-Stopped at: Completed 05-01-PLAN.md
+Last session: 2026-03-21T20:36:44.719Z
+Stopped at: Completed 05-02-PLAN.md
 Resume file: None
