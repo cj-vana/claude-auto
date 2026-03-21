@@ -1,4 +1,12 @@
-export type CliCommand = "list" | "logs" | "report" | "pause" | "resume" | "remove" | "edit" | "help";
+export type CliCommand =
+	| "list"
+	| "logs"
+	| "report"
+	| "pause"
+	| "resume"
+	| "remove"
+	| "edit"
+	| "help";
 
 export interface ParsedCommand {
 	command: CliCommand;

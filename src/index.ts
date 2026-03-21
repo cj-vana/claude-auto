@@ -64,3 +64,11 @@ export { formatDiscord, formatSlack, formatTelegram } from "./notifications/form
 export { extractIssueNumber, postIssueComment } from "./notifications/issue-comment.js";
 export type { NotificationEvent, NotificationPayload, EventTriggers } from "./notifications/types.js";
 export { shouldNotify, buildPayload } from "./notifications/types.js";
+// Phase 5: CLI
+export { runCli, parseCommand } from "./cli/router.js";
+export { listCommand } from "./cli/commands/list.js";
+export { logsCommand } from "./cli/commands/logs.js";
+export { reportCommand } from "./cli/commands/report.js";
+export { formatDuration, formatRelativeTime, formatTable, statusBadge } from "./cli/format.js";
+export type { CliCommand, ParsedCommand, CommandHandler } from "./cli/types.js";
+export { COMMANDS } from "./cli/types.js";

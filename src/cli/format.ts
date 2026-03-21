@@ -62,7 +62,9 @@ export function formatTable(headers: string[], rows: string[][]): string {
 
 	const headerLine = headers.map((h, i) => pad(h, colWidths[i])).join(sep);
 	const separatorLine = colWidths.map((w) => "-".repeat(w)).join(sep);
-	const dataLines = rows.map((row) => row.map((cell, i) => pad(cell || "", colWidths[i])).join(sep));
+	const dataLines = rows.map((row) =>
+		row.map((cell, i) => pad(cell || "", colWidths[i])).join(sep),
+	);
 
 	return [headerLine, separatorLine, ...dataLines].join("\n");
 }

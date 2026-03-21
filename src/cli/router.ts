@@ -1,4 +1,4 @@
-import { COMMANDS, type CliCommand, type ParsedCommand } from "./types.js";
+import { type CliCommand, COMMANDS, type ParsedCommand } from "./types.js";
 
 const VALID_COMMANDS = new Set<string>(Object.keys(COMMANDS));
 
