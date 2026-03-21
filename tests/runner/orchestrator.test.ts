@@ -334,6 +334,61 @@ describe("executeRun", () => {
 		expect(result.issueNumber).toBe(7);
 	});
 
+	it("returns paused status when config.enabled is false", async () => {
+		mockedLoadJobConfig.mockResolvedValue(makeDefaultConfig());
+		vi.mocked(mockedLoadJobConfig).mockResolvedValue({
+			...makeDefaultConfig(),
+			enabled: false,
+		});
+
+		const result = await executeRun("test-job");
+
+		expect(result.status).toBe("paused");
+		expect(result.jobId).toBe("test-job");
+		expect(result.runId).toBeDefined();
+		expect(result.startedAt).toBeDefined();
+		expect(result.completedAt).toBeDefined();
+		expect(result.durationMs).toBeGreaterThanOrEqual(0);
+	});
+
+	it("does not call pullLatest or spawnClaude when paused", async () => {
+		mockedLoadJobConfig.mockResolvedValue({
+			...makeDefaultConfig(),
+			enabled: false,
+		});
+
+		await executeRun("test-job");
+
+		expect(mockedPullLatest).not.toHaveBeenCalled();
+		expect(mockedCreateBranch).not.toHaveBeenCalled();
+		expect(mockedSpawnClaude).not.toHaveBeenCalled();
+	});
+
+	it("writes run log with paused status", async () => {
+		mockedLoadJobConfig.mockResolvedValue({
+			...makeDefaultConfig(),
+			enabled: false,
+		});
+
+		await executeRun("test-job");
+
+		expect(mockedWriteRunLog).toHaveBeenCalledWith(
+			"test-job",
+			expect.objectContaining({ status: "paused" }),
+		);
+	});
+
+	it("releases lock when paused", async () => {
+		mockedLoadJobConfig.mockResolvedValue({
+			...makeDefaultConfig(),
+			enabled: false,
+		});
+
+		await executeRun("test-job");
+
+		expect(mockReleaseLock).toHaveBeenCalled();
+	});
+
 	it("calls sendNotifications after git-error run", async () => {
 		mockedPullLatest.mockRejectedValue(new GitOpsError("pullLatest", "/tmp/test-repo", "merge conflict"));
 
