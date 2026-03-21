@@ -314,6 +314,59 @@ describe("createCommand", () => {
 		);
 	});
 
+	it("passes restrictToPaths array in guardrails when --restrict-paths provided", async () => {
+		const job = makeJob({
+			guardrails: {
+				maxTurns: 50,
+				maxBudgetUsd: 5.0,
+				noNewDependencies: false,
+				noArchitectureChanges: false,
+				bugFixOnly: false,
+				restrictToPaths: ["src/", "tests/"],
+			},
+		});
+		mockRepoExists();
+		mockedValidateCronExpression.mockImplementation(() => {});
+		mockedCreateJob.mockResolvedValue(job);
+		mockedDescribeSchedule.mockReturnValue("Every 6 hours");
+		mockedGetNextRuns.mockReturnValue([new Date("2026-01-01T06:00:00Z")]);
+		mockScheduler();
+
+		await createCommand({
+			name: "Test Job",
+			repo: "/home/user/repos/my-project",
+			schedule: "0 */6 * * *",
+			restrictPaths: "src/,tests/",
+		});
+
+		expect(mockedCreateJob).toHaveBeenCalledWith(
+			expect.objectContaining({
+				guardrails: expect.objectContaining({
+					restrictToPaths: ["src/", "tests/"],
+				}),
+			}),
+		);
+	});
+
+	it("passes undefined restrictToPaths when --restrict-paths not provided", async () => {
+		const job = makeJob();
+		mockRepoExists();
+		mockedValidateCronExpression.mockImplementation(() => {});
+		mockedCreateJob.mockResolvedValue(job);
+		mockedDescribeSchedule.mockReturnValue("Every 6 hours");
+		mockedGetNextRuns.mockReturnValue([new Date("2026-01-01T06:00:00Z")]);
+		mockScheduler();
+
+		await createCommand({
+			name: "Test Job",
+			repo: "/home/user/repos/my-project",
+			schedule: "0 */6 * * *",
+		});
+
+		const createJobCall = mockedCreateJob.mock.calls[0][0];
+		expect(createJobCall.guardrails.restrictToPaths).toBeUndefined();
+	});
+
 	it("uses default focus and system timezone when not specified", async () => {
 		const job = makeJob();
 		mockRepoExists();

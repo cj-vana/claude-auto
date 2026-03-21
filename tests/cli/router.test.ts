@@ -46,6 +46,22 @@ describe("parseCommand", () => {
 		expect(result).toEqual({ command: "help", args: {} });
 		errorSpy.mockRestore();
 	});
+
+	it("parseCommand with --restrict-paths flag returns restrictPaths in args", () => {
+		const result = parseCommand([
+			"create",
+			"--name",
+			"test",
+			"--repo",
+			"/tmp",
+			"--schedule",
+			"0 * * * *",
+			"--restrict-paths",
+			"src/,tests/",
+		]);
+		expect(result.command).toBe("create");
+		expect(result.args.restrictPaths).toBe("src/,tests/");
+	});
 });
 
 describe("formatDuration", () => {
