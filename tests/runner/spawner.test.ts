@@ -312,3 +312,89 @@ describe("spawnClaude", () => {
 		await expect(promise).rejects.toThrow(/spawn ENOENT/);
 	});
 });
+
+describe("model selection (--model flag)", () => {
+	const baseOptions: SpawnOptions = {
+		cwd: "/tmp/test-repo",
+		prompt: "Do some work",
+		maxTurns: 50,
+		maxBudgetUsd: 5.0,
+		allowedTools: ["Read", "Edit"],
+	};
+
+	beforeEach(() => {
+		mockedSpawn.mockReset();
+	});
+
+	afterEach(() => {
+		vi.restoreAllMocks();
+	});
+
+	it("includes --model opus when model is set to opus", async () => {
+		const { child } = createMockChildProcess();
+		mockedSpawn.mockReturnValue(child as never);
+
+		const promise = spawnClaude({ ...baseOptions, model: "opus" });
+
+		const args = mockedSpawn.mock.calls[0][1] as string[];
+		expect(args).toContain("--model");
+		expect(args[args.indexOf("--model") + 1]).toBe("opus");
+
+		emitResponse(child, { result: "ok" });
+		await promise;
+	});
+
+	it("includes --model sonnet when model is set to sonnet", async () => {
+		const { child } = createMockChildProcess();
+		mockedSpawn.mockReturnValue(child as never);
+
+		const promise = spawnClaude({ ...baseOptions, model: "sonnet" });
+
+		const args = mockedSpawn.mock.calls[0][1] as string[];
+		expect(args).toContain("--model");
+		expect(args[args.indexOf("--model") + 1]).toBe("sonnet");
+
+		emitResponse(child, { result: "ok" });
+		await promise;
+	});
+
+	it("includes --model claude-opus-4-6 when model is a full model ID", async () => {
+		const { child } = createMockChildProcess();
+		mockedSpawn.mockReturnValue(child as never);
+
+		const promise = spawnClaude({ ...baseOptions, model: "claude-opus-4-6" });
+
+		const args = mockedSpawn.mock.calls[0][1] as string[];
+		expect(args).toContain("--model");
+		expect(args[args.indexOf("--model") + 1]).toBe("claude-opus-4-6");
+
+		emitResponse(child, { result: "ok" });
+		await promise;
+	});
+
+	it("does NOT include --model when model is 'default'", async () => {
+		const { child } = createMockChildProcess();
+		mockedSpawn.mockReturnValue(child as never);
+
+		const promise = spawnClaude({ ...baseOptions, model: "default" });
+
+		const args = mockedSpawn.mock.calls[0][1] as string[];
+		expect(args).not.toContain("--model");
+
+		emitResponse(child, { result: "ok" });
+		await promise;
+	});
+
+	it("does NOT include --model when model is undefined", async () => {
+		const { child } = createMockChildProcess();
+		mockedSpawn.mockReturnValue(child as never);
+
+		const promise = spawnClaude({ ...baseOptions });
+
+		const args = mockedSpawn.mock.calls[0][1] as string[];
+		expect(args).not.toContain("--model");
+
+		emitResponse(child, { result: "ok" });
+		await promise;
+	});
+});
