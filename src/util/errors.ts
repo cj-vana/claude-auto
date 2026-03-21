@@ -39,3 +39,35 @@ export class CronValidationError extends Error {
 		super(`Invalid cron expression "${expression}": ${message}`);
 	}
 }
+
+export class GitOpsError extends Error {
+	override name = "GitOpsError" as const;
+	constructor(
+		public readonly operation: string,
+		public readonly repoPath: string,
+		message: string,
+		public override readonly cause?: Error,
+	) {
+		super(`Git operation '${operation}' failed in ${repoPath}: ${message}`);
+	}
+}
+
+export class LockError extends Error {
+	override name = "LockError" as const;
+	constructor(
+		public readonly jobId: string,
+		message: string,
+	) {
+		super(`Lock error for job ${jobId}: ${message}`);
+	}
+}
+
+export class SpawnError extends Error {
+	override name = "SpawnError" as const;
+	constructor(
+		message: string,
+		public readonly exitCode?: number,
+	) {
+		super(`Claude spawn error: ${message}`);
+	}
+}

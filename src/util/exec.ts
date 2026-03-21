@@ -15,11 +15,11 @@ export interface ExecResult {
 export async function execCommand(
 	command: string,
 	args: string[],
-	options?: { stdin?: string },
+	options?: { stdin?: string; cwd?: string },
 ): Promise<ExecResult> {
 	if (options?.stdin !== undefined) {
 		return new Promise<ExecResult>((resolve, reject) => {
-			const child = execFile(command, args, (err, stdout, stderr) => {
+			const child = execFile(command, args, { cwd: options?.cwd }, (err, stdout, stderr) => {
 				if (err) {
 					reject(err);
 					return;
@@ -30,6 +30,6 @@ export async function execCommand(
 			child.stdin?.end();
 		});
 	}
-	const { stdout, stderr } = await execFileAsync(command, args);
+	const { stdout, stderr } = await execFileAsync(command, args, { cwd: options?.cwd });
 	return { stdout, stderr };
 }
