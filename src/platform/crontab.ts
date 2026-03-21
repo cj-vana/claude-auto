@@ -61,10 +61,10 @@ async function writeCrontab(content: string): Promise<void> {
 function getRunnerPath(): string {
 	try {
 		const currentDir = dirname(fileURLToPath(import.meta.url));
-		return join(currentDir, "..", "..", "dist", "runner.js");
+		return join(currentDir, "..", "..", "dist", "claude-auto-run.js");
 	} catch {
 		// Fallback for test/bundle environments
-		return join(process.cwd(), "dist", "runner.js");
+		return join(process.cwd(), "dist", "claude-auto-run.js");
 	}
 }
 

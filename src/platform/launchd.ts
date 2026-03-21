@@ -34,9 +34,9 @@ function getUid(): number {
 function getRunnerPath(): string {
 	try {
 		const currentDir = dirname(fileURLToPath(import.meta.url));
-		return join(currentDir, "..", "..", "dist", "runner.js");
+		return join(currentDir, "..", "..", "dist", "claude-auto-run.js");
 	} catch {
-		return join(process.cwd(), "dist", "runner.js");
+		return join(process.cwd(), "dist", "claude-auto-run.js");
 	}
 }
 
