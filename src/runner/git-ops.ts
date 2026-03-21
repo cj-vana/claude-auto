@@ -1,31 +1,105 @@
-// Stub -- implementation pending (TDD RED phase)
+import { execCommand } from "../util/exec.js";
+import { GitOpsError } from "../util/errors.js";
 
-export async function pullLatest(
-	_repoPath: string,
-	_branch: string,
-	_remote: string,
-): Promise<void> {
-	throw new Error("Not implemented");
+/**
+ * Pull latest changes from remote branch.
+ * Runs: git fetch, git checkout, git pull --ff-only (in order).
+ */
+export async function pullLatest(repoPath: string, branch: string, remote: string): Promise<void> {
+	try {
+		await execCommand("git", ["-C", repoPath, "fetch", remote]);
+		await execCommand("git", ["-C", repoPath, "checkout", branch]);
+		await execCommand("git", ["-C", repoPath, "pull", "--ff-only", remote, branch]);
+	} catch (err) {
+		throw new GitOpsError(
+			"pullLatest",
+			repoPath,
+			err instanceof Error ? err.message : String(err),
+			err instanceof Error ? err : undefined,
+		);
+	}
 }
 
-export async function createBranch(_repoPath: string, _jobId: string): Promise<string> {
-	throw new Error("Not implemented");
+/**
+ * Create a new branch for this run.
+ * Branch name format: claude-auto/{jobId}/{ISO-timestamp}
+ */
+export async function createBranch(repoPath: string, jobId: string): Promise<string> {
+	const timestamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+	const branchName = `claude-auto/${jobId}/${timestamp}`;
+
+	try {
+		await execCommand("git", ["-C", repoPath, "checkout", "-b", branchName]);
+	} catch (err) {
+		throw new GitOpsError(
+			"createBranch",
+			repoPath,
+			err instanceof Error ? err.message : String(err),
+			err instanceof Error ? err : undefined,
+		);
+	}
+
+	return branchName;
 }
 
-export async function hasChanges(_repoPath: string): Promise<boolean> {
-	throw new Error("Not implemented");
+/**
+ * Check if the working tree has uncommitted changes.
+ */
+export async function hasChanges(repoPath: string): Promise<boolean> {
+	try {
+		const { stdout } = await execCommand("git", ["-C", repoPath, "status", "--porcelain"]);
+		return stdout.trim().length > 0;
+	} catch (err) {
+		throw new GitOpsError(
+			"hasChanges",
+			repoPath,
+			err instanceof Error ? err.message : String(err),
+			err instanceof Error ? err : undefined,
+		);
+	}
 }
 
-export async function pushBranch(_repoPath: string, _branchName: string): Promise<void> {
-	throw new Error("Not implemented");
+/**
+ * Push branch to origin with upstream tracking.
+ * Safety: only uses -u flag, no destructive push flags.
+ */
+export async function pushBranch(repoPath: string, branchName: string): Promise<void> {
+	try {
+		await execCommand("git", ["-C", repoPath, "push", "-u", "origin", branchName]);
+	} catch (err) {
+		throw new GitOpsError(
+			"pushBranch",
+			repoPath,
+			err instanceof Error ? err.message : String(err),
+			err instanceof Error ? err : undefined,
+		);
+	}
 }
 
+/**
+ * Create a pull request via GitHub CLI.
+ * Returns the PR URL.
+ */
 export async function createPR(
-	_repoPath: string,
-	_branchName: string,
-	_baseBranch: string,
-	_title: string,
-	_body: string,
+	repoPath: string,
+	branchName: string,
+	baseBranch: string,
+	title: string,
+	body: string,
 ): Promise<string> {
-	throw new Error("Not implemented");
+	try {
+		const { stdout } = await execCommand(
+			"gh",
+			["pr", "create", "--head", branchName, "--base", baseBranch, "--title", title, "--body", body],
+			{ cwd: repoPath },
+		);
+		return stdout.trim();
+	} catch (err) {
+		throw new GitOpsError(
+			"createPR",
+			repoPath,
+			err instanceof Error ? err.message : String(err),
+			err instanceof Error ? err : undefined,
+		);
+	}
 }
