@@ -1,5 +1,6 @@
 import { GitOpsError } from "../util/errors.js";
 import { execCommand } from "../util/exec.js";
+import type { RebaseResult } from "./types.js";
 
 /**
  * Pull latest changes from remote branch.
@@ -136,5 +137,110 @@ export async function createPR(
 			err instanceof Error ? err.message : String(err),
 			err instanceof Error ? err : undefined,
 		);
+	}
+}
+
+/**
+ * Check if the target branch has diverged from the current branch.
+ * Fetches the remote base branch first, then uses git merge-base --is-ancestor
+ * to determine if the remote base is still an ancestor of HEAD.
+ *
+ * @returns true if diverged (remote base has commits not in current branch), false otherwise
+ */
+export async function checkDivergence(
+	repoPath: string,
+	baseBranch: string,
+	remote: string,
+): Promise<boolean> {
+	try {
+		await execCommand("git", ["-C", repoPath, "fetch", remote, baseBranch]);
+	} catch (err) {
+		throw new GitOpsError(
+			"checkDivergence",
+			repoPath,
+			err instanceof Error ? err.message : String(err),
+			err instanceof Error ? err : undefined,
+		);
+	}
+
+	try {
+		await execCommand("git", [
+			"-C",
+			repoPath,
+			"merge-base",
+			"--is-ancestor",
+			`${remote}/${baseBranch}`,
+			"HEAD",
+		]);
+		return false; // Not diverged -- remote base is ancestor of HEAD
+	} catch {
+		return true; // Diverged -- remote base has commits not in current branch
+	}
+}
+
+/**
+ * Attempt to rebase the current branch onto the remote base branch.
+ * First checks for divergence; if not diverged, returns early.
+ * If diverged, attempts rebase. On conflict, aborts cleanly and returns conflict list.
+ */
+export async function attemptRebase(
+	repoPath: string,
+	baseBranch: string,
+	remote: string,
+): Promise<RebaseResult> {
+	const diverged = await checkDivergence(repoPath, baseBranch, remote);
+
+	if (!diverged) {
+		return { diverged: false, rebased: false, conflicts: [] };
+	}
+
+	try {
+		await execCommand("git", ["-C", repoPath, "rebase", `${remote}/${baseBranch}`]);
+		return { diverged: true, rebased: true, conflicts: [] };
+	} catch {
+		// Rebase failed with conflicts -- get conflict file list
+		let conflicts: string[] = [];
+		try {
+			const { stdout } = await execCommand("git", [
+				"-C",
+				repoPath,
+				"diff",
+				"--name-only",
+				"--diff-filter=U",
+			]);
+			conflicts = stdout
+				.trim()
+				.split("\n")
+				.filter((f) => f.length > 0);
+		} catch {
+			// diff failed -- proceed with empty conflict list
+		}
+
+		// ALWAYS run `git rebase --abort` to restore clean state
+		try {
+			await execCommand("git", ["-C", repoPath, "rebase", "--abort"]);
+		} catch {
+			// Abort failed -- nothing more we can do
+		}
+
+		return { diverged: true, rebased: false, conflicts };
+	}
+}
+
+/**
+ * Get the diff between the base branch and HEAD.
+ * Best-effort: returns empty string on error.
+ */
+export async function getDiffFromBase(repoPath: string, baseBranch: string): Promise<string> {
+	try {
+		const { stdout } = await execCommand("git", [
+			"-C",
+			repoPath,
+			"diff",
+			`${baseBranch}...HEAD`,
+		]);
+		return stdout.trim();
+	} catch {
+		return "";
 	}
 }
