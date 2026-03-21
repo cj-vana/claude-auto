@@ -17,7 +17,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 3: Run Orchestrator & Git Safety** - Core execution engine: Claude spawning, git workflow, safety infrastructure, run logging
 - [ ] **Phase 4: Notifications** - Webhook notifications to Discord/Slack/Telegram with configurable triggers
 - [x] **Phase 5: Job Management CLI** - User-facing CLI for listing, pausing, resuming, editing, and removing jobs (completed 2026-03-21)
-- [ ] **Phase 6: Plugin & Skills** - Claude Code plugin with conversational setup wizard, system prompt crafting, and npm distribution
+- [x] **Phase 6: Plugin & Skills** - Claude Code plugin with conversational setup wizard, system prompt crafting, and npm distribution (completed 2026-03-21)
 
 ## Phase Details
 
@@ -108,11 +108,11 @@ Plans:
   2. The setup wizard guides users through repo selection, branch, schedule, focus areas, and system prompt in a natural conversation -- producing a valid job config and registered schedule
   3. Claude helps the user craft a system prompt with personality, coding style, focus areas, and exclusions -- not just accepting raw text
   4. If the target repo is not cloned locally, the tool clones it automatically via gh before proceeding
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 06-01: TBD
-- [ ] 06-02: TBD
+- [x] 06-01-PLAN.md -- CLI create and check-repo commands with router integration and tests
+- [x] 06-02-PLAN.md -- Plugin manifest, 8 skill files, postinstall/preuninstall scripts, package.json distribution config
 
 ## Progress
 
@@ -126,4 +126,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | 3. Run Orchestrator & Git Safety | 0/3 | Planning complete | - |
 | 4. Notifications | 1/2 | In Progress|  |
 | 5. Job Management CLI | 2/2 | Complete   | 2026-03-21 |
-| 6. Plugin & Skills | 0/0 | Not started | - |
+| 6. Plugin & Skills | 2/2 | Complete   | 2026-03-21 |

@@ -9,11 +9,11 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Setup & Configuration
 
-- [ ] **SETUP-01**: User can set up a new cron job via guided wizard where Claude walks through repo, branch, schedule, focus areas, and system prompt
+- [x] **SETUP-01**: User can set up a new cron job via guided wizard where Claude walks through repo, branch, schedule, focus areas, and system prompt
 - [x] **SETUP-02**: Job configuration stored as human-readable YAML files that users can edit directly
 - [x] **SETUP-03**: User can specify schedule as natural language ("every 6 hours") or cron syntax; Claude normalizes to cron
-- [ ] **SETUP-04**: Claude helps user craft system prompt with personality, coding style, focus areas, and things to avoid
-- [ ] **SETUP-05**: If target repo is not cloned locally, tool clones it automatically via gh
+- [x] **SETUP-04**: Claude helps user craft system prompt with personality, coding style, focus areas, and things to avoid
+- [x] **SETUP-05**: If target repo is not cloned locally, tool clones it automatically via gh
 
 ### Scheduling & Platform
 
@@ -65,8 +65,8 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Distribution
 
-- [ ] **DIST-01**: Tool installable as a global npm package (npm install -g claude-auto)
-- [ ] **DIST-02**: Package registers as a Claude Code skill with slash commands for all management operations
+- [x] **DIST-01**: Tool installable as a global npm package (npm install -g claude-auto)
+- [x] **DIST-02**: Package registers as a Claude Code skill with slash commands for all management operations
 
 ## v2 Requirements
 
@@ -105,11 +105,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SETUP-01 | Phase 6 | Pending |
+| SETUP-01 | Phase 6 | Complete |
 | SETUP-02 | Phase 1 | Complete |
 | SETUP-03 | Phase 2 | Complete |
-| SETUP-04 | Phase 6 | Pending |
-| SETUP-05 | Phase 6 | Pending |
+| SETUP-04 | Phase 6 | Complete |
+| SETUP-05 | Phase 6 | Complete |
 | SCHED-01 | Phase 2 | Complete |
 | SCHED-02 | Phase 2 | Complete |
 | SCHED-03 | Phase 2 | Complete |
@@ -137,8 +137,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | NOTF-03 | Phase 4 | Complete |
 | REPT-01 | Phase 3 | Complete |
 | REPT-02 | Phase 5 | Complete |
-| DIST-01 | Phase 6 | Pending |
-| DIST-02 | Phase 6 | Pending |
+| DIST-01 | Phase 6 | Complete |
+| DIST-02 | Phase 6 | Complete |
 
 **Coverage:**
 - v1 requirements: 34 total
