@@ -1,7 +1,7 @@
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
 let tmpDir: string;
 
@@ -23,10 +23,13 @@ vi.mock("../../src/util/paths.js", () => {
 	return {
 		get paths() {
 			// tmpDir is set by the time tests actually run
-			const td = join(tmpdir(), ""); // placeholder; overridden below
 			return {
-				get base() { return tmpDir; },
-				get jobs() { return join(tmpDir, "jobs"); },
+				get base() {
+					return tmpDir;
+				},
+				get jobs() {
+					return join(tmpDir, "jobs");
+				},
 				jobDir: (id: string) => join(tmpDir, "jobs", id),
 				jobConfig: (id: string) => join(tmpDir, "jobs", id, "config.yaml"),
 			};
@@ -34,13 +37,7 @@ vi.mock("../../src/util/paths.js", () => {
 	};
 });
 
-import {
-	createJob,
-	deleteJob,
-	listJobs,
-	readJob,
-	updateJob,
-} from "../../src/core/job-manager.js";
+import { createJob, deleteJob, listJobs, readJob, updateJob } from "../../src/core/job-manager.js";
 import type { JobConfig } from "../../src/core/types.js";
 
 const baseInput: Omit<JobConfig, "id"> = {
@@ -172,8 +169,8 @@ describe("listJobs", () => {
 		await rm(join(tmpDir, "jobs"), { recursive: true, force: true });
 		await mkdir(join(tmpDir, "jobs"), { recursive: true });
 
-		const job1 = await createJob({ ...baseInput, name: "list-test-1" });
-		const job2 = await createJob({ ...baseInput, name: "list-test-2" });
+		await createJob({ ...baseInput, name: "list-test-1" });
+		await createJob({ ...baseInput, name: "list-test-2" });
 
 		const jobs = await listJobs();
 

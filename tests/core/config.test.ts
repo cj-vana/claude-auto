@@ -8,7 +8,6 @@ import {
 	readConfigDocument,
 	saveJobConfig,
 	updateConfigField,
-	validateConfig,
 	writeConfigDocument,
 } from "../../src/core/config.js";
 import { ConfigParseError, ConfigValidationError } from "../../src/util/errors.js";
@@ -121,7 +120,8 @@ describe("saveJobConfig", () => {
 			repo: { path: "/tmp/multiline-repo", branch: "main", remote: "origin" },
 			schedule: { cron: "0 */6 * * *", timezone: "UTC" },
 			focus: ["open-issues" as const],
-			systemPrompt: "You are a helpful assistant.\nFocus on bug fixes.\nDo not add new dependencies.",
+			systemPrompt:
+				"You are a helpful assistant.\nFocus on bug fixes.\nDo not add new dependencies.",
 			guardrails: {
 				maxTurns: 50,
 				maxBudgetUsd: 5.0,

@@ -56,7 +56,7 @@ export async function saveJobConfig(filePath: string, config: JobConfig): Promis
 	const doc = new Document(config);
 
 	// For multiline systemPrompt, force YAML block literal style (|)
-	if (config.systemPrompt && config.systemPrompt.includes("\n")) {
+	if (config.systemPrompt?.includes("\n")) {
 		const node = doc.getIn(["systemPrompt"]);
 		if (node && typeof node === "object" && "type" in node) {
 			(node as { type: string }).type = "BLOCK_LITERAL";
