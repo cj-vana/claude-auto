@@ -6,6 +6,10 @@
 	"engines": {
 		"node": ">=22.0.0"
 	},
+	"bin": {
+		"claude-auto": "./dist/cli.js",
+		"claude-auto-run": "./dist/runner.js"
+	},
 	"exports": {
 		".": {
 			"import": "./dist/index.js",
