@@ -54,9 +54,9 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Notifications
 
-- [ ] **NOTF-01**: User can configure webhook notifications to Discord, Slack, and/or Telegram
-- [ ] **NOTF-02**: When working on a GitHub issue, Claude comments on the issue with status/PR link
-- [ ] **NOTF-03**: User can configure which events trigger notifications (PR created, error, nothing found, run skipped)
+- [x] **NOTF-01**: User can configure webhook notifications to Discord, Slack, and/or Telegram
+- [x] **NOTF-02**: When working on a GitHub issue, Claude comments on the issue with status/PR link
+- [x] **NOTF-03**: User can configure which events trigger notifications (PR created, error, nothing found, run skipped)
 
 ### Reporting
 
@@ -132,9 +132,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SAFE-01 | Phase 3 | Complete |
 | SAFE-02 | Phase 3 | Complete |
 | SAFE-03 | Phase 3 | Complete |
-| NOTF-01 | Phase 4 | Pending |
-| NOTF-02 | Phase 4 | Pending |
-| NOTF-03 | Phase 4 | Pending |
+| NOTF-01 | Phase 4 | Complete |
+| NOTF-02 | Phase 4 | Complete |
+| NOTF-03 | Phase 4 | Complete |
 | REPT-01 | Phase 3 | Complete |
 | REPT-02 | Phase 5 | Pending |
 | DIST-01 | Phase 6 | Pending |

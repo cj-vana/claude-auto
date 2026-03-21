@@ -77,10 +77,11 @@ Plans:
   1. A PR creation event sends a formatted webhook notification to a configured Discord, Slack, or Telegram channel with the PR link and summary
   2. When Claude works on a GitHub issue, a comment is posted to that issue with status and PR link
   3. Users can configure which events trigger notifications (PR created, error, nothing found, run skipped) and only those events fire
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 04-01: TBD
+- [x] 04-01-PLAN.md -- Notification types, provider formatters (Discord/Slack/Telegram), webhook dispatcher, GitHub issue commenting
+- [ ] 04-02-PLAN.md -- Schema extension for event triggers, orchestrator integration, barrel export update
 
 ### Phase 5: Job Management CLI
 **Goal**: Users can manage all their autonomous jobs from the command line without editing files or touching cron directly
@@ -123,6 +124,6 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | 1. Foundation & Config | 2/2 | Complete | 2026-03-21 |
 | 2. Platform Scheduling | 0/2 | Planning complete | - |
 | 3. Run Orchestrator & Git Safety | 0/3 | Planning complete | - |
-| 4. Notifications | 0/0 | Not started | - |
+| 4. Notifications | 1/2 | In Progress|  |
 | 5. Job Management CLI | 0/0 | Not started | - |
 | 6. Plugin & Skills | 0/0 | Not started | - |
