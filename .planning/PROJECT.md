@@ -2,7 +2,7 @@
 
 ## What This Is
 
-An npm-installable Claude Code skill that lets developers set up autonomous cron jobs where Claude continuously works on their repositories. Each cron job spawns a headless Claude instance that researches the codebase, picks work to do (open issues, bugs it discovers, or features it wants to add), makes PRs, updates documentation, and notifies the user. Users configure everything through a guided conversation with Claude — repo, schedule, focus areas, system prompt, guardrails — and can run multiple instances targeting different repos or concerns.
+An npm-installable Claude Code plugin that lets developers set up autonomous cron jobs where Claude continuously works on their repositories. Each cron job spawns a headless Claude instance that researches the codebase, picks work to do (open issues, bugs it discovers, or features it wants to add), makes PRs, updates documentation, and notifies the user. Users configure everything through a guided conversation with Claude — repo, schedule, focus areas, system prompt, guardrails — and can run multiple instances targeting different repos or concerns.
 
 ## Core Value
 
@@ -12,79 +12,83 @@ Claude autonomously and continuously improves codebases without human interventi
 
 ### Validated
 
-(None yet — ship to validate)
+- ✓ Human-readable YAML config files with comment preservation — v1.0
+- ✓ Schedule accepts natural language or cron syntax, Claude normalizes — v1.0
+- ✓ System cron/launchd scheduling (macOS + Linux) with timezone support — v1.0
+- ✓ Headless Claude spawning with safety guarantees (--dangerously-skip-permissions) — v1.0
+- ✓ Work priority chain (issues → bugs → features) — v1.0
+- ✓ Git safety (new branch, never main, never force push, PR via gh) — v1.0
+- ✓ Codebase research, bug discovery, issue triage, doc updates — v1.0
+- ✓ Configurable guardrails (max turns, restrict paths, no new deps, bug-fix only) — v1.0
+- ✓ Local run logs (JSON append-only per run) — v1.0
+- ✓ Notifications: Discord, Slack, Telegram webhooks + GitHub issue comments — v1.0
+- ✓ Configurable event triggers per provider (onSuccess/onFailure/onNoChanges/onLocked) — v1.0
+- ✓ CLI management: list, pause, resume, edit, remove jobs — v1.0
+- ✓ Run summary reports — v1.0
+- ✓ npm package with Claude Code plugin auto-registration — v1.0
+- ✓ Guided wizard setup (/claude-auto:setup) with conversational system prompt crafting — v1.0
+- ✓ Auto-clone repos via gh — v1.0
 
 ### Active
 
-- [ ] Skill registers as a Claude Code skill installable via npm
-- [ ] Guided wizard setup: Claude walks user through repo, branch, schedule, focus areas, system prompt
-- [ ] Claude helps craft the system prompt (personality, coding style, focus areas, things to avoid)
-- [ ] Schedule accepts natural language ("every 6 hours") or cron syntax, Claude normalizes
-- [ ] Each cron run spawns Claude in headless mode with --dangerously-skip-permissions
-- [ ] Work priority chain: open GitHub issues → bugs Claude discovers → features Claude wants to add
-- [ ] Always pulls configured branch, creates new branch, never force pushes, never commits to main
-- [ ] Codebase research phase at the start of every run (understand current implementation)
-- [ ] Bug discovery: scans for pre-existing bugs before adding new features
-- [ ] Creates PRs to configured branch with detailed descriptions
-- [ ] Updates relevant documentation after changes
-- [ ] Notifications: Discord, Slack, Telegram, GitHub issue comments (configurable per job)
-- [ ] Multiple cron job instances per user, each targeting different repos/focuses
-- [ ] Management via skill commands: list, pause, resume, edit, remove jobs
-- [ ] Human-readable config files that users can also edit directly
-- [ ] Repos: assumes local clone, clones if not present
-- [ ] Full trust by default, optional configurable guardrails (no new deps, no arch changes, bug-fix only, etc.)
-- [ ] Local run log for each cron execution
+(None — v1.0 complete. Add requirements for next milestone.)
 
 ### Out of Scope
 
 - GUI/web dashboard — CLI-first, skill-first
 - Self-hosting infrastructure — runs on user's machine via system cron/launchd
 - Payment/billing — free tool
-- Windows support for v1 — macOS/Linux first
+- Windows support — macOS/Linux only (WSL as workaround)
+- Cross-run context persistence — defer until single-run reliability proven
+- Auto-merging PRs — human review gate is intentional
+- Real-time streaming — defeats purpose of "wake up to PRs"
 
 ## Context
 
-- Claude Code is Anthropic's CLI tool that supports skills (custom slash commands), headless mode, and --dangerously-skip-permissions for autonomous operation
-- The skill itself is meta: Claude helps users configure Claude to run autonomously
-- GitHub CLI (gh) is the expected interface for issue listing, PR creation, repo cloning
-- System cron (crontab) or launchd on macOS are the cron mechanisms
-- Notification integrations use webhooks (Discord, Slack, Telegram) — no complex auth flows
-- Users are developers comfortable with CLI tools and giving Claude repo access
+Shipped v1.0 with 3,193 LOC TypeScript + 5,214 LOC tests (315 tests).
+Tech stack: TypeScript ESM, Node 22, Zod v4, yaml (Document API), vitest, tsup, biome.
+Platform: crontab (Linux) + launchd (macOS) with native fetch for webhooks.
+Distribution: npm package with Claude Code plugin system (postinstall auto-registration).
+CLI: `claude-auto` binary with 10 subcommands (list, logs, report, pause, resume, remove, edit, create, check-repo + help).
+Plugin: 8 SKILL.md files including conversational setup wizard.
 
 ## Constraints
 
-- **Runtime**: Must work with Claude Code's headless mode and --dangerously-skip-permissions flag
-- **Distribution**: npm package that registers as a Claude Code skill
-- **Git safety**: Never force push, never commit to main/configured branch directly, always new branch + PR
-- **Platform**: macOS and Linux for v1 (cron/launchd)
-- **Auth**: Relies on user's existing git/gh authentication on the machine
+- **Runtime**: Claude Code headless mode with --dangerously-skip-permissions
+- **Distribution**: npm package with Claude Code plugin registration
+- **Git safety**: Never force push, never commit to main, always new branch + PR
+- **Platform**: macOS and Linux (cron/launchd)
+- **Auth**: Relies on user's existing git/gh authentication
 
 ## Key Decisions
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| npm package distribution | Standard JS ecosystem distribution, easy install | — Pending |
-| Headless Claude with --dangerously-skip-permissions | Full autonomy requires skipping permission prompts | — Pending |
-| System cron/launchd for scheduling | No custom daemon needed, reliable, well-understood | — Pending |
-| Webhook-based notifications | Simple, no OAuth flows, works with Discord/Slack/Telegram | — Pending |
-| Config files + skill commands for management | Both power users (edit files) and casual users (ask Claude) served | — Pending |
+| npm package distribution | Standard JS ecosystem distribution, easy install | ✓ Good |
+| CLI spawning over Agent SDK | Agent SDK has orphaned process bug (#142); CLI is simpler for v1 | ✓ Good |
+| System cron/launchd for scheduling | No custom daemon needed, reliable, well-understood | ✓ Good |
+| YAML config with Document API | Comment preservation for human editing; multiline system prompts | ✓ Good |
+| Webhook-based notifications | Simple, no OAuth flows, native fetch — zero deps | ✓ Good |
+| Skills call CLI for all mutations | Testable, deterministic; skills handle UX only | ✓ Good |
+| proper-lockfile for concurrency | Cross-platform, stale detection, atomic mkdir-based | ✓ Good |
+| No CLI framework (parseArgs only) | Minimal deps, sufficient for 10 subcommands | ✓ Good |
 
 ## Evolution
 
 This document evolves at phase transitions and milestone boundaries.
 
-**After each phase transition** (via `/gsd:transition`):
+**After each phase transition:**
 1. Requirements invalidated? → Move to Out of Scope with reason
 2. Requirements validated? → Move to Validated with phase reference
 3. New requirements emerged? → Add to Active
 4. Decisions to log? → Add to Key Decisions
 5. "What This Is" still accurate? → Update if drifted
 
-**After each milestone** (via `/gsd:complete-milestone`):
+**After each milestone:**
 1. Full review of all sections
 2. Core Value check — still the right priority?
 3. Audit Out of Scope — reasons still valid?
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-21 after initialization*
+*Last updated: 2026-03-21 after v1.0 milestone*

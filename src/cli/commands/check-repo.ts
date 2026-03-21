@@ -25,9 +25,7 @@ export async function checkRepoCommand(args: ParsedCommand["args"]): Promise<voi
 
 		// Get remote URL
 		const { stdout } = await execCommand("git", ["-C", repoPath, "remote", "get-url", "origin"]);
-		console.log(
-			JSON.stringify({ exists: true, isGitRepo: true, remote: stdout.trim() }),
-		);
+		console.log(JSON.stringify({ exists: true, isGitRepo: true, remote: stdout.trim() }));
 	} catch (err: unknown) {
 		if (err instanceof Error && "code" in err && (err as NodeJS.ErrnoException).code === "ENOENT") {
 			console.log(JSON.stringify({ exists: false }));
