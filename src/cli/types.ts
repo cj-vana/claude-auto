@@ -8,6 +8,7 @@ export type CliCommand =
 	| "resume"
 	| "remove"
 	| "edit"
+	| "cost"
 	| "help";
 
 export interface ParsedCommand {
@@ -27,5 +28,6 @@ export const COMMANDS: Record<string, string> = {
 	resume: "Resume a paused job",
 	edit: "Edit a job configuration",
 	remove: "Remove a job and unregister its schedule",
+	cost: "Show cost summary per job or per run",
 	help: "Show this help message",
 };

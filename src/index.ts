@@ -62,6 +62,9 @@ export {
 export { acquireLock, STALE_THRESHOLD } from "./runner/lock.js";
 export { formatContextWindow, loadRunContext, saveRunContext } from "./runner/context-store.js";
 export type { RunContext } from "./runner/context-store.js";
+export { checkBudget, getCostSummary } from "./runner/cost-tracker.js";
+export type { BudgetConfig, CostSummaryRow, DailyCostRow } from "./runner/cost-tracker.js";
+export { costCommand } from "./cli/commands/cost.js";
 export { listRunLogs, readRunLog, writeRunLog } from "./runner/logger.js";
 // Phase 3: Runner
 export { executeRun } from "./runner/orchestrator.js";

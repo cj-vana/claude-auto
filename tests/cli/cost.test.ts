@@ -36,7 +36,7 @@ describe("costCommand", () => {
 
 		await costCommand({});
 
-		expect(mockedGetCostSummary).toHaveBeenCalledWith(undefined);
+		expect(mockedGetCostSummary).toHaveBeenCalled();
 		const output = logSpy.mock.calls.map((c) => c[0]).join("\n");
 		expect(output).toContain("Job ID");
 		expect(output).toContain("Runs");

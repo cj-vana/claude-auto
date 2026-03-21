@@ -10,6 +10,8 @@ import { execCommand } from "../util/exec.js";
 import { GitOpsError } from "../util/errors.js";
 import { sendNotifications } from "../notifications/dispatcher.js";
 import { extractIssueNumber, postIssueComment } from "../notifications/issue-comment.js";
+import { checkBudget } from "./cost-tracker.js";
+import { loadRunContext, type RunContext } from "./context-store.js";
 import type { JobConfig } from "../core/types.js";
 import type { RunResult, SpawnResult } from "./types.js";
 
@@ -84,14 +86,41 @@ export async function executeRun(jobId: string): Promise<RunResult> {
 			return result;
 		}
 
+		// Step 2.5: Check cumulative budget
+		if (config.budget) {
+			const exceeded = checkBudget(jobId, config.budget);
+			if (exceeded) {
+				const result: RunResult = {
+					status: "budget-exceeded",
+					jobId,
+					runId,
+					startedAt,
+					completedAt: new Date().toISOString(),
+					durationMs: Date.now() - startTime,
+					model: config.model,
+				};
+				await writeRunLog(jobId, result);
+				await sendNotifications(config, result).catch(() => {});
+				return result;
+			}
+		}
+
 		// Step 3: Pull latest
 		await pullLatest(config.repo.path, config.repo.branch, config.repo.remote);
 
 		// Step 4: Create work branch
 		branchName = await createBranch(config.repo.path, jobId);
 
+		// Step 4.5: Load cross-run context
+		let runContext: RunContext[] = [];
+		try {
+			runContext = loadRunContext(jobId);
+		} catch {
+			// Context loading is best-effort
+		}
+
 		// Step 5: Build prompt and tools
-		const workPrompt = buildWorkPrompt(config);
+		const workPrompt = buildWorkPrompt(config, runContext);
 		const systemPrompt = buildSystemPrompt(config);
 		const allowedTools = buildAllowedTools(config);
 
@@ -103,6 +132,7 @@ export async function executeRun(jobId: string): Promise<RunResult> {
 			maxBudgetUsd: config.guardrails.maxBudgetUsd,
 			allowedTools,
 			appendSystemPrompt: systemPrompt,
+			model: config.model,
 		});
 
 		// Step 7: Check for changes
@@ -140,6 +170,7 @@ export async function executeRun(jobId: string): Promise<RunResult> {
 			sessionId: spawnResult.sessionId,
 			branchName,
 			issueNumber,
+			model: config.model,
 		};
 
 		await writeRunLog(jobId, result);

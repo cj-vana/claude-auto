@@ -171,6 +171,11 @@ export async function runCli(argv: string[]): Promise<void> {
 			await editCommand(parsed.args);
 			break;
 		}
+		case "cost": {
+			const { costCommand } = await import("./commands/cost.js");
+			await costCommand(parsed.args);
+			break;
+		}
 		default:
 			console.error(`Command '${parsed.command}' is not yet implemented.`);
 			break;
