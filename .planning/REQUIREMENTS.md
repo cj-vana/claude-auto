@@ -22,9 +22,9 @@ Requirements for v1.1 release. Each maps to roadmap phases.
 
 ### Issue Triage
 
-- [ ] **TRIG-01**: Claude evaluates issue complexity before picking work (simple label detection, reproduction steps, size estimation)
-- [ ] **TRIG-02**: Claude skips issues that look like spam, are too vague, or require human decisions
-- [ ] **TRIG-03**: Claude prioritizes issues with "good first issue" or "bug" labels over unlabeled issues
+- [x] **TRIG-01**: Claude evaluates issue complexity before picking work (simple label detection, reproduction steps, size estimation)
+- [x] **TRIG-02**: Claude skips issues that look like spam, are too vague, or require human decisions
+- [x] **TRIG-03**: Claude prioritizes issues with "good first issue" or "bug" labels over unlabeled issues
 
 ### Agent Pipeline
 
@@ -99,9 +99,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PRFB-02 | Phase 9 | Pending |
 | PRFB-03 | Phase 9 | Pending |
 | PRFB-04 | Phase 9 | Pending |
-| TRIG-01 | Phase 9 | Pending |
-| TRIG-02 | Phase 9 | Pending |
-| TRIG-03 | Phase 9 | Pending |
+| TRIG-01 | Phase 9 | Complete |
+| TRIG-02 | Phase 9 | Complete |
+| TRIG-03 | Phase 9 | Complete |
 | PIPE-01 | Phase 10 | Pending |
 | PIPE-02 | Phase 10 | Pending |
 | PIPE-03 | Phase 10 | Pending |
