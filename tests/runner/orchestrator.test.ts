@@ -42,6 +42,15 @@ vi.mock("../../src/util/exec.js", () => ({
 	execCommand: vi.fn(),
 }));
 
+vi.mock("../../src/notifications/dispatcher.js", () => ({
+	sendNotifications: vi.fn().mockResolvedValue(undefined),
+}));
+
+vi.mock("../../src/notifications/issue-comment.js", () => ({
+	extractIssueNumber: vi.fn().mockReturnValue(undefined),
+	postIssueComment: vi.fn().mockResolvedValue(undefined),
+}));
+
 // Import mocked modules after mock declarations
 import { acquireLock } from "../../src/runner/lock.js";
 import { pullLatest, createBranch, hasChanges, pushBranch, createPR } from "../../src/runner/git-ops.js";
@@ -50,6 +59,8 @@ import { buildWorkPrompt, buildSystemPrompt } from "../../src/runner/prompt-buil
 import { writeRunLog } from "../../src/runner/logger.js";
 import { loadJobConfig } from "../../src/core/config.js";
 import { execCommand } from "../../src/util/exec.js";
+import { sendNotifications } from "../../src/notifications/dispatcher.js";
+import { extractIssueNumber, postIssueComment } from "../../src/notifications/issue-comment.js";
 import { executeRun } from "../../src/runner/orchestrator.js";
 
 const mockedAcquireLock = vi.mocked(acquireLock);
@@ -65,6 +76,9 @@ const mockedBuildWorkPrompt = vi.mocked(buildWorkPrompt);
 const mockedBuildSystemPrompt = vi.mocked(buildSystemPrompt);
 const mockedWriteRunLog = vi.mocked(writeRunLog);
 const mockedExecCommand = vi.mocked(execCommand);
+const mockedSendNotifications = vi.mocked(sendNotifications);
+const mockedExtractIssueNumber = vi.mocked(extractIssueNumber);
+const mockedPostIssueComment = vi.mocked(postIssueComment);
 
 function makeDefaultConfig(): JobConfig {
 	return {
@@ -239,5 +253,96 @@ describe("executeRun", () => {
 			allowedTools: ["Read", "Edit", "Write"],
 			appendSystemPrompt: "You are an autonomous agent",
 		});
+	});
+
+	// --- Notification integration tests ---
+
+	it("calls sendNotifications after successful run", async () => {
+		const result = await executeRun("test-job");
+
+		expect(result.status).toBe("success");
+		expect(mockedSendNotifications).toHaveBeenCalledWith(
+			expect.objectContaining({ id: "test-job" }),
+			expect.objectContaining({ status: "success" }),
+		);
+	});
+
+	it("calls sendNotifications after error run", async () => {
+		mockedSpawnClaude.mockRejectedValue(new Error("Claude process crashed"));
+
+		const result = await executeRun("test-job");
+
+		expect(result.status).toBe("error");
+		expect(mockedSendNotifications).toHaveBeenCalledWith(
+			expect.objectContaining({ id: "test-job" }),
+			expect.objectContaining({ status: "error" }),
+		);
+	});
+
+	it("calls sendNotifications after no-changes run", async () => {
+		mockedHasChanges.mockResolvedValue(false);
+
+		const result = await executeRun("test-job");
+
+		expect(result.status).toBe("no-changes");
+		expect(mockedSendNotifications).toHaveBeenCalledWith(
+			expect.objectContaining({ id: "test-job" }),
+			expect.objectContaining({ status: "no-changes" }),
+		);
+	});
+
+	it("does not call sendNotifications when run is locked", async () => {
+		mockedAcquireLock.mockResolvedValue(null);
+
+		const result = await executeRun("test-job");
+
+		expect(result.status).toBe("locked");
+		expect(mockedSendNotifications).not.toHaveBeenCalled();
+	});
+
+	it("calls postIssueComment when issue number extracted from summary", async () => {
+		mockedExtractIssueNumber.mockReturnValue(42);
+
+		await executeRun("test-job");
+
+		expect(mockedPostIssueComment).toHaveBeenCalledWith(
+			expect.objectContaining({
+				repoPath: "/tmp/test-repo",
+				issueNumber: 42,
+				status: "success",
+				prUrl: "https://github.com/test/repo/pull/42",
+				jobName: "Test Job",
+			}),
+		);
+	});
+
+	it("does not throw when sendNotifications rejects", async () => {
+		mockedSendNotifications.mockRejectedValue(new Error("webhook down"));
+
+		const result = await executeRun("test-job");
+
+		// Should still return a valid result
+		expect(result.status).toBe("success");
+		expect(result.prUrl).toBe("https://github.com/test/repo/pull/42");
+	});
+
+	it("sets issueNumber on result when extracted", async () => {
+		mockedExtractIssueNumber.mockReturnValue(7);
+
+		const result = await executeRun("test-job");
+
+		expect(result.issueNumber).toBe(7);
+	});
+
+	it("calls sendNotifications after git-error run", async () => {
+		mockedPullLatest.mockRejectedValue(new GitOpsError("pullLatest", "/tmp/test-repo", "merge conflict"));
+
+		const result = await executeRun("test-job");
+
+		expect(result.status).toBe("git-error");
+		expect(mockedSendNotifications).toHaveBeenCalledWith(
+			expect.objectContaining({ id: "test-job" }),
+			expect.objectContaining({ status: "git-error" }),
+		);
 	});
 });
