@@ -75,6 +75,9 @@ export async function createCommand(args: ParsedCommand["args"]): Promise<void> 
 	const noNewDependencies = Boolean(args.noNewDeps);
 	const noArchitectureChanges = Boolean(args.noArchChanges);
 	const bugFixOnly = Boolean(args.bugFixOnly);
+	const restrictToPaths = args.restrictPaths
+		? String(args.restrictPaths).split(",").map((s) => s.trim()).filter(Boolean)
+		: undefined;
 
 	// Parse notifications (provide default trigger values matching Zod schema defaults)
 	const defaultTriggers = { onSuccess: true, onFailure: true, onNoChanges: false, onLocked: false };
@@ -110,6 +113,7 @@ export async function createCommand(args: ParsedCommand["args"]): Promise<void> 
 			noNewDependencies,
 			noArchitectureChanges,
 			bugFixOnly,
+			restrictToPaths,
 		},
 		notifications,
 		enabled: true,

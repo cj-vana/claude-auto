@@ -38,6 +38,7 @@ export function parseCommand(argv: string[]): ParsedCommand {
 		"--notify-slack",
 		"--notify-telegram",
 		"--path",
+		"--restrict-paths",
 	]);
 
 	// Flags that are boolean (no value)
@@ -68,6 +69,7 @@ export function parseCommand(argv: string[]): ParsedCommand {
 		"--notify-slack": "notifySlack",
 		"--notify-telegram": "notifyTelegram",
 		"--path": "path",
+		"--restrict-paths": "restrictPaths",
 		"--no-new-deps": "noNewDeps",
 		"--no-arch-changes": "noArchChanges",
 		"--bug-fix-only": "bugFixOnly",
