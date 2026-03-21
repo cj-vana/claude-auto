@@ -127,7 +127,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 07-01-PLAN.md -- Wire --restrict-paths CLI flag, implement --json list output, add config.enabled orchestrator check
+- [x] 07-01-PLAN.md -- Wire --restrict-paths CLI flag, implement --json list output, add config.enabled orchestrator check
 
 ## Progress
 
