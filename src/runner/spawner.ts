@@ -76,6 +76,10 @@ export function spawnClaude(options: SpawnOptions): Promise<SpawnResult> {
 			args.push("--append-system-prompt", options.appendSystemPrompt);
 		}
 
+		if (options.model && options.model !== "default") {
+			args.push("--model", options.model);
+		}
+
 		if (options.allowedTools.length > 0) {
 			args.push("--allowedTools", options.allowedTools.join(","));
 		}
