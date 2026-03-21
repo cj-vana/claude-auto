@@ -1,6 +1,7 @@
 import { readFile, readdir } from "node:fs/promises";
 import { writeFileSafe } from "../util/fs.js";
 import { paths } from "../util/paths.js";
+import { saveRunContext } from "./context-store.js";
 import type { RunLogEntry } from "./types.js";
 
 /**
@@ -13,6 +14,14 @@ import type { RunLogEntry } from "./types.js";
 export async function writeRunLog(jobId: string, entry: RunLogEntry): Promise<void> {
 	const logPath = paths.jobLog(jobId, entry.runId);
 	await writeFileSafe(logPath, JSON.stringify(entry, null, 2));
+
+	// Dual-write: persist to SQLite for cross-run context queries (CTXT-01, COST-01).
+	// Best-effort -- never fail the run due to DB issues.
+	try {
+		saveRunContext(entry);
+	} catch {
+		// SQLite write is best-effort
+	}
 }
 
 /**

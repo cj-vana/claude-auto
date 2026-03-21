@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { JobConfig } from "../../src/core/types.js";
+import type { RunContext } from "../../src/runner/context-store.js";
 import { buildSystemPrompt, buildWorkPrompt } from "../../src/runner/prompt-builder.js";
 
 function makeDefaultConfig(overrides: Partial<JobConfig> = {}): JobConfig {
@@ -200,5 +201,69 @@ describe("buildWorkPrompt", () => {
 		const prompt = buildWorkPrompt(config);
 
 		expect(prompt).not.toContain("## Guardrails");
+	});
+});
+
+describe("context window injection", () => {
+	const mockContext: RunContext[] = [
+		{
+			id: "run-001",
+			status: "success",
+			pr_url: "https://github.com/test/repo/pull/42",
+			branch_name: "auto/fix-auth-bug",
+			issue_number: 42,
+			summary: null,
+			started_at: "2026-03-21T12:00:00Z",
+		},
+		{
+			id: "run-002",
+			status: "no-changes",
+			pr_url: null,
+			branch_name: "auto/scan-issues",
+			issue_number: null,
+			summary: null,
+			started_at: "2026-03-20T08:00:00Z",
+		},
+	];
+
+	it('buildWorkPrompt with non-empty RunContext[] includes "Previous Work" section in output', () => {
+		const config = makeDefaultConfig();
+		const prompt = buildWorkPrompt(config, mockContext);
+
+		expect(prompt).toContain("## Previous Work (DO NOT duplicate)");
+	});
+
+	it("buildWorkPrompt with non-empty RunContext[] includes issue numbers from context", () => {
+		const config = makeDefaultConfig();
+		const prompt = buildWorkPrompt(config, mockContext);
+
+		expect(prompt).toContain("Issue: #42");
+	});
+
+	it("buildWorkPrompt with non-empty RunContext[] includes PR URLs from context", () => {
+		const config = makeDefaultConfig();
+		const prompt = buildWorkPrompt(config, mockContext);
+
+		expect(prompt).toContain("PR: https://github.com/test/repo/pull/42");
+	});
+
+	it('buildWorkPrompt with empty RunContext[] does NOT include "Previous Work" section', () => {
+		const config = makeDefaultConfig();
+		const prompt = buildWorkPrompt(config, []);
+
+		expect(prompt).not.toContain("Previous Work");
+	});
+
+	it("buildWorkPrompt without context parameter behaves identically to current (backward compat)", () => {
+		const config = makeDefaultConfig();
+		const withoutContext = buildWorkPrompt(config);
+		const withEmptyContext = buildWorkPrompt(config, []);
+
+		// Both should not contain Previous Work and should be functionally equivalent
+		expect(withoutContext).not.toContain("Previous Work");
+		expect(withEmptyContext).not.toContain("Previous Work");
+		// The core content should be the same
+		expect(withoutContext).toContain("## Work Priority");
+		expect(withEmptyContext).toContain("## Work Priority");
 	});
 });

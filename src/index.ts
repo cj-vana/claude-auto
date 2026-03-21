@@ -22,6 +22,7 @@ export {
 	validateConfig,
 	writeConfigDocument,
 } from "./core/config.js";
+export { closeDatabase, getDatabase } from "./core/database.js";
 export { createJob, deleteJob, listJobs, readJob, updateJob } from "./core/job-manager.js";
 // Phase 2: Scheduling
 export {
@@ -59,6 +60,8 @@ export {
 	pushBranch,
 } from "./runner/git-ops.js";
 export { acquireLock, STALE_THRESHOLD } from "./runner/lock.js";
+export { formatContextWindow, loadRunContext, saveRunContext } from "./runner/context-store.js";
+export type { RunContext } from "./runner/context-store.js";
 export { listRunLogs, readRunLog, writeRunLog } from "./runner/logger.js";
 // Phase 3: Runner
 export { executeRun } from "./runner/orchestrator.js";

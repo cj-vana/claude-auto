@@ -1,4 +1,5 @@
 import type { JobConfig } from "../core/types.js";
+import { formatContextWindow, type RunContext } from "./context-store.js";
 
 /**
  * Build the system prompt for Claude, including research instructions
@@ -23,12 +24,13 @@ export function buildSystemPrompt(config: JobConfig): string {
 /**
  * Build the work prompt for Claude, containing priority chain, focus areas,
  * conditional guardrails, git safety rules, documentation requirements,
- * and completion instructions.
+ * completion instructions, and optionally a "Previous Work" context section.
  *
  * @param config - Job configuration with guardrails and focus areas
+ * @param context - Optional array of prior run context for duplicate avoidance
  * @returns Multi-section work prompt string
  */
-export function buildWorkPrompt(config: JobConfig): string {
+export function buildWorkPrompt(config: JobConfig, context?: RunContext[]): string {
 	const sections: string[] = [];
 
 	// Section 1 - Work Priority (EXEC-03, EXEC-04, EXEC-05)
@@ -99,6 +101,14 @@ When your work is complete:
 - Commit all changes with descriptive messages
 - Do NOT create a PR yourself -- the orchestrator handles this
 - Write a clear summary of what you did, why, and what you changed as your final message`);
+
+	// Section 7 - Previous Work context (CTXT-02, CTXT-03)
+	if (context && context.length > 0) {
+		const contextSection = formatContextWindow(context);
+		if (contextSection) {
+			sections.push(contextSection);
+		}
+	}
 
 	return sections.join("\n\n");
 }
