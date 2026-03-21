@@ -40,11 +40,11 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Job Management
 
-- [ ] **JOB-01**: User can list all active/paused jobs with status, repo, schedule, last run, and next run
+- [x] **JOB-01**: User can list all active/paused jobs with status, repo, schedule, last run, and next run
 - [ ] **JOB-02**: User can pause and resume jobs without losing configuration
 - [ ] **JOB-03**: User can edit job configuration via skill command or direct file editing
 - [ ] **JOB-04**: User can remove jobs (cleans up cron/launchd entry, config, optionally logs)
-- [ ] **JOB-05**: User can run multiple job instances targeting different repos or different focuses on the same repo
+- [x] **JOB-05**: User can run multiple job instances targeting different repos or different focuses on the same repo
 
 ### Safety & Guardrails
 
@@ -61,7 +61,7 @@ Requirements for initial release. Each maps to roadmap phases.
 ### Reporting
 
 - [x] **REPT-01**: Each run produces an append-only local log (start time, duration, what was attempted, what was committed, PR URL, errors)
-- [ ] **REPT-02**: Run summary reports aggregate what was analyzed, attempted, and produced
+- [x] **REPT-02**: Run summary reports aggregate what was analyzed, attempted, and produced
 
 ### Distribution
 
@@ -124,11 +124,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | GIT-03 | Phase 3 | Complete |
 | GIT-04 | Phase 3 | Complete |
 | GIT-05 | Phase 3 | Complete |
-| JOB-01 | Phase 5 | Pending |
+| JOB-01 | Phase 5 | Complete |
 | JOB-02 | Phase 5 | Pending |
 | JOB-03 | Phase 5 | Pending |
 | JOB-04 | Phase 5 | Pending |
-| JOB-05 | Phase 5 | Pending |
+| JOB-05 | Phase 5 | Complete |
 | SAFE-01 | Phase 3 | Complete |
 | SAFE-02 | Phase 3 | Complete |
 | SAFE-03 | Phase 3 | Complete |
@@ -136,7 +136,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | NOTF-02 | Phase 4 | Complete |
 | NOTF-03 | Phase 4 | Complete |
 | REPT-01 | Phase 3 | Complete |
-| REPT-02 | Phase 5 | Pending |
+| REPT-02 | Phase 5 | Complete |
 | DIST-01 | Phase 6 | Pending |
 | DIST-02 | Phase 6 | Pending |
 

@@ -93,11 +93,11 @@ Plans:
   3. A removed job cleans up its cron/launchd entry, and optionally its config and logs
   4. Multiple jobs can target different repos or different focuses on the same repo, each running on independent schedules
   5. Run summary reports show what was analyzed, attempted, and produced across recent runs
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 05-01: TBD
-- [ ] 05-02: TBD
+- [x] 05-01-PLAN.md -- CLI framework (router, types, formatting), list/logs/report commands
+- [ ] 05-02-PLAN.md -- Pause, resume, remove, edit commands, barrel export update
 
 ### Phase 6: Plugin & Skills
 **Goal**: Users install claude-auto via npm and set up autonomous jobs through a guided conversation with Claude -- the core differentiator
@@ -125,5 +125,5 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | 2. Platform Scheduling | 0/2 | Planning complete | - |
 | 3. Run Orchestrator & Git Safety | 0/3 | Planning complete | - |
 | 4. Notifications | 1/2 | In Progress|  |
-| 5. Job Management CLI | 0/0 | Not started | - |
+| 5. Job Management CLI | 1/2 | In Progress|  |
 | 6. Plugin & Skills | 0/0 | Not started | - |
