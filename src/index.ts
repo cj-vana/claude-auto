@@ -30,8 +30,31 @@ export {
 	ConfigParseError,
 	ConfigValidationError,
 	CronValidationError,
+	GitOpsError,
+	LockError,
 	SchedulerError,
+	SpawnError,
 } from "./util/errors.js";
 export { execCommand } from "./util/exec.js";
 export { writeFileSafe } from "./util/fs.js";
 export { paths } from "./util/paths.js";
+// Phase 3: Runner
+export { executeRun } from "./runner/orchestrator.js";
+export { spawnClaude, buildAllowedTools } from "./runner/spawner.js";
+export { buildWorkPrompt, buildSystemPrompt } from "./runner/prompt-builder.js";
+export {
+	pullLatest,
+	createBranch,
+	hasChanges,
+	pushBranch,
+	createPR,
+} from "./runner/git-ops.js";
+export { acquireLock, STALE_THRESHOLD } from "./runner/lock.js";
+export { writeRunLog, readRunLog, listRunLogs } from "./runner/logger.js";
+export type {
+	SpawnOptions,
+	SpawnResult,
+	RunResult,
+	RunStatus,
+	RunLogEntry,
+} from "./runner/types.js";
