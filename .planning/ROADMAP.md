@@ -18,6 +18,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 4: Notifications** - Webhook notifications to Discord/Slack/Telegram with configurable triggers
 - [x] **Phase 5: Job Management CLI** - User-facing CLI for listing, pausing, resuming, editing, and removing jobs (completed 2026-03-21)
 - [x] **Phase 6: Plugin & Skills** - Claude Code plugin with conversational setup wizard, system prompt crafting, and npm distribution (completed 2026-03-21)
+- [ ] **Phase 7: Polish & Tech Debt** - Wire --restrict-paths CLI flag, implement --json list output, add enabled check in orchestrator
 
 ## Phase Details
 
@@ -114,10 +115,24 @@ Plans:
 - [x] 06-01-PLAN.md -- CLI create and check-repo commands with router integration and tests
 - [x] 06-02-PLAN.md -- Plugin manifest, 8 skill files, postinstall/preuninstall scripts, package.json distribution config
 
+### Phase 7: Polish & Tech Debt
+**Goal**: Close all remaining tech debt from milestone audit — wire missing CLI flags, implement JSON output, add defense-in-depth enabled check
+**Depends on**: Phase 6
+**Requirements**: SAFE-03, JOB-01
+**Gap Closure**: Closes gaps from v1.0 milestone audit
+**Success Criteria** (what must be TRUE):
+  1. Running `claude-auto create --restrict-paths src/,tests/` correctly sets restrictToPaths in job config
+  2. Running `claude-auto list --json` produces valid JSON output parseable by skills
+  3. Running `claude-auto-run --job-id <paused-id>` exits early with "job is paused" message
+**Plans**: 1 plan
+
+Plans:
+- [ ] 07-01-PLAN.md -- Wire --restrict-paths CLI flag, implement --json list output, add config.enabled orchestrator check
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -127,3 +142,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | 4. Notifications | 1/2 | In Progress|  |
 | 5. Job Management CLI | 2/2 | Complete   | 2026-03-21 |
 | 6. Plugin & Skills | 2/2 | Complete   | 2026-03-21 |
+| 7. Polish & Tech Debt | 0/1 | Planning complete | - |
