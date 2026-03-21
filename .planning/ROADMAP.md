@@ -50,7 +50,7 @@ Plans:
 
 Plans:
 - [x] 02-01-PLAN.md -- Schedule module: cron validation, timezone-aware next runs, human-readable descriptions, dependency install
-- [ ] 02-02-PLAN.md -- Platform schedulers: Scheduler interface, CrontabScheduler (Linux), LaunchdScheduler (macOS), barrel export
+- [x] 02-02-PLAN.md -- Platform schedulers: Scheduler interface, CrontabScheduler (Linux), LaunchdScheduler (macOS), barrel export
 
 ### Phase 3: Run Orchestrator & Git Safety
 **Goal**: A scheduled cron tick executes a complete autonomous work cycle -- research, pick work, implement, commit, PR -- with all safety guarantees enforced

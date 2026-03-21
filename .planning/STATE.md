@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 02-01-PLAN.md
-last_updated: "2026-03-21T18:00:48.310Z"
+stopped_at: Completed 02-02-PLAN.md
+last_updated: "2026-03-21T18:10:37.861Z"
 progress:
   total_phases: 6
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 4
-  completed_plans: 3
+  completed_plans: 4
 ---
 
 # Project State
@@ -49,6 +49,7 @@ Plan: 2 of 2
 | Phase 01 P01 | 4min | 2 tasks | 13 files |
 | Phase 01 P02 | 4min | 2 tasks | 10 files |
 | Phase 02 P01 | 3min | 2 tasks | 8 files |
+| Phase 02 P02 | 7min | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -69,6 +70,9 @@ Recent decisions affecting current work:
 - [Phase 02]: Used cron-parser v5 CronExpressionParser.parse() with tz option for timezone-aware schedule iteration
 - [Phase 02]: Used cronstrue default import with toString() for human-readable cron descriptions
 - [Phase 02]: Only accept standard 5-field cron expressions (reject 6-field seconds-based)
+- [Phase 02]: Used cron-parser v5 fields.minute.values (not spread on field directly) for CalendarInterval conversion
+- [Phase 02]: Every-N-minutes cron patterns use StartInterval instead of StartCalendarInterval to avoid plist interval explosion
+- [Phase 02]: Reject cron expressions producing >50 CalendarInterval entries with descriptive error
 
 ### Pending Todos
 
@@ -82,6 +86,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-21T18:00:48.307Z
-Stopped at: Completed 02-01-PLAN.md
+Last session: 2026-03-21T18:10:37.859Z
+Stopped at: Completed 02-02-PLAN.md
 Resume file: None

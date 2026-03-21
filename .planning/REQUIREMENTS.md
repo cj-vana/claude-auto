@@ -17,8 +17,8 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Scheduling & Platform
 
-- [ ] **SCHED-01**: Jobs registered with system crontab on Linux
-- [ ] **SCHED-02**: Jobs registered with launchd on macOS
+- [x] **SCHED-01**: Jobs registered with system crontab on Linux
+- [x] **SCHED-02**: Jobs registered with launchd on macOS
 - [x] **SCHED-03**: Schedules respect user's timezone (IANA timezone stored per job)
 
 ### Autonomous Execution
@@ -110,8 +110,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SETUP-03 | Phase 2 | Complete |
 | SETUP-04 | Phase 6 | Pending |
 | SETUP-05 | Phase 6 | Pending |
-| SCHED-01 | Phase 2 | Pending |
-| SCHED-02 | Phase 2 | Pending |
+| SCHED-01 | Phase 2 | Complete |
+| SCHED-02 | Phase 2 | Complete |
 | SCHED-03 | Phase 2 | Complete |
 | EXEC-01 | Phase 3 | Pending |
 | EXEC-02 | Phase 3 | Pending |
