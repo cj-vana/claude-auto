@@ -1,103 +1,90 @@
-# Requirements: Claude Auto
+# Requirements: Claude Auto v1.1
 
 **Defined:** 2026-03-21
-**Core Value:** Claude autonomously and continuously improves codebases without human intervention — users wake up to PRs.
+**Core Value:** Claude autonomously and continuously improves codebases without human intervention -- users wake up to PRs.
 
-## v1 Requirements
+## v1.1 Requirements
 
-Requirements for initial release. Each maps to roadmap phases.
+Requirements for v1.1 release. Each maps to roadmap phases.
 
-### Setup & Configuration
+### Cross-Run Intelligence
 
-- [x] **SETUP-01**: User can set up a new cron job via guided wizard where Claude walks through repo, branch, schedule, focus areas, and system prompt
-- [x] **SETUP-02**: Job configuration stored as human-readable YAML files that users can edit directly
-- [x] **SETUP-03**: User can specify schedule as natural language ("every 6 hours") or cron syntax; Claude normalizes to cron
-- [x] **SETUP-04**: Claude helps user craft system prompt with personality, coding style, focus areas, and things to avoid
-- [x] **SETUP-05**: If target repo is not cloned locally, tool clones it automatically via gh
+- [ ] **CTXT-01**: Each run persists structured context (files modified, PR URL, issue number, summary) to a local SQLite database
+- [ ] **CTXT-02**: Each run loads context from prior runs and injects it into Claude's system prompt as a rolling window
+- [ ] **CTXT-03**: Claude avoids duplicate work by checking what was done in previous runs before picking new work
 
-### Scheduling & Platform
+### PR Feedback Loop
 
-- [x] **SCHED-01**: Jobs registered with system crontab on Linux
-- [x] **SCHED-02**: Jobs registered with launchd on macOS
-- [x] **SCHED-03**: Schedules respect user's timezone (IANA timezone stored per job)
+- [ ] **PRFB-01**: Before picking new work, Claude checks for open PRs with unaddressed review comments via gh
+- [ ] **PRFB-02**: When review comments exist, Claude checks out the existing PR branch and addresses the feedback
+- [ ] **PRFB-03**: PR feedback iteration has a configurable max rounds (default 3) to prevent infinite loops
+- [ ] **PRFB-04**: After addressing feedback, Claude pushes to the same branch and comments on the PR with what changed
 
-### Autonomous Execution
+### Issue Triage
 
-- [x] **EXEC-01**: Each cron run spawns Claude Code in headless mode with --dangerously-skip-permissions
-- [x] **EXEC-02**: Claude researches current codebase implementation at the start of every run before doing any work
-- [x] **EXEC-03**: Work follows priority chain: open GitHub issues/feature requests → bugs Claude discovers → features Claude wants to add
-- [x] **EXEC-04**: Claude proactively scans for pre-existing bugs before considering new features
-- [x] **EXEC-05**: Claude evaluates issue complexity and solvability, skips spam/unclear issues, picks best candidate for autonomous resolution
-- [x] **EXEC-06**: Claude updates relevant documentation as part of every PR
+- [ ] **TRIG-01**: Claude evaluates issue complexity before picking work (simple label detection, reproduction steps, size estimation)
+- [ ] **TRIG-02**: Claude skips issues that look like spam, are too vague, or require human decisions
+- [ ] **TRIG-03**: Claude prioritizes issues with "good first issue" or "bug" labels over unlabeled issues
 
-### Git & PR Workflow
+### Agent Pipeline
 
-- [x] **GIT-01**: Each run pulls latest from configured branch before starting work
-- [x] **GIT-02**: Each run creates a new descriptively-named branch (never commits directly to configured branch or main)
-- [x] **GIT-03**: Tool never force pushes under any circumstances
-- [x] **GIT-04**: Work is submitted as a PR via gh pr create with detailed description (what changed, why, testing notes, linked issue)
-- [x] **GIT-05**: File-based locking prevents overlapping runs of the same job on the same repo
+- [ ] **PIPE-01**: User can enable a multi-stage pipeline per job: plan -> implement -> review
+- [ ] **PIPE-02**: Each pipeline stage spawns a separate Claude instance with a stage-specific system prompt
+- [ ] **PIPE-03**: Review stage checks implementation against the plan and can request changes before PR creation
+- [ ] **PIPE-04**: Pipeline stages use configurable models (e.g., Haiku for plan, Opus for implement, Sonnet for review)
 
-### Job Management
+### Model Selection
 
-- [x] **JOB-01**: User can list all active/paused jobs with status, repo, schedule, last run, and next run
-- [x] **JOB-02**: User can pause and resume jobs without losing configuration
-- [x] **JOB-03**: User can edit job configuration via skill command or direct file editing
-- [x] **JOB-04**: User can remove jobs (cleans up cron/launchd entry, config, optionally logs)
-- [x] **JOB-05**: User can run multiple job instances targeting different repos or different focuses on the same repo
+- [x] **MODL-01**: User can configure which Claude model to use per job (sonnet, opus, haiku)
+- [x] **MODL-02**: Model selection is passed to Claude CLI via --model flag during spawning
+- [x] **MODL-03**: Default model is configurable; falls back to Claude Code's default if unset
 
-### Safety & Guardrails
+### Cost Tracking
 
-- [x] **SAFE-01**: Each run has a configurable max turns limit to prevent runaway sessions
-- [x] **SAFE-02**: User can optionally configure scope restrictions (no new deps, no architecture changes, bug-fix only, specific directories only)
-- [x] **SAFE-03**: Full trust by default — guardrails are opt-in, not default
+- [ ] **COST-01**: Each run records token usage and cost from Claude's JSON output to the SQLite database
+- [ ] **COST-02**: User can view cost summaries per job and across all jobs via CLI (claude-auto cost)
+- [x] **COST-03**: User can set daily, weekly, or monthly budget caps per job
+- [ ] **COST-04**: When a budget cap is reached, scheduled runs skip with a "budget exceeded" status and notification
 
-### Notifications
+### Merge Conflict Resolution
 
-- [x] **NOTF-01**: User can configure webhook notifications to Discord, Slack, and/or Telegram
-- [x] **NOTF-02**: When working on a GitHub issue, Claude comments on the issue with status/PR link
-- [x] **NOTF-03**: User can configure which events trigger notifications (PR created, error, nothing found, run skipped)
+- [ ] **MRGC-01**: Before starting work, Claude checks if the PR branch has diverged from the target branch
+- [ ] **MRGC-02**: When conflicts exist, Claude attempts to rebase or merge the target branch and resolve conflicts
+- [ ] **MRGC-03**: If conflict resolution fails, Claude reports the failure in the run log and notification
 
-### Reporting
+### Windows Support
 
-- [x] **REPT-01**: Each run produces an append-only local log (start time, duration, what was attempted, what was committed, PR URL, errors)
-- [x] **REPT-02**: Run summary reports aggregate what was analyzed, attempted, and produced
+- [ ] **WNDW-01**: Jobs can be registered with Windows Task Scheduler via schtasks.exe
+- [ ] **WNDW-02**: Jobs can be removed from Windows Task Scheduler cleanly
+- [ ] **WNDW-03**: Platform detection correctly identifies Windows and selects the Task Scheduler adapter
+- [ ] **WNDW-04**: Cron expressions are translated to Task Scheduler compatible schedules
 
-### Distribution
+### TUI Dashboard
 
-- [x] **DIST-01**: Tool installable as a global npm package (npm install -g claude-auto)
-- [x] **DIST-02**: Package registers as a Claude Code skill with slash commands for all management operations
+- [ ] **TUID-01**: User can launch an interactive terminal dashboard via `claude-auto dashboard`
+- [ ] **TUID-02**: Dashboard shows all jobs with live status, last run, next run, and cost summary
+- [ ] **TUID-03**: Dashboard supports keyboard navigation to pause, resume, or view logs for a job
+- [ ] **TUID-04**: Dashboard auto-refreshes when run logs are updated
 
-## v2 Requirements
+## Future Requirements
 
-Deferred to future release. Tracked but not in current roadmap.
+Deferred beyond v1.1.
 
-### Advanced Features
+### Advanced
 
-- **ADV-01**: Cross-run context persistence — Claude remembers what it did in previous runs to avoid duplicate work
-- **ADV-02**: Model selection per job — use Sonnet for routine maintenance, Opus for complex issues
-- **ADV-03**: Agent teams per job — spawn multiple Claude instances (planner, implementer, reviewer) per run
-- **ADV-04**: Merge conflict resolution — auto-resolve when target branch has diverged
-
-### Platform
-
-- **PLAT-01**: Windows support via Task Scheduler
-- **PLAT-02**: TUI dashboard for terminal-based job management
+- **ADV-01**: Full agent teams (parallel, not sequential) -- defer until sequential pipeline proves value
+- **ADV-02**: Cross-repo orchestration -- single job spanning multiple repos
+- **ADV-03**: Custom notification templates -- user-defined webhook payloads
 
 ## Out of Scope
 
-Explicitly excluded. Documented to prevent scope creep.
-
 | Feature | Reason |
 |---------|--------|
-| Web dashboard / GUI | Massive scope increase; contradicts CLI-first design |
-| Direct main branch commits | One bad commit = broken production; PRs provide review gate |
-| Custom daemon / background service | System cron/launchd is battle-tested; custom daemons are fragile |
-| Auto-merging PRs | Removes human review gate; too risky for autonomous agent |
-| Real-time streaming of agent work | Defeats purpose of "wake up to PRs"; headless by design |
-| Multi-repo orchestration in single job | Cross-repo coordination is enormous complexity; one job per repo |
-| OAuth notification integrations | Webhooks are copy-paste simple; OAuth adds unnecessary complexity |
-| Cost tracking / billing | Claude Code already has /cost and workspace limits |
+| Web dashboard / GUI | CLI-first design; TUI covers terminal users |
+| Auto-merging PRs | Human review gate is intentional |
+| Real-time streaming | Defeats purpose of headless autonomous operation |
+| OAuth notification flows | Webhooks are simpler and sufficient |
+| Full parallel agent teams | Sequential pipeline first; parallel is experimental and 7x cost |
 
 ## Traceability
 
@@ -105,44 +92,42 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SETUP-01 | Phase 6 | Complete |
-| SETUP-02 | Phase 1 | Complete |
-| SETUP-03 | Phase 2 | Complete |
-| SETUP-04 | Phase 6 | Complete |
-| SETUP-05 | Phase 6 | Complete |
-| SCHED-01 | Phase 2 | Complete |
-| SCHED-02 | Phase 2 | Complete |
-| SCHED-03 | Phase 2 | Complete |
-| EXEC-01 | Phase 3 | Complete |
-| EXEC-02 | Phase 3 | Complete |
-| EXEC-03 | Phase 3 | Complete |
-| EXEC-04 | Phase 3 | Complete |
-| EXEC-05 | Phase 3 | Complete |
-| EXEC-06 | Phase 3 | Complete |
-| GIT-01 | Phase 3 | Complete |
-| GIT-02 | Phase 3 | Complete |
-| GIT-03 | Phase 3 | Complete |
-| GIT-04 | Phase 3 | Complete |
-| GIT-05 | Phase 3 | Complete |
-| JOB-01 | Phase 5 | Complete |
-| JOB-02 | Phase 5 | Complete |
-| JOB-03 | Phase 5 | Complete |
-| JOB-04 | Phase 5 | Complete |
-| JOB-05 | Phase 5 | Complete |
-| SAFE-01 | Phase 3 | Complete |
-| SAFE-02 | Phase 3 | Complete |
-| SAFE-03 | Phase 3 | Complete |
-| NOTF-01 | Phase 4 | Complete |
-| NOTF-02 | Phase 4 | Complete |
-| NOTF-03 | Phase 4 | Complete |
-| REPT-01 | Phase 3 | Complete |
-| REPT-02 | Phase 5 | Complete |
-| DIST-01 | Phase 6 | Complete |
-| DIST-02 | Phase 6 | Complete |
+| CTXT-01 | Phase 8 | Pending |
+| CTXT-02 | Phase 8 | Pending |
+| CTXT-03 | Phase 8 | Pending |
+| PRFB-01 | Phase 9 | Pending |
+| PRFB-02 | Phase 9 | Pending |
+| PRFB-03 | Phase 9 | Pending |
+| PRFB-04 | Phase 9 | Pending |
+| TRIG-01 | Phase 9 | Pending |
+| TRIG-02 | Phase 9 | Pending |
+| TRIG-03 | Phase 9 | Pending |
+| PIPE-01 | Phase 10 | Pending |
+| PIPE-02 | Phase 10 | Pending |
+| PIPE-03 | Phase 10 | Pending |
+| PIPE-04 | Phase 10 | Pending |
+| MODL-01 | Phase 8 | Complete |
+| MODL-02 | Phase 8 | Complete |
+| MODL-03 | Phase 8 | Complete |
+| COST-01 | Phase 8 | Pending |
+| COST-02 | Phase 8 | Pending |
+| COST-03 | Phase 8 | Complete |
+| COST-04 | Phase 8 | Pending |
+| MRGC-01 | Phase 10 | Pending |
+| MRGC-02 | Phase 10 | Pending |
+| MRGC-03 | Phase 10 | Pending |
+| WNDW-01 | Phase 11 | Pending |
+| WNDW-02 | Phase 11 | Pending |
+| WNDW-03 | Phase 11 | Pending |
+| WNDW-04 | Phase 11 | Pending |
+| TUID-01 | Phase 11 | Pending |
+| TUID-02 | Phase 11 | Pending |
+| TUID-03 | Phase 11 | Pending |
+| TUID-04 | Phase 11 | Pending |
 
 **Coverage:**
-- v1 requirements: 34 total
-- Mapped to phases: 34
+- v1.1 requirements: 32 total
+- Mapped to phases: 32
 - Unmapped: 0
 
 ---

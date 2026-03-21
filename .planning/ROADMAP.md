@@ -1,8 +1,9 @@
 # Roadmap: Claude Auto
 
-## Overview
+## Milestones
 
-Claude Auto delivers autonomous codebase improvement through scheduled headless Claude Code sessions. The build progresses from config infrastructure through the core execution engine, then layers on notifications, management CLI, and finally the conversational skill interface that ties everything together as an installable npm package. Each phase delivers a coherent, testable capability that the next phase depends on.
+- [x] **v1.0 MVP** - Phases 1-7 (shipped 2026-03-21)
+- [ ] **v1.1 Intelligence & Platform** - Phases 8-11 (in progress)
 
 ## Phases
 
@@ -12,15 +13,32 @@ Claude Auto delivers autonomous codebase improvement through scheduled headless 
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Foundation & Config** - Project scaffold, shared types, config schema, YAML job storage
-- [ ] **Phase 2: Platform Scheduling** - System crontab/launchd registration with schedule parsing and environment capture
-- [ ] **Phase 3: Run Orchestrator & Git Safety** - Core execution engine: Claude spawning, git workflow, safety infrastructure, run logging
-- [ ] **Phase 4: Notifications** - Webhook notifications to Discord/Slack/Telegram with configurable triggers
-- [x] **Phase 5: Job Management CLI** - User-facing CLI for listing, pausing, resuming, editing, and removing jobs (completed 2026-03-21)
-- [x] **Phase 6: Plugin & Skills** - Claude Code plugin with conversational setup wizard, system prompt crafting, and npm distribution (completed 2026-03-21)
-- [ ] **Phase 7: Polish & Tech Debt** - Wire --restrict-paths CLI flag, implement --json list output, add enabled check in orchestrator
+<details>
+<summary>v1.0 MVP (Phases 1-7) - SHIPPED 2026-03-21</summary>
+
+- [x] **Phase 1: Foundation & Config** - Project scaffold, shared types, config schema, YAML job storage
+- [x] **Phase 2: Platform Scheduling** - System crontab/launchd registration with schedule parsing and environment capture
+- [x] **Phase 3: Run Orchestrator & Git Safety** - Core execution engine: Claude spawning, git workflow, safety infrastructure, run logging
+- [x] **Phase 4: Notifications** - Webhook notifications to Discord/Slack/Telegram with configurable triggers
+- [x] **Phase 5: Job Management CLI** - User-facing CLI for listing, pausing, resuming, editing, and removing jobs
+- [x] **Phase 6: Plugin & Skills** - Claude Code plugin with conversational setup wizard, system prompt crafting, and npm distribution
+- [x] **Phase 7: Polish & Tech Debt** - Wire --restrict-paths CLI flag, implement --json list output, add enabled check in orchestrator
+
+</details>
+
+### v1.1 Intelligence & Platform
+
+**Milestone Goal:** Make Claude a smarter, more capable autonomous contributor -- cross-run memory, agent teams, PR iteration, cost awareness, and broader platform support.
+
+- [ ] **Phase 8: Foundation** - SQLite persistence layer, model selection per job, and cost tracking with budget enforcement
+- [ ] **Phase 9: PR Intelligence** - PR feedback loop for iterating on review comments and smarter issue triage
+- [ ] **Phase 10: Agent Pipeline** - Multi-stage plan/implement/review pipeline and merge conflict resolution
+- [ ] **Phase 11: Platform & UX** - Windows Task Scheduler support and interactive TUI dashboard
 
 ## Phase Details
+
+<details>
+<summary>v1.0 MVP Phase Details (Phases 1-7) - SHIPPED 2026-03-21</summary>
 
 ### Phase 1: Foundation & Config
 **Goal**: Developers have a working TypeScript project with a validated config system that all other components build on
@@ -116,10 +134,9 @@ Plans:
 - [x] 06-02-PLAN.md -- Plugin manifest, 8 skill files, postinstall/preuninstall scripts, package.json distribution config
 
 ### Phase 7: Polish & Tech Debt
-**Goal**: Close all remaining tech debt from milestone audit — wire missing CLI flags, implement JSON output, add defense-in-depth enabled check
+**Goal**: Close all remaining tech debt from milestone audit -- wire missing CLI flags, implement JSON output, add defense-in-depth enabled check
 **Depends on**: Phase 6
 **Requirements**: SAFE-03, JOB-01
-**Gap Closure**: Closes gaps from v1.0 milestone audit
 **Success Criteria** (what must be TRUE):
   1. Running `claude-auto create --restrict-paths src/,tests/` correctly sets restrictToPaths in job config
   2. Running `claude-auto list --json` produces valid JSON output parseable by skills
@@ -129,17 +146,88 @@ Plans:
 Plans:
 - [x] 07-01-PLAN.md -- Wire --restrict-paths CLI flag, implement --json list output, add config.enabled orchestrator check
 
+</details>
+
+### Phase 8: Foundation
+**Goal**: Every job has persistent cross-run memory, configurable model selection, and cost visibility with budget enforcement -- the infrastructure that all intelligence features depend on
+**Depends on**: Phase 7 (v1.0 complete)
+**Requirements**: MODL-01, MODL-02, MODL-03, CTXT-01, CTXT-02, CTXT-03, COST-01, COST-02, COST-03, COST-04
+**Success Criteria** (what must be TRUE):
+  1. User can set `model: opus` in a job config and Claude spawns with that model; changing to `sonnet` uses Sonnet on the next run
+  2. After multiple runs on the same job, Claude avoids re-opening issues it already submitted PRs for in previous runs
+  3. Running `claude-auto cost` shows per-job token usage and dollar cost broken down by run, with totals
+  4. A job with a daily budget cap of $5 skips its scheduled run and sends a "budget exceeded" notification when the cap is reached
+  5. Cross-run context persists in a local SQLite database that survives across sessions
+**Plans**: 3 plans
+
+Plans:
+- [x] 08-01-PLAN.md -- Model selection schema + spawner --model flag + budget schema
+- [x] 08-02-PLAN.md -- SQLite persistence layer + cross-run context store + prompt context injection
+- [ ] 08-03-PLAN.md -- Cost tracking CLI command + budget enforcement + orchestrator integration
+
+### Phase 9: PR Intelligence
+**Goal**: Claude autonomously iterates on its own PRs based on reviewer feedback and picks work it can actually complete by scoring issue complexity
+**Depends on**: Phase 8
+**Requirements**: PRFB-01, PRFB-02, PRFB-03, PRFB-04, TRIG-01, TRIG-02, TRIG-03
+**Success Criteria** (what must be TRUE):
+  1. When a reviewer leaves comments on a Claude-created PR, the next run checks out that PR branch and addresses the feedback instead of picking new work
+  2. After addressing review comments, Claude pushes to the same branch and posts a PR comment summarizing what changed
+  3. PR feedback iteration stops after the configured max rounds (default 3) and the PR is flagged for human review
+  4. Claude skips issues that are too vague, look like spam, or require human decisions -- and logs why it skipped them
+  5. Issues labeled "good first issue" or "bug" are picked before unlabeled issues
+**Plans**: TBD
+
+Plans:
+- [ ] 09-01: TBD
+- [ ] 09-02: TBD
+
+### Phase 10: Agent Pipeline
+**Goal**: Users can enable a multi-stage plan/implement/review pipeline that produces higher-quality PRs through built-in self-review, and Claude handles diverged branches automatically
+**Depends on**: Phase 9
+**Requirements**: PIPE-01, PIPE-02, PIPE-03, PIPE-04, MRGC-01, MRGC-02, MRGC-03
+**Success Criteria** (what must be TRUE):
+  1. User enables `pipeline: true` in job config and each run executes three stages (plan, implement, review) with separate Claude instances
+  2. Each pipeline stage uses its configured model (e.g., Haiku for planning, Opus for implementation, Sonnet for review)
+  3. The review stage catches issues in the implementation and requests changes before a PR is created -- not every run produces a PR
+  4. When a PR branch has diverged from the target branch, Claude attempts to rebase and resolve conflicts before starting new work
+  5. If merge conflict resolution fails, the run logs the failure clearly and notifies the user instead of silently producing broken code
+**Plans**: TBD
+
+Plans:
+- [ ] 10-01: TBD
+- [ ] 10-02: TBD
+
+### Phase 11: Platform & UX
+**Goal**: Claude Auto runs on Windows via Task Scheduler and users can monitor all jobs through an interactive terminal dashboard
+**Depends on**: Phase 8 (reads cost/context data; independent of Phases 9-10)
+**Requirements**: WNDW-01, WNDW-02, WNDW-03, WNDW-04, TUID-01, TUID-02, TUID-03, TUID-04
+**Success Criteria** (what must be TRUE):
+  1. Running `claude-auto create` on Windows registers the job with Task Scheduler and it fires on schedule
+  2. Removing a job on Windows cleanly deletes the Task Scheduler entry with no orphaned tasks
+  3. Cron expressions like "0 */6 * * *" are correctly translated to Task Scheduler trigger schedules
+  4. Running `claude-auto dashboard` launches an interactive terminal UI showing all jobs with status, last run, next run, and cost summary
+  5. User can pause, resume, and view logs for any job directly from the dashboard using keyboard navigation
+**Plans**: TBD
+
+Plans:
+- [ ] 11-01: TBD
+- [ ] 11-02: TBD
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
+Phases execute in numeric order: 8 -> 9 -> 10 -> 11 (Phase 11 can begin after Phase 8 if needed)
 
-| Phase | Plans Complete | Status | Completed |
-|-------|----------------|--------|-----------|
-| 1. Foundation & Config | 2/2 | Complete | 2026-03-21 |
-| 2. Platform Scheduling | 0/2 | Planning complete | - |
-| 3. Run Orchestrator & Git Safety | 0/3 | Planning complete | - |
-| 4. Notifications | 1/2 | In Progress|  |
-| 5. Job Management CLI | 2/2 | Complete   | 2026-03-21 |
-| 6. Plugin & Skills | 2/2 | Complete   | 2026-03-21 |
-| 7. Polish & Tech Debt | 0/1 | Planning complete | - |
+| Phase | Milestone | Plans Complete | Status | Completed |
+|-------|-----------|----------------|--------|-----------|
+| 1. Foundation & Config | v1.0 | 2/2 | Complete | 2026-03-21 |
+| 2. Platform Scheduling | v1.0 | 2/2 | Complete | 2026-03-21 |
+| 3. Run Orchestrator & Git Safety | v1.0 | 3/3 | Complete | 2026-03-21 |
+| 4. Notifications | v1.0 | 2/2 | Complete | 2026-03-21 |
+| 5. Job Management CLI | v1.0 | 2/2 | Complete | 2026-03-21 |
+| 6. Plugin & Skills | v1.0 | 2/2 | Complete | 2026-03-21 |
+| 7. Polish & Tech Debt | v1.0 | 1/1 | Complete | 2026-03-21 |
+| 8. Foundation | v1.1 | 0/3 | Planned | - |
+| 9. PR Intelligence | v1.1 | 0/? | Not started | - |
+| 10. Agent Pipeline | v1.1 | 0/? | Not started | - |
+| 11. Platform & UX | v1.1 | 0/? | Not started | - |

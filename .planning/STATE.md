@@ -1,15 +1,15 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: milestone
+milestone: v1.1
+milestone_name: Intelligence & Platform
 status: unknown
-stopped_at: Completed 07-01-PLAN.md
-last_updated: "2026-03-21T21:37:24.336Z"
+stopped_at: Completed 08-01-PLAN.md
+last_updated: "2026-03-21T22:26:47.866Z"
 progress:
-  total_phases: 7
+  total_phases: 11
   completed_phases: 7
-  total_plans: 14
-  completed_plans: 14
+  total_plans: 17
+  completed_plans: 16
 ---
 
 # Project State
@@ -19,47 +19,40 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-21)
 
 **Core value:** Claude autonomously and continuously improves codebases without human intervention -- users wake up to PRs.
-**Current focus:** Phase 07 — Polish & Tech Debt
+**Current focus:** Phase 08 — Foundation
 
 ## Current Position
 
-Phase: 07
-Plan: Not started
+Phase: 08 (Foundation) — EXECUTING
+Plan: 3 of 3
 
 ## Performance Metrics
 
-**Velocity:**
+**Velocity (from v1.0):**
 
-- Total plans completed: 0
-- Average duration: -
-- Total execution time: 0 hours
+- Total plans completed: 14
+- Average duration: 3.7 min
+- Total execution time: ~52 min
 
-**By Phase:**
+**By Phase (v1.0):**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| - | - | - | - |
+| Phase 01 | 2 | 8min | 4min |
+| Phase 02 | 2 | 10min | 5min |
+| Phase 03 | 3 | 10min | 3.3min |
+| Phase 04 | 2 | 6min | 3min |
+| Phase 05 | 2 | 9min | 4.5min |
+| Phase 06 | 2 | 6min | 3min |
+| Phase 07 | 1 | 3min | 3min |
 
 **Recent Trend:**
 
-- Last 5 plans: -
-- Trend: -
+- Last 5 plans: 4min, 3min, 3min, 3min, 3min
+- Trend: Stable (~3min/plan)
 
 *Updated after each plan completion*
-| Phase 01 P01 | 4min | 2 tasks | 13 files |
-| Phase 01 P02 | 4min | 2 tasks | 10 files |
-| Phase 02 P01 | 3min | 2 tasks | 8 files |
-| Phase 02 P02 | 7min | 2 tasks | 8 files |
-| Phase 03 P01 | 3min | 1 tasks | 9 files |
-| Phase 03 P02 | 5min | 2 tasks | 6 files |
-| Phase 03 P03 | 2min | 2 tasks | 4 files |
-| Phase 04 P01 | 3min | 2 tasks | 7 files |
-| Phase 04 P02 | 3min | 2 tasks | 6 files |
-| Phase 05 P01 | 5min | 2 tasks | 14 files |
-| Phase 05 P02 | 4min | 2 tasks | 10 files |
-| Phase 06 P01 | 3min | 2 tasks | 7 files |
-| Phase 06 P02 | 3min | 2 tasks | 13 files |
-| Phase 07 P01 | 3min | 3 tasks | 9 files |
+| Phase 08 P01 | 3min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -68,52 +61,13 @@ Plan: Not started
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
-- [Roadmap]: Use CLI spawning (child_process.spawn) for Claude in v1, not Agent SDK (orphaned process risk). Design spawner interface for v2 swap.
-- [Roadmap]: Flat file storage under ~/.claude-auto/jobs/<job-id>/ -- no database.
-- [Roadmap]: Skills call CLI binary for all mutations -- no direct file I/O from skill layer.
-- [Phase 01]: Used explicit Zod v4 .default() values for nested objects instead of empty objects (Zod v4 requires output-type-compatible defaults)
-- [Phase 01]: Created custom type declaration for write-file-atomic v7 (no @types package available)
-- [Phase 01]: Migrated biome.json to v2.4.8 schema with assist.actions.source.organizeImports
-- [Phase 01]: Used yaml Document API (parseDocument) for comment-preserving YAML reads instead of parse/stringify
-- [Phase 01]: Used Zod v4 z.prettifyError() for human-readable config validation errors
-- [Phase 01]: Used Dirent<string> with encoding:'utf-8' for Node 25 readdir type compatibility
-- [Phase 02]: Used cron-parser v5 CronExpressionParser.parse() with tz option for timezone-aware schedule iteration
-- [Phase 02]: Used cronstrue default import with toString() for human-readable cron descriptions
-- [Phase 02]: Only accept standard 5-field cron expressions (reject 6-field seconds-based)
-- [Phase 02]: Used cron-parser v5 fields.minute.values (not spread on field directly) for CalendarInterval conversion
-- [Phase 02]: Every-N-minutes cron patterns use StartInterval instead of StartCalendarInterval to avoid plist interval explosion
-- [Phase 02]: Reject cron expressions producing >50 CalendarInterval entries with descriptive error
-- [Phase 03]: Used proper-lockfile default import with retries:0 for immediate fail-fast on lock contention
-- [Phase 03]: GIT-03 compliance verified via source-code grep test (no --force string anywhere in git-ops.ts)
-- [Phase 03]: Extended execCommand with cwd option rather than creating separate exec helper for gh commands
-- [Phase 03]: Lock targets jobDir (directory) not jobLock file, matching proper-lockfile mkdir-based locking
-- [Phase 03]: Used PassThrough streams for mock child process in spawner tests (reliable data event emission)
-- [Phase 03]: Prompt builder uses section-based string concatenation with conditional guardrails (no template engine needed)
-- [Phase 03]: Logger stores pretty-printed JSON (2-space indent) for human readability of run logs
-- [Phase 03]: Orchestrator uses try/finally for guaranteed lock release regardless of error state
-- [Phase 03]: Branch cleanup on error is best-effort to avoid masking original error
-- [Phase 03]: Entry point uses 3 exit codes: 0 (success/no-changes/locked), 1 (error/git-error), 2 (fatal)
-- [Phase 03]: writeRunLog error in catch path silently caught to prevent masking original error
-- [Phase 04]: Used native fetch for all webhook POSTs (no library needed)
-- [Phase 04]: Best-effort notification delivery: failures logged as warnings, never thrown
-- [Phase 04]: Promise.allSettled for fan-out: one provider failure does not block others
-- [Phase 04]: Event filtering defaults: onSuccess/onFailure=true, onNoChanges/onLocked=false
-- [Phase 04]: Extended all three notification providers with identical trigger fields (onSuccess, onFailure, onNoChanges, onLocked) for consistency
-- [Phase 04]: Notifications not sent for locked status (no config loaded, nothing meaningful to notify)
-- [Phase 04]: Best-effort notification pattern: .catch(() => {}) ensures run never fails due to notification errors
-- [Phase 05]: Used lazy dynamic imports for CLI command modules to keep startup fast
-- [Phase 05]: Split tsup config into array (library with DTS + bins without DTS) to fix rootDir issue with bin/ entries
-- [Phase 05]: Best-effort scheduler unregister in mutation commands (try/catch since entry may be missing)
-- [Phase 05]: Idempotent pause/resume: no error on double-action, informational message only
-- [Phase 05]: Edit command re-registers scheduler only when schedule/timezone changes AND job is enabled
-- [Phase 06]: Notification objects include default trigger values (onSuccess:true, onFailure:true, onNoChanges:false, onLocked:false) to satisfy Zod output type requirements
-- [Phase 06]: Telegram --notify-telegram format is botToken:chatId split on first colon
-- [Phase 06]: Used .mjs extension for postinstall/preuninstall scripts to guarantee ESM parsing
-- [Phase 06]: Setup skill does NOT set disable-model-invocation (conversational wizard needs Claude invokable)
-- [Phase 06]: Setup skill uses --system-prompt-file (temp file) to avoid shell escaping issues with multiline prompts
-- [Phase 07]: restrictToPaths parsed from comma-separated string with trim/filter for robustness
-- [Phase 07]: JSON list output uses full repo path (not truncated) for machine readability
-- [Phase 07]: Paused status exits 0 in runner (silent skip, not error)
+- [Roadmap v1.1]: Sequential Claude spawns for agent pipeline, NOT Agent Teams API (7x cost, experimental, interactive-only)
+- [Roadmap v1.1]: better-sqlite3 for persistence (node:sqlite still experimental, JSON inadequate for cross-run queries)
+- [Roadmap v1.1]: ink + react for TUI dashboard (lazily loaded, zero startup cost for non-dashboard commands)
+- [Roadmap v1.1]: schtasks.exe directly via child_process for Windows (all npm wrappers are abandoned)
+- [Roadmap v1.1]: Store structured facts in context DB (issues, PRs, branches), never raw Claude narrative (prevents hallucination amplification)
+- [Phase 08]: Model field uses z.union of z.enum (5 aliases) + z.string().regex(/^claude-/) for extensible model ID validation
+- [Phase 08]: Budget fields are schema-only; enforcement deferred to cost tracking plan (08-02)
 
 ### Pending Todos
 
@@ -121,12 +75,12 @@ None yet.
 
 ### Blockers/Concerns
 
-- Validate that Claude Code sandbox (--sandbox) works in headless cron context with no TTY (needed before Phase 3 execution)
-- Confirm crontab npm package viability vs custom wrapper (needed during Phase 2 planning)
-- Verify plugin.json schema and npm postinstall registration mechanics (needed before Phase 6)
+- Session chaining for agent pipeline: --continue/--resume behavior when switching --model between resumes is unverified (test early in Phase 10)
+- Windows CI testing: No Windows CI configured yet; Phase 11 requires windows-latest GitHub Actions runners
+- Prompt injection via PR review comments: Untrusted comments injected into Claude's prompt need sanitization (address in Phase 9)
 
 ## Session Continuity
 
-Last session: 2026-03-21T21:33:12.282Z
-Stopped at: Completed 07-01-PLAN.md
+Last session: 2026-03-21T22:26:33.721Z
+Stopped at: Completed 08-01-PLAN.md
 Resume file: None
