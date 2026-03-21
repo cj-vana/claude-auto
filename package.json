@@ -16,6 +16,15 @@
 			"types": "./dist/index.d.ts"
 		}
 	},
+	"files": [
+		"dist/",
+		".claude-plugin/",
+		"skills/",
+		"scripts/postinstall.mjs",
+		"scripts/preuninstall.mjs",
+		"README.md",
+		"LICENSE"
+	],
 	"scripts": {
 		"build": "tsup",
 		"dev": "tsx watch src/index.ts",
@@ -23,7 +32,9 @@
 		"test:watch": "vitest",
 		"lint": "biome check .",
 		"lint:fix": "biome check --write .",
-		"typecheck": "tsc --noEmit"
+		"typecheck": "tsc --noEmit",
+		"postinstall": "node scripts/postinstall.mjs",
+		"preuninstall": "node scripts/preuninstall.mjs"
 	},
 	"keywords": [
 		"claude",
