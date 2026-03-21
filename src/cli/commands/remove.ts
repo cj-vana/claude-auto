@@ -1,6 +1,6 @@
 import { cp, mkdir } from "node:fs/promises";
 import { join } from "node:path";
-import { readJob, deleteJob } from "../../core/job-manager.js";
+import { deleteJob, readJob } from "../../core/job-manager.js";
 import { createScheduler } from "../../platform/scheduler.js";
 import { paths } from "../../util/paths.js";
 import type { ParsedCommand } from "../types.js";
@@ -19,11 +19,7 @@ export async function removeCommand(args: ParsedCommand["args"]): Promise<void> 
 	try {
 		await readJob(jobId);
 	} catch (err: unknown) {
-		if (
-			err instanceof Error &&
-			"code" in err &&
-			(err as NodeJS.ErrnoException).code === "ENOENT"
-		) {
+		if (err instanceof Error && "code" in err && (err as NodeJS.ErrnoException).code === "ENOENT") {
 			console.error(`Job ${jobId} not found.`);
 			throw err;
 		}

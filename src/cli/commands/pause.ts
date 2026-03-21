@@ -1,4 +1,5 @@
 import { readJob, updateJob } from "../../core/job-manager.js";
+import type { JobConfig } from "../../core/types.js";
 import { createScheduler } from "../../platform/scheduler.js";
 import type { ParsedCommand } from "../types.js";
 
@@ -13,15 +14,11 @@ export async function pauseCommand(args: ParsedCommand["args"]): Promise<void> {
 		throw new Error("Missing required argument: job-id");
 	}
 
-	let config;
+	let config: JobConfig;
 	try {
 		config = await readJob(jobId);
 	} catch (err: unknown) {
-		if (
-			err instanceof Error &&
-			"code" in err &&
-			(err as NodeJS.ErrnoException).code === "ENOENT"
-		) {
+		if (err instanceof Error && "code" in err && (err as NodeJS.ErrnoException).code === "ENOENT") {
 			console.error(`Job ${jobId} not found.`);
 			throw err;
 		}

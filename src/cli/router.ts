@@ -21,14 +21,50 @@ export function parseCommand(argv: string[]): ParsedCommand {
 	const command = subcommand as CliCommand;
 	const args: Record<string, string | number | boolean | undefined> = {};
 
+	// Flags that take a string value
+	const stringFlags = new Set([
+		"--limit",
+		"--name",
+		"--schedule",
+		"--timezone",
+		"--branch",
+		"--max-turns",
+		"--max-budget",
+		"--focus",
+	]);
+
+	// Flags that are boolean (no value)
+	const booleanFlags = new Set(["--json", "--keep-logs"]);
+
+	// Mapping from kebab-case flag names to camelCase arg keys
+	const flagKeyMap: Record<string, string> = {
+		"--limit": "limit",
+		"--name": "name",
+		"--schedule": "schedule",
+		"--timezone": "timezone",
+		"--branch": "branch",
+		"--max-turns": "maxTurns",
+		"--max-budget": "maxBudget",
+		"--focus": "focus",
+		"--json": "json",
+		"--keep-logs": "keepLogs",
+	};
+
 	// Parse positional arg (jobId) and flags from rest
 	const positionals: string[] = [];
 	for (let i = 0; i < rest.length; i++) {
 		const arg = rest[i];
-		if (arg === "--limit" && i + 1 < rest.length) {
-			args.limit = Number.parseInt(rest[++i], 10);
-		} else if (arg === "--json") {
-			args.json = true;
+		if (stringFlags.has(arg) && i + 1 < rest.length) {
+			const key = flagKeyMap[arg] ?? arg.replace(/^--/, "");
+			const value = rest[++i];
+			if (arg === "--limit") {
+				args[key] = Number.parseInt(value, 10);
+			} else {
+				args[key] = value;
+			}
+		} else if (booleanFlags.has(arg)) {
+			const key = flagKeyMap[arg] ?? arg.replace(/^--/, "");
+			args[key] = true;
 		} else if (!arg.startsWith("--")) {
 			positionals.push(arg);
 		}
@@ -78,6 +114,26 @@ export async function runCli(argv: string[]): Promise<void> {
 		case "report": {
 			const { reportCommand } = await import("./commands/report.js");
 			await reportCommand(parsed.args);
+			break;
+		}
+		case "pause": {
+			const { pauseCommand } = await import("./commands/pause.js");
+			await pauseCommand(parsed.args);
+			break;
+		}
+		case "resume": {
+			const { resumeCommand } = await import("./commands/resume.js");
+			await resumeCommand(parsed.args);
+			break;
+		}
+		case "remove": {
+			const { removeCommand } = await import("./commands/remove.js");
+			await removeCommand(parsed.args);
+			break;
+		}
+		case "edit": {
+			const { editCommand } = await import("./commands/edit.js");
+			await editCommand(parsed.args);
 			break;
 		}
 		default:
