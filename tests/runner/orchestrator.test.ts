@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { JobConfig } from "../../src/core/types.js";
-import type { SpawnResult } from "../../src/runner/types.js";
+import type { PipelineResult, SpawnResult } from "../../src/runner/types.js";
 import { GitOpsError } from "../../src/util/errors.js";
 
 // Mock all dependencies
@@ -19,6 +19,12 @@ vi.mock("../../src/runner/git-ops.js", () => ({
 	pushBranch: vi.fn(),
 	createPR: vi.fn(),
 	checkoutExistingBranch: vi.fn(),
+	attemptRebase: vi.fn(),
+	getDiffFromBase: vi.fn(),
+}));
+
+vi.mock("../../src/runner/pipeline.js", () => ({
+	runPipeline: vi.fn(),
 }));
 
 vi.mock("../../src/runner/spawner.js", () => ({
@@ -77,6 +83,7 @@ import { extractIssueNumber, postIssueComment } from "../../src/notifications/is
 import { loadRunContext } from "../../src/runner/context-store.js";
 import { checkBudget } from "../../src/runner/cost-tracker.js";
 import {
+	attemptRebase,
 	checkoutExistingBranch,
 	createBranch,
 	createPR,
@@ -87,6 +94,7 @@ import {
 import { triageIssues } from "../../src/runner/issue-triage.js";
 // Import mocked modules after mock declarations
 import { acquireLock } from "../../src/runner/lock.js";
+import { runPipeline } from "../../src/runner/pipeline.js";
 import { writeRunLog } from "../../src/runner/logger.js";
 import { executeRun } from "../../src/runner/orchestrator.js";
 import { checkPendingPRFeedback, postPRComment } from "../../src/runner/pr-feedback.js";
@@ -123,6 +131,8 @@ const mockedTriageIssues = vi.mocked(triageIssues);
 const mockedCheckoutExistingBranch = vi.mocked(checkoutExistingBranch);
 const mockedBuildFeedbackPrompt = vi.mocked(buildFeedbackPrompt);
 const mockedBuildTriagedWorkPrompt = vi.mocked(buildTriagedWorkPrompt);
+const mockedAttemptRebase = vi.mocked(attemptRebase);
+const mockedRunPipeline = vi.mocked(runPipeline);
 
 function makeDefaultConfig(): JobConfig {
 	return {
@@ -158,6 +168,21 @@ function makeDefaultSpawnResult(overrides: Partial<SpawnResult> = {}): SpawnResu
 	};
 }
 
+function makeDefaultPipelineResult(overrides: Partial<PipelineResult> = {}): PipelineResult {
+	return {
+		stages: [
+			{ stage: "plan", spawnResult: makeDefaultSpawnResult({ summary: "Plan: fix auth bug", costUsd: 0.5, durationMs: 10000, numTurns: 5 }) },
+			{ stage: "implement", spawnResult: makeDefaultSpawnResult({ summary: "Implemented auth fix", costUsd: 2.0, durationMs: 30000, numTurns: 20 }) },
+			{ stage: "review", spawnResult: makeDefaultSpawnResult({ summary: "VERDICT: PASS", costUsd: 0.3, durationMs: 8000, numTurns: 3 }) },
+		],
+		reviewVerdict: "pass",
+		totalCostUsd: 2.8,
+		totalDurationMs: 48000,
+		summary: "Fixed authentication bug in login handler",
+		...overrides,
+	};
+}
+
 const mockReleaseLock = vi.fn().mockResolvedValue(undefined);
 
 describe("executeRun", () => {
@@ -186,6 +211,8 @@ describe("executeRun", () => {
 		mockedCheckoutExistingBranch.mockResolvedValue(undefined);
 		mockedBuildFeedbackPrompt.mockReturnValue("Address PR feedback");
 		mockedBuildTriagedWorkPrompt.mockReturnValue("Do triaged work");
+		mockedAttemptRebase.mockResolvedValue({ diverged: false, rebased: false, conflicts: [] });
+		mockedRunPipeline.mockResolvedValue(makeDefaultPipelineResult());
 	});
 
 	afterEach(() => {
@@ -720,5 +747,289 @@ describe("executeRun", () => {
 			"git",
 			expect.arrayContaining(["branch", "-D"]),
 		);
+	});
+
+	// --- Pipeline mode tests ---
+
+	describe("pipeline mode", () => {
+		function makePipelineConfig(overrides: Record<string, unknown> = {}): JobConfig {
+			return {
+				...makeDefaultConfig(),
+				pipeline: {
+					enabled: true,
+					planModel: "opus",
+					implementModel: "sonnet",
+					reviewModel: "sonnet",
+					maxReviewRounds: 1,
+				},
+				...overrides,
+			} as JobConfig;
+		}
+
+		it("calls runPipeline when config.pipeline.enabled is true", async () => {
+			mockedLoadJobConfig.mockResolvedValue(makePipelineConfig());
+
+			const result = await executeRun("test-job");
+
+			expect(mockedRunPipeline).toHaveBeenCalled();
+			expect(mockedSpawnClaude).not.toHaveBeenCalled();
+			expect(result.status).toBe("success");
+		});
+
+		it("uses single spawnClaude when config.pipeline is undefined", async () => {
+			// Default config has no pipeline field
+			mockedLoadJobConfig.mockResolvedValue(makeDefaultConfig());
+
+			await executeRun("test-job");
+
+			expect(mockedRunPipeline).not.toHaveBeenCalled();
+			expect(mockedSpawnClaude).toHaveBeenCalled();
+		});
+
+		it("uses single spawnClaude when config.pipeline.enabled is false", async () => {
+			mockedLoadJobConfig.mockResolvedValue(makePipelineConfig({
+				pipeline: { enabled: false, planModel: "opus", implementModel: "sonnet", reviewModel: "sonnet" },
+			}));
+
+			await executeRun("test-job");
+
+			expect(mockedRunPipeline).not.toHaveBeenCalled();
+			expect(mockedSpawnClaude).toHaveBeenCalled();
+		});
+
+		it("passes config, repoPath, branchName, runContext, triaged to runPipeline", async () => {
+			const config = makePipelineConfig();
+			mockedLoadJobConfig.mockResolvedValue(config);
+			const mockContext = [{ id: "run-1", status: "success", pr_url: null, branch_name: "auto/fix", issue_number: null, summary: "Did work", started_at: "2026-03-20T12:00:00Z" }];
+			mockedLoadRunContext.mockReturnValue(mockContext);
+			const scoredIssues = [{ number: 5, title: "Bug", body: "Fix", labels: ["bug"], score: 70 }];
+			mockedTriageIssues.mockResolvedValue(scoredIssues);
+
+			await executeRun("test-job");
+
+			expect(mockedRunPipeline).toHaveBeenCalledWith(
+				config,
+				"/tmp/test-repo",
+				"claude-auto/test-job/2026-03-21T00-00-00",
+				mockContext,
+				scoredIssues,
+			);
+		});
+
+		it("creates PR with pipeline summary when changes exist", async () => {
+			mockedLoadJobConfig.mockResolvedValue(makePipelineConfig());
+			mockedHasChanges.mockResolvedValue(true);
+
+			const result = await executeRun("test-job");
+
+			expect(mockedPushBranch).toHaveBeenCalled();
+			expect(mockedCreatePR).toHaveBeenCalledWith(
+				"/tmp/test-repo",
+				"claude-auto/test-job/2026-03-21T00-00-00",
+				"main",
+				expect.stringContaining("[claude-auto]"),
+				expect.stringContaining("Pipeline Stages"),
+			);
+			expect(result.status).toBe("success");
+			expect(result.prUrl).toBe("https://github.com/test/repo/pull/42");
+		});
+
+		it("uses PipelineResult.totalCostUsd and totalDurationMs in RunResult", async () => {
+			mockedLoadJobConfig.mockResolvedValue(makePipelineConfig());
+
+			const result = await executeRun("test-job");
+
+			expect(result.costUsd).toBe(2.8);
+		});
+
+		it("includes pipelineStages in RunResult with per-stage cost/duration", async () => {
+			mockedLoadJobConfig.mockResolvedValue(makePipelineConfig());
+
+			const result = await executeRun("test-job");
+
+			expect(result.pipelineStages).toBeDefined();
+			expect(result.pipelineStages).toHaveLength(3);
+			expect(result.pipelineStages![0]).toEqual(expect.objectContaining({
+				stage: "plan",
+				costUsd: 0.5,
+				durationMs: 10000,
+				numTurns: 5,
+			}));
+		});
+
+		it("returns no-changes when pipeline produces no changes", async () => {
+			mockedLoadJobConfig.mockResolvedValue(makePipelineConfig());
+			mockedHasChanges.mockResolvedValue(false);
+
+			const result = await executeRun("test-job");
+
+			expect(result.status).toBe("no-changes");
+			expect(mockedPushBranch).not.toHaveBeenCalled();
+			expect(mockedCreatePR).not.toHaveBeenCalled();
+		});
+
+		it("does not apply pipeline to PR feedback path", async () => {
+			mockedLoadJobConfig.mockResolvedValue(makePipelineConfig());
+			const feedbackCtx = {
+				number: 42,
+				title: "Fix auth bug",
+				headRefName: "claude-auto/test-job/2026-03-20T00-00-00",
+				url: "https://github.com/test/repo/pull/42",
+				reviewDecision: "CHANGES_REQUESTED",
+				unresolvedThreads: [
+					{
+						id: "thread-1",
+						isResolved: false,
+						comments: [{ body: "Fix this", author: { login: "reviewer" } }],
+					},
+				],
+				currentRound: 0,
+			};
+			mockedCheckPendingPRFeedback.mockResolvedValue(feedbackCtx);
+
+			await executeRun("test-job");
+
+			// Feedback path uses single spawnClaude, not pipeline
+			expect(mockedRunPipeline).not.toHaveBeenCalled();
+			expect(mockedSpawnClaude).toHaveBeenCalled();
+		});
+	});
+
+	// --- Merge conflict resolution tests ---
+
+	describe("merge conflict resolution", () => {
+		it("calls attemptRebase before push on normal path", async () => {
+			await executeRun("test-job");
+
+			expect(mockedAttemptRebase).toHaveBeenCalledWith(
+				"/tmp/test-repo",
+				"main",
+				"origin",
+			);
+		});
+
+		it("calls attemptRebase before push on pipeline path", async () => {
+			mockedLoadJobConfig.mockResolvedValue({
+				...makeDefaultConfig(),
+				pipeline: {
+					enabled: true,
+					planModel: "opus",
+					implementModel: "sonnet",
+					reviewModel: "sonnet",
+					maxReviewRounds: 1,
+				},
+			} as JobConfig);
+
+			await executeRun("test-job");
+
+			expect(mockedAttemptRebase).toHaveBeenCalledWith(
+				"/tmp/test-repo",
+				"main",
+				"origin",
+			);
+		});
+
+		it("proceeds with push when attemptRebase returns diverged:true, rebased:true", async () => {
+			mockedAttemptRebase.mockResolvedValue({ diverged: true, rebased: true, conflicts: [] });
+
+			const result = await executeRun("test-job");
+
+			expect(result.status).toBe("success");
+			expect(mockedPushBranch).toHaveBeenCalled();
+			expect(mockedCreatePR).toHaveBeenCalled();
+		});
+
+		it("returns merge-conflict when attemptRebase returns diverged:true, rebased:false", async () => {
+			mockedAttemptRebase.mockResolvedValue({
+				diverged: true,
+				rebased: false,
+				conflicts: ["src/index.ts", "src/utils.ts"],
+			});
+
+			const result = await executeRun("test-job");
+
+			expect(result.status).toBe("merge-conflict");
+			expect(result.error).toContain("Merge conflict");
+			expect(result.error).toContain("src/index.ts");
+			expect(result.error).toContain("src/utils.ts");
+			expect(mockedPushBranch).not.toHaveBeenCalled();
+			expect(mockedCreatePR).not.toHaveBeenCalled();
+		});
+
+		it("merge-conflict triggers notification", async () => {
+			mockedAttemptRebase.mockResolvedValue({
+				diverged: true,
+				rebased: false,
+				conflicts: ["src/index.ts"],
+			});
+
+			await executeRun("test-job");
+
+			expect(mockedSendNotifications).toHaveBeenCalledWith(
+				expect.objectContaining({ id: "test-job" }),
+				expect.objectContaining({ status: "merge-conflict" }),
+			);
+		});
+
+		it("proceeds with push when attemptRebase returns diverged:false", async () => {
+			mockedAttemptRebase.mockResolvedValue({ diverged: false, rebased: false, conflicts: [] });
+
+			const result = await executeRun("test-job");
+
+			expect(result.status).toBe("success");
+			expect(mockedPushBranch).toHaveBeenCalled();
+		});
+
+		it("proceeds with push when attemptRebase throws (best-effort)", async () => {
+			mockedAttemptRebase.mockRejectedValue(new Error("git fetch failed"));
+
+			const result = await executeRun("test-job");
+
+			expect(result.status).toBe("success");
+			expect(mockedPushBranch).toHaveBeenCalled();
+		});
+
+		it("does not call attemptRebase when no changes to push", async () => {
+			mockedHasChanges.mockResolvedValue(false);
+
+			await executeRun("test-job");
+
+			expect(mockedAttemptRebase).not.toHaveBeenCalled();
+		});
+
+		it("returns merge-conflict on pipeline path with conflict details", async () => {
+			mockedLoadJobConfig.mockResolvedValue({
+				...makeDefaultConfig(),
+				pipeline: {
+					enabled: true,
+					planModel: "opus",
+					implementModel: "sonnet",
+					reviewModel: "sonnet",
+					maxReviewRounds: 1,
+				},
+			} as JobConfig);
+			mockedAttemptRebase.mockResolvedValue({
+				diverged: true,
+				rebased: false,
+				conflicts: ["README.md"],
+			});
+
+			const result = await executeRun("test-job");
+
+			expect(result.status).toBe("merge-conflict");
+			expect(result.error).toContain("README.md");
+			expect(result.pipelineStages).toBeDefined();
+			expect(mockedPushBranch).not.toHaveBeenCalled();
+		});
+	});
+
+	// --- All existing tests continue to pass verification ---
+
+	it("all existing tests pass with no pipeline config (backward compatible)", async () => {
+		// Default config has no pipeline field; verify the normal path is unchanged
+		const result = await executeRun("test-job");
+		expect(result.status).toBe("success");
+		expect(mockedRunPipeline).not.toHaveBeenCalled();
+		expect(mockedSpawnClaude).toHaveBeenCalled();
 	});
 });
