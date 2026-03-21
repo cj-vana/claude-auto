@@ -81,10 +81,10 @@ describe("database singleton", () => {
 		expect(indexNames).toContain("idx_runs_job_started");
 	});
 
-	it("user_version is 1 after initialization", () => {
+	it("user_version is 2 after initialization", () => {
 		const db = getDatabase(":memory:");
 		const version = db.pragma("user_version", { simple: true });
-		expect(version).toBe(1);
+		expect(version).toBe(2);
 	});
 
 	it("closeDatabase() closes the connection and resets singleton", () => {
@@ -93,5 +93,44 @@ describe("database singleton", () => {
 		// After closing, getDatabase should create a new instance
 		const db2 = getDatabase(":memory:");
 		expect(db2).not.toBe(db1);
+	});
+});
+
+describe("database migration v2", () => {
+	afterEach(() => {
+		closeDatabase();
+	});
+
+	it("migration v2 adds feedback_round column to runs table", () => {
+		const db = getDatabase(":memory:");
+		const columns = db.prepare("PRAGMA table_info(runs)").all() as Array<{ name: string }>;
+		const columnNames = columns.map((c) => c.name);
+		expect(columnNames).toContain("feedback_round");
+	});
+
+	it("migration v2 adds pr_number column to runs table", () => {
+		const db = getDatabase(":memory:");
+		const columns = db.prepare("PRAGMA table_info(runs)").all() as Array<{ name: string }>;
+		const columnNames = columns.map((c) => c.name);
+		expect(columnNames).toContain("pr_number");
+	});
+
+	it("fresh database has both v2 columns (full migration from 0 to 2)", () => {
+		const db = getDatabase(":memory:");
+		const columns = db.prepare("PRAGMA table_info(runs)").all() as Array<{ name: string }>;
+		const columnNames = columns.map((c) => c.name);
+
+		// V1 columns
+		expect(columnNames).toContain("id");
+		expect(columnNames).toContain("job_id");
+		expect(columnNames).toContain("status");
+
+		// V2 columns
+		expect(columnNames).toContain("feedback_round");
+		expect(columnNames).toContain("pr_number");
+
+		// Version should be 2
+		const version = db.pragma("user_version", { simple: true });
+		expect(version).toBe(2);
 	});
 });

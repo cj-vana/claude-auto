@@ -78,6 +78,7 @@ export const JobConfigSchema = z.object({
 			monthlyUsd: z.number().positive().optional(),
 		})
 		.optional(),
+	maxFeedbackRounds: z.number().int().positive().default(3).optional(),
 });
 
 export type JobConfig = z.infer<typeof JobConfigSchema>;

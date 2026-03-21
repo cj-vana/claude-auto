@@ -56,7 +56,13 @@ function migrateSchema(database: Database.Database): void {
 		database.pragma("user_version = 1");
 	}
 
-	// Future migrations: if (version < 2) { ... database.pragma("user_version = 2"); }
+	if (version < 2) {
+		database.exec(`
+			ALTER TABLE runs ADD COLUMN feedback_round INTEGER;
+			ALTER TABLE runs ADD COLUMN pr_number INTEGER;
+		`);
+		database.pragma("user_version = 2");
+	}
 }
 
 /**

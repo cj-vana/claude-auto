@@ -22,7 +22,7 @@ export interface SpawnResult {
 	errors?: string[];
 }
 
-export type RunStatus = "success" | "no-changes" | "error" | "locked" | "git-error" | "paused" | "budget-exceeded";
+export type RunStatus = "success" | "no-changes" | "error" | "locked" | "git-error" | "paused" | "budget-exceeded" | "needs-human-review";
 
 export interface RunResult {
 	status: RunStatus;
@@ -40,6 +40,24 @@ export interface RunResult {
 	branchName?: string;
 	issueNumber?: number;
 	model?: string;
+	feedbackRound?: number;
+	prNumber?: number;
 }
 
 export interface RunLogEntry extends RunResult {}
+
+export interface ReviewThread {
+	id: string;
+	isResolved: boolean;
+	comments: Array<{ body: string; author: { login: string } }>;
+}
+
+export interface PRFeedbackContext {
+	number: number;
+	title: string;
+	headRefName: string;
+	url: string;
+	reviewDecision: string;
+	unresolvedThreads: ReviewThread[];
+	currentRound: number;
+}

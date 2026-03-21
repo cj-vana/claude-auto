@@ -105,6 +105,7 @@ describe("saveJobConfig", () => {
 			},
 			notifications: {},
 			enabled: true,
+			maxFeedbackRounds: 3,
 		};
 
 		await saveJobConfig(configPath, config);
@@ -277,6 +278,41 @@ describe("budget field validation", () => {
 	it("rejects negative dailyUsd", () => {
 		expect(() =>
 			JobConfigSchema.parse({ ...validConfigBase, budget: { dailyUsd: -5 } }),
+		).toThrow();
+	});
+});
+
+describe("maxFeedbackRounds field validation", () => {
+	it("defaults to 3 when not provided", () => {
+		const result = JobConfigSchema.parse({ ...validConfigBase });
+		expect(result.maxFeedbackRounds).toBe(3);
+	});
+
+	it("accepts positive integers", () => {
+		const result = JobConfigSchema.parse({ ...validConfigBase, maxFeedbackRounds: 5 });
+		expect(result.maxFeedbackRounds).toBe(5);
+	});
+
+	it("accepts 1 as the minimum positive integer", () => {
+		const result = JobConfigSchema.parse({ ...validConfigBase, maxFeedbackRounds: 1 });
+		expect(result.maxFeedbackRounds).toBe(1);
+	});
+
+	it("rejects 0", () => {
+		expect(() =>
+			JobConfigSchema.parse({ ...validConfigBase, maxFeedbackRounds: 0 }),
+		).toThrow();
+	});
+
+	it("rejects negative numbers", () => {
+		expect(() =>
+			JobConfigSchema.parse({ ...validConfigBase, maxFeedbackRounds: -1 }),
+		).toThrow();
+	});
+
+	it("rejects non-integer values", () => {
+		expect(() =>
+			JobConfigSchema.parse({ ...validConfigBase, maxFeedbackRounds: 2.5 }),
 		).toThrow();
 	});
 });
