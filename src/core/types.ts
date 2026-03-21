@@ -60,3 +60,10 @@ export const JobConfigSchema = z.object({
 });
 
 export type JobConfig = z.infer<typeof JobConfigSchema>;
+
+export interface ScheduleInfo {
+	cron: string;
+	timezone: string;
+	humanReadable: string;
+	nextRuns: Date[];
+}

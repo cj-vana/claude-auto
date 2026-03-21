@@ -18,3 +18,24 @@ export class ConfigValidationError extends Error {
 		super(`Invalid config in ${filePath}:\n${validationMessage}`);
 	}
 }
+
+export class SchedulerError extends Error {
+	override name = "SchedulerError" as const;
+	constructor(
+		public readonly platform: string,
+		message: string,
+		public readonly cause?: Error,
+	) {
+		super(`Scheduler error (${platform}): ${message}`);
+	}
+}
+
+export class CronValidationError extends Error {
+	override name = "CronValidationError" as const;
+	constructor(
+		public readonly expression: string,
+		message: string,
+	) {
+		super(`Invalid cron expression "${expression}": ${message}`);
+	}
+}
