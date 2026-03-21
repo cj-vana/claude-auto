@@ -58,9 +58,12 @@ export { formatContextWindow, loadRunContext, saveRunContext } from "./runner/co
 export type { BudgetConfig, CostSummaryRow, DailyCostRow } from "./runner/cost-tracker.js";
 export { checkBudget, getCostSummary } from "./runner/cost-tracker.js";
 export {
+	attemptRebase,
+	checkDivergence,
 	checkoutExistingBranch,
 	createBranch,
 	createPR,
+	getDiffFromBase,
 	hasChanges,
 	pullLatest,
 	pushBranch,
@@ -71,6 +74,20 @@ export { acquireLock, STALE_THRESHOLD } from "./runner/lock.js";
 export { listRunLogs, readRunLog, writeRunLog } from "./runner/logger.js";
 // Phase 3: Runner
 export { executeRun } from "./runner/orchestrator.js";
+// Phase 10: Agent Pipeline
+export { runPipeline } from "./runner/pipeline.js";
+export {
+	buildFixPrompt,
+	buildFixSystemPrompt,
+	buildImplementPrompt,
+	buildImplementSystemPrompt,
+	buildPlanPrompt,
+	buildPlanSystemPrompt,
+	buildReadOnlyTools,
+	buildReviewPrompt,
+	buildReviewSystemPrompt,
+	parseReviewVerdict,
+} from "./runner/pipeline-prompts.js";
 // Phase 9: PR Intelligence
 export {
 	checkPendingPRFeedback,
@@ -88,7 +105,10 @@ export {
 } from "./runner/prompt-builder.js";
 export { buildAllowedTools, spawnClaude } from "./runner/spawner.js";
 export type {
+	PipelineResult,
+	PipelineStageResult,
 	PRFeedbackContext,
+	RebaseResult,
 	ReviewThread,
 	RunLogEntry,
 	RunResult,
