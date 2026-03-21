@@ -81,7 +81,7 @@ Plans:
 
 Plans:
 - [x] 04-01-PLAN.md -- Notification types, provider formatters (Discord/Slack/Telegram), webhook dispatcher, GitHub issue commenting
-- [ ] 04-02-PLAN.md -- Schema extension for event triggers, orchestrator integration, barrel export update
+- [x] 04-02-PLAN.md -- Schema extension for event triggers, orchestrator integration, barrel export update
 
 ### Phase 5: Job Management CLI
 **Goal**: Users can manage all their autonomous jobs from the command line without editing files or touching cron directly
