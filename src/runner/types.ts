@@ -30,7 +30,8 @@ export type RunStatus =
 	| "git-error"
 	| "paused"
 	| "budget-exceeded"
-	| "needs-human-review";
+	| "needs-human-review"
+	| "merge-conflict";
 
 export interface RunResult {
 	status: RunStatus;
@@ -50,6 +51,12 @@ export interface RunResult {
 	model?: string;
 	feedbackRound?: number;
 	prNumber?: number;
+	pipelineStages?: Array<{
+		stage: string;
+		costUsd: number;
+		durationMs: number;
+		numTurns: number;
+	}>;
 }
 
 export interface RunLogEntry extends RunResult {}
@@ -68,4 +75,23 @@ export interface PRFeedbackContext {
 	reviewDecision: string;
 	unresolvedThreads: ReviewThread[];
 	currentRound: number;
+}
+
+export interface PipelineStageResult {
+	stage: "plan" | "implement" | "review" | "fix";
+	spawnResult: SpawnResult;
+}
+
+export interface PipelineResult {
+	stages: PipelineStageResult[];
+	reviewVerdict: "pass" | "fail" | "skipped";
+	totalCostUsd: number;
+	totalDurationMs: number;
+	summary: string;
+}
+
+export interface RebaseResult {
+	diverged: boolean;
+	rebased: boolean;
+	conflicts: string[];
 }

@@ -1,5 +1,20 @@
 import { z } from "zod";
 
+const ModelSchema = z.union([
+	z.enum(["sonnet", "opus", "haiku", "opusplan", "default"]),
+	z.string().regex(/^claude-/),
+]);
+
+export const PipelineConfigSchema = z.object({
+	enabled: z.boolean().default(false),
+	planModel: ModelSchema.default("haiku"),
+	implementModel: ModelSchema.default("opus"),
+	reviewModel: ModelSchema.default("sonnet"),
+	maxReviewRounds: z.number().int().positive().default(1),
+});
+
+export type PipelineConfig = z.infer<typeof PipelineConfigSchema>;
+
 export const JobConfigSchema = z.object({
 	id: z.string().min(1),
 	name: z.string().min(1),
@@ -65,12 +80,7 @@ export const JobConfigSchema = z.object({
 		})
 		.default({}),
 	enabled: z.boolean().default(true),
-	model: z
-		.union([
-			z.enum(["sonnet", "opus", "haiku", "opusplan", "default"]),
-			z.string().regex(/^claude-/),
-		])
-		.optional(),
+	model: ModelSchema.optional(),
 	budget: z
 		.object({
 			dailyUsd: z.number().positive().optional(),
@@ -79,6 +89,7 @@ export const JobConfigSchema = z.object({
 		})
 		.optional(),
 	maxFeedbackRounds: z.number().int().positive().default(3).optional(),
+	pipeline: PipelineConfigSchema.optional(),
 });
 
 export type JobConfig = z.infer<typeof JobConfigSchema>;
