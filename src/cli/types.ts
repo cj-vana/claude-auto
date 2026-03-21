@@ -1,4 +1,6 @@
 export type CliCommand =
+	| "create"
+	| "check-repo"
 	| "list"
 	| "logs"
 	| "report"
@@ -16,6 +18,8 @@ export interface ParsedCommand {
 export type CommandHandler = (args: ParsedCommand["args"]) => Promise<void>;
 
 export const COMMANDS: Record<string, string> = {
+	create: "Create a new autonomous cron job",
+	"check-repo": "Check if a path is a valid git repository",
 	list: "List all configured jobs with status and schedule",
 	logs: "Show recent run history for a job",
 	report: "Show aggregate run summary report",

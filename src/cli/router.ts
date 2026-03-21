@@ -31,10 +31,23 @@ export function parseCommand(argv: string[]): ParsedCommand {
 		"--max-turns",
 		"--max-budget",
 		"--focus",
+		"--repo",
+		"--github-repo",
+		"--system-prompt-file",
+		"--notify-discord",
+		"--notify-slack",
+		"--notify-telegram",
+		"--path",
 	]);
 
 	// Flags that are boolean (no value)
-	const booleanFlags = new Set(["--json", "--keep-logs"]);
+	const booleanFlags = new Set([
+		"--json",
+		"--keep-logs",
+		"--no-new-deps",
+		"--no-arch-changes",
+		"--bug-fix-only",
+	]);
 
 	// Mapping from kebab-case flag names to camelCase arg keys
 	const flagKeyMap: Record<string, string> = {
@@ -48,6 +61,16 @@ export function parseCommand(argv: string[]): ParsedCommand {
 		"--focus": "focus",
 		"--json": "json",
 		"--keep-logs": "keepLogs",
+		"--repo": "repo",
+		"--github-repo": "githubRepo",
+		"--system-prompt-file": "systemPromptFile",
+		"--notify-discord": "notifyDiscord",
+		"--notify-slack": "notifySlack",
+		"--notify-telegram": "notifyTelegram",
+		"--path": "path",
+		"--no-new-deps": "noNewDeps",
+		"--no-arch-changes": "noArchChanges",
+		"--bug-fix-only": "bugFixOnly",
 	};
 
 	// Parse positional arg (jobId) and flags from rest
@@ -101,6 +124,16 @@ export async function runCli(argv: string[]): Promise<void> {
 	}
 
 	switch (parsed.command) {
+		case "create": {
+			const { createCommand } = await import("./commands/create.js");
+			await createCommand(parsed.args);
+			break;
+		}
+		case "check-repo": {
+			const { checkRepoCommand } = await import("./commands/check-repo.js");
+			await checkRepoCommand(parsed.args);
+			break;
+		}
 		case "list": {
 			const { listCommand } = await import("./commands/list.js");
 			await listCommand(parsed.args);

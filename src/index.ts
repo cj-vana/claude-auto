@@ -1,4 +1,19 @@
 // Phase 1: Config foundation
+
+export { checkRepoCommand } from "./cli/commands/check-repo.js";
+export { createCommand } from "./cli/commands/create.js";
+export { editCommand } from "./cli/commands/edit.js";
+export { listCommand } from "./cli/commands/list.js";
+export { logsCommand } from "./cli/commands/logs.js";
+export { pauseCommand } from "./cli/commands/pause.js";
+export { removeCommand } from "./cli/commands/remove.js";
+export { reportCommand } from "./cli/commands/report.js";
+export { resumeCommand } from "./cli/commands/resume.js";
+export { formatDuration, formatRelativeTime, formatTable, statusBadge } from "./cli/format.js";
+// Phase 5: CLI
+export { parseCommand, runCli } from "./cli/router.js";
+export type { CliCommand, CommandHandler, ParsedCommand } from "./cli/types.js";
+export { COMMANDS } from "./cli/types.js";
 export {
 	loadJobConfig,
 	readConfigDocument,
@@ -17,6 +32,16 @@ export {
 } from "./core/schedule.js";
 export type { ScheduleInfo } from "./core/types.js";
 export { type JobConfig, JobConfigSchema } from "./core/types.js";
+// Phase 4: Notifications
+export { sendNotifications } from "./notifications/dispatcher.js";
+export { formatDiscord, formatSlack, formatTelegram } from "./notifications/formatters.js";
+export { extractIssueNumber, postIssueComment } from "./notifications/issue-comment.js";
+export type {
+	EventTriggers,
+	NotificationEvent,
+	NotificationPayload,
+} from "./notifications/types.js";
+export { buildPayload, shouldNotify } from "./notifications/types.js";
 export { CrontabScheduler } from "./platform/crontab.js";
 export { detectPlatform, type Platform } from "./platform/detect.js";
 export type { CalendarInterval } from "./platform/launchd.js";
@@ -26,6 +51,26 @@ export {
 	type RegisteredJob,
 	type Scheduler,
 } from "./platform/scheduler.js";
+export {
+	createBranch,
+	createPR,
+	hasChanges,
+	pullLatest,
+	pushBranch,
+} from "./runner/git-ops.js";
+export { acquireLock, STALE_THRESHOLD } from "./runner/lock.js";
+export { listRunLogs, readRunLog, writeRunLog } from "./runner/logger.js";
+// Phase 3: Runner
+export { executeRun } from "./runner/orchestrator.js";
+export { buildSystemPrompt, buildWorkPrompt } from "./runner/prompt-builder.js";
+export { buildAllowedTools, spawnClaude } from "./runner/spawner.js";
+export type {
+	RunLogEntry,
+	RunResult,
+	RunStatus,
+	SpawnOptions,
+	SpawnResult,
+} from "./runner/types.js";
 export {
 	ConfigParseError,
 	ConfigValidationError,
@@ -38,41 +83,3 @@ export {
 export { execCommand } from "./util/exec.js";
 export { writeFileSafe } from "./util/fs.js";
 export { paths } from "./util/paths.js";
-// Phase 3: Runner
-export { executeRun } from "./runner/orchestrator.js";
-export { spawnClaude, buildAllowedTools } from "./runner/spawner.js";
-export { buildWorkPrompt, buildSystemPrompt } from "./runner/prompt-builder.js";
-export {
-	pullLatest,
-	createBranch,
-	hasChanges,
-	pushBranch,
-	createPR,
-} from "./runner/git-ops.js";
-export { acquireLock, STALE_THRESHOLD } from "./runner/lock.js";
-export { writeRunLog, readRunLog, listRunLogs } from "./runner/logger.js";
-export type {
-	SpawnOptions,
-	SpawnResult,
-	RunResult,
-	RunStatus,
-	RunLogEntry,
-} from "./runner/types.js";
-// Phase 4: Notifications
-export { sendNotifications } from "./notifications/dispatcher.js";
-export { formatDiscord, formatSlack, formatTelegram } from "./notifications/formatters.js";
-export { extractIssueNumber, postIssueComment } from "./notifications/issue-comment.js";
-export type { NotificationEvent, NotificationPayload, EventTriggers } from "./notifications/types.js";
-export { shouldNotify, buildPayload } from "./notifications/types.js";
-// Phase 5: CLI
-export { runCli, parseCommand } from "./cli/router.js";
-export { listCommand } from "./cli/commands/list.js";
-export { logsCommand } from "./cli/commands/logs.js";
-export { reportCommand } from "./cli/commands/report.js";
-export { pauseCommand } from "./cli/commands/pause.js";
-export { resumeCommand } from "./cli/commands/resume.js";
-export { removeCommand } from "./cli/commands/remove.js";
-export { editCommand } from "./cli/commands/edit.js";
-export { formatDuration, formatRelativeTime, formatTable, statusBadge } from "./cli/format.js";
-export type { CliCommand, ParsedCommand, CommandHandler } from "./cli/types.js";
-export { COMMANDS } from "./cli/types.js";

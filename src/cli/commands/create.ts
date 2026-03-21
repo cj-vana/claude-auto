@@ -76,13 +76,14 @@ export async function createCommand(args: ParsedCommand["args"]): Promise<void> 
 	const noArchitectureChanges = Boolean(args.noArchChanges);
 	const bugFixOnly = Boolean(args.bugFixOnly);
 
-	// Parse notifications
+	// Parse notifications (provide default trigger values matching Zod schema defaults)
+	const defaultTriggers = { onSuccess: true, onFailure: true, onNoChanges: false, onLocked: false };
 	const notifications: JobConfig["notifications"] = {};
 	if (args.notifyDiscord) {
-		notifications.discord = { webhookUrl: args.notifyDiscord as string };
+		notifications.discord = { webhookUrl: args.notifyDiscord as string, ...defaultTriggers };
 	}
 	if (args.notifySlack) {
-		notifications.slack = { webhookUrl: args.notifySlack as string };
+		notifications.slack = { webhookUrl: args.notifySlack as string, ...defaultTriggers };
 	}
 	if (args.notifyTelegram) {
 		const telegramStr = args.notifyTelegram as string;
@@ -91,6 +92,7 @@ export async function createCommand(args: ParsedCommand["args"]): Promise<void> 
 			notifications.telegram = {
 				botToken: telegramStr.slice(0, colonIndex),
 				chatId: telegramStr.slice(colonIndex + 1),
+				...defaultTriggers,
 			};
 		}
 	}

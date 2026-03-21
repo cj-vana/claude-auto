@@ -302,12 +302,13 @@ describe("createCommand", () => {
 			notifyTelegram: "bottoken123:chatid456",
 		});
 
+		const defaultTriggers = { onSuccess: true, onFailure: true, onNoChanges: false, onLocked: false };
 		expect(mockedCreateJob).toHaveBeenCalledWith(
 			expect.objectContaining({
 				notifications: expect.objectContaining({
-					discord: { webhookUrl: "https://discord.com/webhook/123" },
-					slack: { webhookUrl: "https://hooks.slack.com/services/T00/B00/xxx" },
-					telegram: { botToken: "bottoken123", chatId: "chatid456" },
+					discord: { webhookUrl: "https://discord.com/webhook/123", ...defaultTriggers },
+					slack: { webhookUrl: "https://hooks.slack.com/services/T00/B00/xxx", ...defaultTriggers },
+					telegram: { botToken: "bottoken123", chatId: "chatid456", ...defaultTriggers },
 				}),
 			}),
 		);
