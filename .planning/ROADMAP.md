@@ -62,12 +62,12 @@ Plans:
   3. Concurrent runs of the same job are prevented by file-based locking (second invocation exits cleanly)
   4. A runaway Claude session is terminated after the configured max turns limit is reached
   5. Each completed run produces an append-only local log with start time, duration, what was attempted, PR URL, and any errors
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 03-01: TBD
-- [ ] 03-02: TBD
-- [ ] 03-03: TBD
+- [x] 03-01-PLAN.md -- Runner foundation: types, file-based locking, git operations (pull/branch/push/PR)
+- [ ] 03-02-PLAN.md -- Claude spawner, prompt builder (priority chain/guardrails), run logger
+- [ ] 03-03-PLAN.md -- Orchestrator (wires all runner modules), cron entry point, barrel export update
 
 ### Phase 4: Notifications
 **Goal**: Users are informed about autonomous run outcomes through their preferred messaging platform
@@ -122,7 +122,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 |-------|----------------|--------|-----------|
 | 1. Foundation & Config | 2/2 | Complete | 2026-03-21 |
 | 2. Platform Scheduling | 0/2 | Planning complete | - |
-| 3. Run Orchestrator & Git Safety | 0/0 | Not started | - |
+| 3. Run Orchestrator & Git Safety | 0/3 | Planning complete | - |
 | 4. Notifications | 0/0 | Not started | - |
 | 5. Job Management CLI | 0/0 | Not started | - |
 | 6. Plugin & Skills | 0/0 | Not started | - |

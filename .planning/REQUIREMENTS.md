@@ -32,11 +32,11 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Git & PR Workflow
 
-- [ ] **GIT-01**: Each run pulls latest from configured branch before starting work
-- [ ] **GIT-02**: Each run creates a new descriptively-named branch (never commits directly to configured branch or main)
-- [ ] **GIT-03**: Tool never force pushes under any circumstances
-- [ ] **GIT-04**: Work is submitted as a PR via gh pr create with detailed description (what changed, why, testing notes, linked issue)
-- [ ] **GIT-05**: File-based locking prevents overlapping runs of the same job on the same repo
+- [x] **GIT-01**: Each run pulls latest from configured branch before starting work
+- [x] **GIT-02**: Each run creates a new descriptively-named branch (never commits directly to configured branch or main)
+- [x] **GIT-03**: Tool never force pushes under any circumstances
+- [x] **GIT-04**: Work is submitted as a PR via gh pr create with detailed description (what changed, why, testing notes, linked issue)
+- [x] **GIT-05**: File-based locking prevents overlapping runs of the same job on the same repo
 
 ### Job Management
 
@@ -119,11 +119,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | EXEC-04 | Phase 3 | Pending |
 | EXEC-05 | Phase 3 | Pending |
 | EXEC-06 | Phase 3 | Pending |
-| GIT-01 | Phase 3 | Pending |
-| GIT-02 | Phase 3 | Pending |
-| GIT-03 | Phase 3 | Pending |
-| GIT-04 | Phase 3 | Pending |
-| GIT-05 | Phase 3 | Pending |
+| GIT-01 | Phase 3 | Complete |
+| GIT-02 | Phase 3 | Complete |
+| GIT-03 | Phase 3 | Complete |
+| GIT-04 | Phase 3 | Complete |
+| GIT-05 | Phase 3 | Complete |
 | JOB-01 | Phase 5 | Pending |
 | JOB-02 | Phase 5 | Pending |
 | JOB-03 | Phase 5 | Pending |
