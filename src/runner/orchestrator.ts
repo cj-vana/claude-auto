@@ -70,6 +70,20 @@ export async function executeRun(jobId: string): Promise<RunResult> {
 		// Step 2: Load config
 		config = await loadJobConfig(paths.jobConfig(jobId));
 
+		// Defense-in-depth: check if job is paused
+		if (!config.enabled) {
+			const result: RunResult = {
+				status: "paused",
+				jobId,
+				runId,
+				startedAt,
+				completedAt: new Date().toISOString(),
+				durationMs: Date.now() - startTime,
+			};
+			await writeRunLog(jobId, result);
+			return result;
+		}
+
 		// Step 3: Pull latest
 		await pullLatest(config.repo.path, config.repo.branch, config.repo.remote);
 

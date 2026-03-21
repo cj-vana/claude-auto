@@ -21,7 +21,7 @@ export interface SpawnResult {
 	errors?: string[];
 }
 
-export type RunStatus = "success" | "no-changes" | "error" | "locked" | "git-error";
+export type RunStatus = "success" | "no-changes" | "error" | "locked" | "git-error" | "paused";
 
 export interface RunResult {
 	status: RunStatus;
