@@ -1,3 +1,4 @@
-// Barrel export - placeholder for Task 1 scaffold verification
-// Full exports added in Task 2
-export {};
+export { type JobConfig, JobConfigSchema } from "./core/types.js";
+export { ConfigParseError, ConfigValidationError } from "./util/errors.js";
+export { writeFileSafe } from "./util/fs.js";
+export { paths } from "./util/paths.js";

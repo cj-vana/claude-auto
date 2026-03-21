@@ -1,0 +1,62 @@
+import { z } from "zod";
+
+export const JobConfigSchema = z.object({
+	id: z.string().min(1),
+	name: z.string().min(1),
+	repo: z.object({
+		path: z.string().min(1),
+		branch: z.string().default("main"),
+		remote: z.string().default("origin"),
+	}),
+	schedule: z.object({
+		cron: z.string().min(1),
+		timezone: z.string().default("UTC"),
+	}),
+	focus: z
+		.array(z.enum(["open-issues", "bug-discovery", "features", "documentation"]))
+		.default(["open-issues", "bug-discovery"]),
+	systemPrompt: z.string().optional(),
+	guardrails: z
+		.object({
+			maxTurns: z.number().int().positive().default(50),
+			maxBudgetUsd: z.number().positive().default(5.0),
+			noNewDependencies: z.boolean().default(false),
+			noArchitectureChanges: z.boolean().default(false),
+			bugFixOnly: z.boolean().default(false),
+			restrictToPaths: z.array(z.string()).optional(),
+		})
+		.default({
+			maxTurns: 50,
+			maxBudgetUsd: 5.0,
+			noNewDependencies: false,
+			noArchitectureChanges: false,
+			bugFixOnly: false,
+		}),
+	notifications: z
+		.object({
+			discord: z
+				.object({
+					webhookUrl: z.string().url(),
+					onSuccess: z.boolean().default(true),
+					onFailure: z.boolean().default(true),
+				})
+				.optional(),
+			slack: z
+				.object({
+					webhookUrl: z.string().url(),
+					onFailure: z.boolean().default(true),
+				})
+				.optional(),
+			telegram: z
+				.object({
+					botToken: z.string(),
+					chatId: z.string(),
+					onFailure: z.boolean().default(true),
+				})
+				.optional(),
+		})
+		.default({}),
+	enabled: z.boolean().default(true),
+});
+
+export type JobConfig = z.infer<typeof JobConfigSchema>;

@@ -1,14 +1,12 @@
-import { describe, it, expect } from "vitest";
-import { homedir } from "node:os";
+import { mkdir, readFile, rm } from "node:fs/promises";
+import { homedir, tmpdir } from "node:os";
 import { join } from "node:path";
-
+import { describe, expect, it } from "vitest";
+import { JobConfigSchema } from "../../src/core/types.js";
+import { ConfigParseError, ConfigValidationError } from "../../src/util/errors.js";
+import { writeFileSafe } from "../../src/util/fs.js";
 // These imports will fail until source modules exist
 import { paths } from "../../src/util/paths.js";
-import { ConfigParseError, ConfigValidationError } from "../../src/util/errors.js";
-import { JobConfigSchema } from "../../src/core/types.js";
-import { writeFileSafe } from "../../src/util/fs.js";
-import { readFile, rm, mkdir } from "node:fs/promises";
-import { tmpdir } from "node:os";
 
 describe("paths", () => {
 	const expectedBase = join(homedir(), ".claude-auto");

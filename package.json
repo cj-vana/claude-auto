@@ -1,46 +1,46 @@
 {
-  "name": "claude-auto",
-  "version": "0.1.0",
-  "description": "Autonomous Claude Code cron jobs for continuous codebase improvement",
-  "type": "module",
-  "engines": {
-    "node": ">=22.0.0"
-  },
-  "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    }
-  },
-  "scripts": {
-    "build": "tsup",
-    "dev": "tsx watch src/index.ts",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "lint": "biome check .",
-    "lint:fix": "biome check --write .",
-    "typecheck": "tsc --noEmit"
-  },
-  "keywords": [
-    "claude",
-    "claude-code",
-    "autonomous",
-    "cron",
-    "ai"
-  ],
-  "license": "MIT",
-  "dependencies": {
-    "nanoid": "^5.1.7",
-    "write-file-atomic": "^7.0.1",
-    "yaml": "^2.8.3",
-    "zod": "^4.3.6"
-  },
-  "devDependencies": {
-    "@biomejs/biome": "^2.4.8",
-    "@types/node": "^25.5.0",
-    "tsup": "^8.5.1",
-    "tsx": "^4.21.0",
-    "typescript": "^5.9.3",
-    "vitest": "^4.1.0"
-  }
+	"name": "claude-auto",
+	"version": "0.1.0",
+	"description": "Autonomous Claude Code cron jobs for continuous codebase improvement",
+	"type": "module",
+	"engines": {
+		"node": ">=22.0.0"
+	},
+	"exports": {
+		".": {
+			"import": "./dist/index.js",
+			"types": "./dist/index.d.ts"
+		}
+	},
+	"scripts": {
+		"build": "tsup",
+		"dev": "tsx watch src/index.ts",
+		"test": "vitest run",
+		"test:watch": "vitest",
+		"lint": "biome check .",
+		"lint:fix": "biome check --write .",
+		"typecheck": "tsc --noEmit"
+	},
+	"keywords": [
+		"claude",
+		"claude-code",
+		"autonomous",
+		"cron",
+		"ai"
+	],
+	"license": "MIT",
+	"dependencies": {
+		"nanoid": "^5.1.7",
+		"write-file-atomic": "^7.0.1",
+		"yaml": "^2.8.3",
+		"zod": "^4.3.6"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^2.4.8",
+		"@types/node": "^25.5.0",
+		"tsup": "^8.5.1",
+		"tsx": "^4.21.0",
+		"typescript": "^5.9.3",
+		"vitest": "^4.1.0"
+	}
 }
