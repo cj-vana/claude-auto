@@ -118,9 +118,9 @@ When your work is complete:
 const MAX_COMMENT_LENGTH = 2000;
 
 /**
- * Git safety rules section text shared between work and feedback prompts.
+ * Git safety rules section text shared between work, feedback, and pipeline prompts.
  */
-const GIT_SAFETY_SECTION = `## Git Safety Rules (NEVER VIOLATE)
+export const GIT_SAFETY_SECTION = `## Git Safety Rules (NEVER VIOLATE)
 - NEVER force push (no --force, -f, or --force-with-lease flags)
 - NEVER commit directly to the base branch -- you are on a work branch
 - NEVER run git push (the orchestrator handles pushing)
