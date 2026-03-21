@@ -13,9 +13,7 @@ describe("validateCronExpression", () => {
 	});
 
 	it('throws CronValidationError for "invalid" expression', () => {
-		expect(() => validateCronExpression("invalid")).toThrow(
-			CronValidationError,
-		);
+		expect(() => validateCronExpression("invalid")).toThrow(CronValidationError);
 		try {
 			validateCronExpression("invalid");
 		} catch (error) {
@@ -25,9 +23,7 @@ describe("validateCronExpression", () => {
 	});
 
 	it("throws CronValidationError for 6-field (seconds) cron expression", () => {
-		expect(() => validateCronExpression("* * * * * *")).toThrow(
-			CronValidationError,
-		);
+		expect(() => validateCronExpression("* * * * * *")).toThrow(CronValidationError);
 		try {
 			validateCronExpression("* * * * * *");
 		} catch (error) {
@@ -111,8 +107,6 @@ describe("validateAndDescribeSchedule", () => {
 	});
 
 	it("throws CronValidationError for an invalid expression", () => {
-		expect(() => validateAndDescribeSchedule("not-valid", "UTC")).toThrow(
-			CronValidationError,
-		);
+		expect(() => validateAndDescribeSchedule("not-valid", "UTC")).toThrow(CronValidationError);
 	});
 });
