@@ -65,6 +65,19 @@ export const JobConfigSchema = z.object({
 		})
 		.default({}),
 	enabled: z.boolean().default(true),
+	model: z
+		.union([
+			z.enum(["sonnet", "opus", "haiku", "opusplan", "default"]),
+			z.string().regex(/^claude-/),
+		])
+		.optional(),
+	budget: z
+		.object({
+			dailyUsd: z.number().positive().optional(),
+			weeklyUsd: z.number().positive().optional(),
+			monthlyUsd: z.number().positive().optional(),
+		})
+		.optional(),
 });
 
 export type JobConfig = z.infer<typeof JobConfigSchema>;

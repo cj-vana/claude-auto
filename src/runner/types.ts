@@ -5,6 +5,7 @@ export interface SpawnOptions {
 	maxBudgetUsd: number;
 	allowedTools: string[];
 	appendSystemPrompt?: string;
+	model?: string;
 	env?: Record<string, string>;
 }
 
@@ -21,7 +22,7 @@ export interface SpawnResult {
 	errors?: string[];
 }
 
-export type RunStatus = "success" | "no-changes" | "error" | "locked" | "git-error" | "paused";
+export type RunStatus = "success" | "no-changes" | "error" | "locked" | "git-error" | "paused" | "budget-exceeded";
 
 export interface RunResult {
 	status: RunStatus;
@@ -38,6 +39,7 @@ export interface RunResult {
 	error?: string;
 	branchName?: string;
 	issueNumber?: number;
+	model?: string;
 }
 
 export interface RunLogEntry extends RunResult {}
