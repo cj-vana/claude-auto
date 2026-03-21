@@ -175,11 +175,12 @@ Plans:
   3. PR feedback iteration stops after the configured max rounds (default 3) and the PR is flagged for human review
   4. Claude skips issues that are too vague, look like spam, or require human decisions -- and logs why it skipped them
   5. Issues labeled "good first issue" or "bug" are picked before unlabeled issues
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 09-01: TBD
-- [ ] 09-02: TBD
+- [ ] 09-01-PLAN.md -- PR feedback types, schema, DB migration, pr-feedback module, checkoutExistingBranch
+- [ ] 09-02-PLAN.md -- Issue triage module with scoring, filtering, and label priority
+- [ ] 09-03-PLAN.md -- Orchestrator integration wiring PR feedback priority and triage into run cycle
 
 ### Phase 10: Agent Pipeline
 **Goal**: Users can enable a multi-stage plan/implement/review pipeline that produces higher-quality PRs through built-in self-review, and Claude handles diverged branches automatically
@@ -228,6 +229,6 @@ Phases execute in numeric order: 8 -> 9 -> 10 -> 11 (Phase 11 can begin after Ph
 | 6. Plugin & Skills | v1.0 | 2/2 | Complete | 2026-03-21 |
 | 7. Polish & Tech Debt | v1.0 | 1/1 | Complete | 2026-03-21 |
 | 8. Foundation | v1.1 | 0/3 | Planned | - |
-| 9. PR Intelligence | v1.1 | 0/? | Not started | - |
+| 9. PR Intelligence | v1.1 | 0/3 | Planned | - |
 | 10. Agent Pipeline | v1.1 | 0/? | Not started | - |
 | 11. Platform & UX | v1.1 | 0/? | Not started | - |
