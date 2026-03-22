@@ -26,6 +26,7 @@ vi.mock("../../src/runner/git-ops.js", () => ({
 }));
 
 import { getDiffFromBase } from "../../src/runner/git-ops.js";
+import { runPipeline } from "../../src/runner/pipeline.js";
 import {
 	buildFixPrompt,
 	buildFixSystemPrompt,
@@ -38,7 +39,6 @@ import {
 	buildReviewSystemPrompt,
 	parseReviewVerdict,
 } from "../../src/runner/pipeline-prompts.js";
-import { runPipeline } from "../../src/runner/pipeline.js";
 import { buildAllowedTools, spawnClaude } from "../../src/runner/spawner.js";
 
 const mockedSpawnClaude = vi.mocked(spawnClaude);
@@ -211,11 +211,7 @@ describe("runPipeline", () => {
 
 		await runPipeline(config, "/tmp/test-repo", "work-branch", [], []);
 
-		expect(mockedBuildImplementPrompt).toHaveBeenCalledWith(
-			config,
-			planResult,
-			expect.any(Array),
-		);
+		expect(mockedBuildImplementPrompt).toHaveBeenCalledWith(config, planResult, expect.any(Array));
 	});
 
 	it("diff output is passed to review prompt", async () => {

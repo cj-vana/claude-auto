@@ -63,8 +63,7 @@ Do NOT make any changes yourself. Only produce the plan.`);
 		const maxDisplay = 5;
 		const displayed = triaged.slice(0, maxDisplay);
 		const issueLines = displayed.map(
-			(issue, i) =>
-				`${i + 1}. **#${issue.number}: ${issue.title}** (score: ${issue.score})`,
+			(issue, i) => `${i + 1}. **#${issue.number}: ${issue.title}** (score: ${issue.score})`,
 		);
 		sections.push(`## Candidate Issues\n\n${issueLines.join("\n")}`);
 	}
@@ -203,11 +202,7 @@ export function buildImplementSystemPrompt(config: JobConfig): string {
  * @param diffOutput - Git diff of implementation changes
  * @returns Multi-section review prompt string
  */
-export function buildReviewPrompt(
-	config: JobConfig,
-	planText: string,
-	diffOutput: string,
-): string {
+export function buildReviewPrompt(config: JobConfig, planText: string, diffOutput: string): string {
 	const sections: string[] = [];
 
 	// Section 1: Task framing with review instructions
@@ -296,8 +291,7 @@ When done fixing the issues:
  * @returns System prompt string for the fix stage
  */
 export function buildFixSystemPrompt(config: JobConfig): string {
-	let prompt =
-		"You are the FIX stage. Address the review feedback precisely.";
+	let prompt = "You are the FIX stage. Address the review feedback precisely.";
 
 	if (config.systemPrompt) {
 		prompt += `\n\n${config.systemPrompt}`;

@@ -20,8 +20,8 @@ import {
 import type { ScoredIssue } from "./issue-triage.js";
 import { triageIssues } from "./issue-triage.js";
 import { acquireLock } from "./lock.js";
-import { runPipeline } from "./pipeline.js";
 import { writeRunLog } from "./logger.js";
+import { runPipeline } from "./pipeline.js";
 import { checkPendingPRFeedback, postPRComment } from "./pr-feedback.js";
 import {
 	buildFeedbackPrompt,
@@ -298,7 +298,13 @@ export async function executeRun(jobId: string): Promise<RunResult> {
 		// Step 5: Pipeline or single-spawn path
 		if (config.pipeline?.enabled) {
 			// --- PIPELINE PATH (PIPE-01, PIPE-02, PIPE-03) ---
-			const pipelineResult = await runPipeline(config, config.repo.path, branchName, runContext, triaged);
+			const pipelineResult = await runPipeline(
+				config,
+				config.repo.path,
+				branchName,
+				runContext,
+				triaged,
+			);
 			const changed = await hasChanges(config.repo.path);
 
 			let prUrl: string | undefined;

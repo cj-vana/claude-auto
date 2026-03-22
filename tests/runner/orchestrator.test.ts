@@ -94,9 +94,9 @@ import {
 import { triageIssues } from "../../src/runner/issue-triage.js";
 // Import mocked modules after mock declarations
 import { acquireLock } from "../../src/runner/lock.js";
-import { runPipeline } from "../../src/runner/pipeline.js";
 import { writeRunLog } from "../../src/runner/logger.js";
 import { executeRun } from "../../src/runner/orchestrator.js";
+import { runPipeline } from "../../src/runner/pipeline.js";
 import { checkPendingPRFeedback, postPRComment } from "../../src/runner/pr-feedback.js";
 import {
 	buildFeedbackPrompt,
@@ -171,9 +171,33 @@ function makeDefaultSpawnResult(overrides: Partial<SpawnResult> = {}): SpawnResu
 function makeDefaultPipelineResult(overrides: Partial<PipelineResult> = {}): PipelineResult {
 	return {
 		stages: [
-			{ stage: "plan", spawnResult: makeDefaultSpawnResult({ summary: "Plan: fix auth bug", costUsd: 0.5, durationMs: 10000, numTurns: 5 }) },
-			{ stage: "implement", spawnResult: makeDefaultSpawnResult({ summary: "Implemented auth fix", costUsd: 2.0, durationMs: 30000, numTurns: 20 }) },
-			{ stage: "review", spawnResult: makeDefaultSpawnResult({ summary: "VERDICT: PASS", costUsd: 0.3, durationMs: 8000, numTurns: 3 }) },
+			{
+				stage: "plan",
+				spawnResult: makeDefaultSpawnResult({
+					summary: "Plan: fix auth bug",
+					costUsd: 0.5,
+					durationMs: 10000,
+					numTurns: 5,
+				}),
+			},
+			{
+				stage: "implement",
+				spawnResult: makeDefaultSpawnResult({
+					summary: "Implemented auth fix",
+					costUsd: 2.0,
+					durationMs: 30000,
+					numTurns: 20,
+				}),
+			},
+			{
+				stage: "review",
+				spawnResult: makeDefaultSpawnResult({
+					summary: "VERDICT: PASS",
+					costUsd: 0.3,
+					durationMs: 8000,
+					numTurns: 3,
+				}),
+			},
 		],
 		reviewVerdict: "pass",
 		totalCostUsd: 2.8,
@@ -787,9 +811,16 @@ describe("executeRun", () => {
 		});
 
 		it("uses single spawnClaude when config.pipeline.enabled is false", async () => {
-			mockedLoadJobConfig.mockResolvedValue(makePipelineConfig({
-				pipeline: { enabled: false, planModel: "opus", implementModel: "sonnet", reviewModel: "sonnet" },
-			}));
+			mockedLoadJobConfig.mockResolvedValue(
+				makePipelineConfig({
+					pipeline: {
+						enabled: false,
+						planModel: "opus",
+						implementModel: "sonnet",
+						reviewModel: "sonnet",
+					},
+				}),
+			);
 
 			await executeRun("test-job");
 
@@ -800,7 +831,17 @@ describe("executeRun", () => {
 		it("passes config, repoPath, branchName, runContext, triaged to runPipeline", async () => {
 			const config = makePipelineConfig();
 			mockedLoadJobConfig.mockResolvedValue(config);
-			const mockContext = [{ id: "run-1", status: "success", pr_url: null, branch_name: "auto/fix", issue_number: null, summary: "Did work", started_at: "2026-03-20T12:00:00Z" }];
+			const mockContext = [
+				{
+					id: "run-1",
+					status: "success",
+					pr_url: null,
+					branch_name: "auto/fix",
+					issue_number: null,
+					summary: "Did work",
+					started_at: "2026-03-20T12:00:00Z",
+				},
+			];
 			mockedLoadRunContext.mockReturnValue(mockContext);
 			const scoredIssues = [{ number: 5, title: "Bug", body: "Fix", labels: ["bug"], score: 70 }];
 			mockedTriageIssues.mockResolvedValue(scoredIssues);
@@ -849,12 +890,14 @@ describe("executeRun", () => {
 
 			expect(result.pipelineStages).toBeDefined();
 			expect(result.pipelineStages).toHaveLength(3);
-			expect(result.pipelineStages![0]).toEqual(expect.objectContaining({
-				stage: "plan",
-				costUsd: 0.5,
-				durationMs: 10000,
-				numTurns: 5,
-			}));
+			expect(result.pipelineStages![0]).toEqual(
+				expect.objectContaining({
+					stage: "plan",
+					costUsd: 0.5,
+					durationMs: 10000,
+					numTurns: 5,
+				}),
+			);
 		});
 
 		it("returns no-changes when pipeline produces no changes", async () => {
@@ -901,11 +944,7 @@ describe("executeRun", () => {
 		it("calls attemptRebase before push on normal path", async () => {
 			await executeRun("test-job");
 
-			expect(mockedAttemptRebase).toHaveBeenCalledWith(
-				"/tmp/test-repo",
-				"main",
-				"origin",
-			);
+			expect(mockedAttemptRebase).toHaveBeenCalledWith("/tmp/test-repo", "main", "origin");
 		});
 
 		it("calls attemptRebase before push on pipeline path", async () => {
@@ -922,11 +961,7 @@ describe("executeRun", () => {
 
 			await executeRun("test-job");
 
-			expect(mockedAttemptRebase).toHaveBeenCalledWith(
-				"/tmp/test-repo",
-				"main",
-				"origin",
-			);
+			expect(mockedAttemptRebase).toHaveBeenCalledWith("/tmp/test-repo", "main", "origin");
 		});
 
 		it("proceeds with push when attemptRebase returns diverged:true, rebased:true", async () => {

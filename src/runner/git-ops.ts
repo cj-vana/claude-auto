@@ -233,12 +233,7 @@ export async function attemptRebase(
  */
 export async function getDiffFromBase(repoPath: string, baseBranch: string): Promise<string> {
 	try {
-		const { stdout } = await execCommand("git", [
-			"-C",
-			repoPath,
-			"diff",
-			`${baseBranch}...HEAD`,
-		]);
+		const { stdout } = await execCommand("git", ["-C", repoPath, "diff", `${baseBranch}...HEAD`]);
 		return stdout.trim();
 	} catch {
 		return "";

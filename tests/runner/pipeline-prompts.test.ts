@@ -240,7 +240,11 @@ describe("buildImplementSystemPrompt", () => {
 describe("buildReviewPrompt", () => {
 	it("includes plan text", () => {
 		const config = makeDefaultConfig();
-		const prompt = buildReviewPrompt(config, "The plan is to fix auth.ts", "diff --git a/src/auth.ts");
+		const prompt = buildReviewPrompt(
+			config,
+			"The plan is to fix auth.ts",
+			"diff --git a/src/auth.ts",
+		);
 
 		expect(prompt).toContain("The plan is to fix auth.ts");
 	});
@@ -407,9 +411,7 @@ describe("buildReadOnlyTools", () => {
 		expect(tools).not.toContain("Edit");
 		expect(tools).not.toContain("Write");
 		expect(tools).not.toEqual(expect.arrayContaining([expect.stringMatching(/Bash\(git add/)]));
-		expect(tools).not.toEqual(
-			expect.arrayContaining([expect.stringMatching(/Bash\(git commit/)]),
-		);
+		expect(tools).not.toEqual(expect.arrayContaining([expect.stringMatching(/Bash\(git commit/)]));
 	});
 
 	it("includes read-only tools: Read, Glob, Grep", () => {
@@ -434,12 +436,8 @@ describe("buildReadOnlyTools", () => {
 		const config = makeDefaultConfig();
 		const tools = buildReadOnlyTools(config);
 
-		expect(tools).toEqual(
-			expect.arrayContaining([expect.stringMatching(/Bash\(gh issue list/)]),
-		);
-		expect(tools).toEqual(
-			expect.arrayContaining([expect.stringMatching(/Bash\(gh issue view/)]),
-		);
+		expect(tools).toEqual(expect.arrayContaining([expect.stringMatching(/Bash\(gh issue list/)]));
+		expect(tools).toEqual(expect.arrayContaining([expect.stringMatching(/Bash\(gh issue view/)]));
 		expect(tools).toEqual(expect.arrayContaining([expect.stringMatching(/Bash\(npm test/)]));
 	});
 });
