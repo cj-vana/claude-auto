@@ -17,12 +17,10 @@ try {
 		settings = JSON.parse(readFileSync(SETTINGS_FILE, "utf-8"));
 	}
 
-	// Add to enabledPlugins with local path source
+	// Register plugin — Claude Code expects enabledPlugins[key] = true
+	// for local plugins discovered via --plugin-dir or npm postinstall
 	settings.enabledPlugins = settings.enabledPlugins || {};
-	settings.enabledPlugins[PLUGIN_KEY] = {
-		source: { source: "local", path: pluginRoot },
-		enabled: true,
-	};
+	settings.enabledPlugins[PLUGIN_KEY] = true;
 
 	writeFileSync(SETTINGS_FILE, JSON.stringify(settings, null, 2) + "\n");
 	console.log("claude-auto: Registered as Claude Code plugin");
