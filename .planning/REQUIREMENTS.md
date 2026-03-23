@@ -54,10 +54,10 @@ Requirements for v1.1 release. Each maps to roadmap phases.
 
 ### Windows Support
 
-- [ ] **WNDW-01**: Jobs can be registered with Windows Task Scheduler via schtasks.exe
-- [ ] **WNDW-02**: Jobs can be removed from Windows Task Scheduler cleanly
-- [ ] **WNDW-03**: Platform detection correctly identifies Windows and selects the Task Scheduler adapter
-- [ ] **WNDW-04**: Cron expressions are translated to Task Scheduler compatible schedules
+- [x] **WNDW-01**: Jobs can be registered with Windows Task Scheduler via schtasks.exe
+- [x] **WNDW-02**: Jobs can be removed from Windows Task Scheduler cleanly
+- [x] **WNDW-03**: Platform detection correctly identifies Windows and selects the Task Scheduler adapter
+- [x] **WNDW-04**: Cron expressions are translated to Task Scheduler compatible schedules
 
 ### TUI Dashboard
 
@@ -116,10 +116,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | MRGC-01 | Phase 10 | Complete |
 | MRGC-02 | Phase 10 | Complete |
 | MRGC-03 | Phase 10 | Complete |
-| WNDW-01 | Phase 11 | Pending |
-| WNDW-02 | Phase 11 | Pending |
-| WNDW-03 | Phase 11 | Pending |
-| WNDW-04 | Phase 11 | Pending |
+| WNDW-01 | Phase 11 | Complete |
+| WNDW-02 | Phase 11 | Complete |
+| WNDW-03 | Phase 11 | Complete |
+| WNDW-04 | Phase 11 | Complete |
 | TUID-01 | Phase 11 | Pending |
 | TUID-02 | Phase 11 | Pending |
 | TUID-03 | Phase 11 | Pending |

@@ -209,11 +209,11 @@ Plans:
   3. Cron expressions like "0 */6 * * *" are correctly translated to Task Scheduler trigger schedules
   4. Running `claude-auto dashboard` launches an interactive terminal UI showing all jobs with status, last run, next run, and cost summary
   5. User can pause, resume, and view logs for any job directly from the dashboard using keyboard navigation
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 11-01: TBD
-- [ ] 11-02: TBD
+- [x] 11-01-PLAN.md -- Windows Task Scheduler adapter, cron-to-schtasks translation, platform detection update
+- [ ] 11-02-PLAN.md -- Interactive TUI dashboard with ink/react, hooks, components, CLI wiring
 
 ## Progress
 
@@ -232,4 +232,4 @@ Phases execute in numeric order: 8 -> 9 -> 10 -> 11 (Phase 11 can begin after Ph
 | 8. Foundation | v1.1 | 0/3 | Planned | - |
 | 9. PR Intelligence | v1.1 | 0/3 | Planned | - |
 | 10. Agent Pipeline | v1.1 | 3/3 | Complete    | 2026-03-22 |
-| 11. Platform & UX | v1.1 | 0/? | Not started | - |
+| 11. Platform & UX | v1.1 | 1/2 | In Progress|  |
