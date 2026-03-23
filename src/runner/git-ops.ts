@@ -61,6 +61,26 @@ export async function hasChanges(repoPath: string): Promise<boolean> {
 }
 
 /**
+ * Check if the current branch has commits ahead of a base reference.
+ * Catches the case where Claude committed its changes (working tree clean)
+ * but the branch has new commits that should be pushed.
+ */
+export async function hasCommitsAhead(repoPath: string, baseRef: string): Promise<boolean> {
+	try {
+		const { stdout } = await execCommand("git", [
+			"-C",
+			repoPath,
+			"log",
+			"--oneline",
+			`${baseRef}..HEAD`,
+		]);
+		return stdout.trim().length > 0;
+	} catch {
+		return false;
+	}
+}
+
+/**
  * Push branch to origin with upstream tracking.
  * Safety: only uses -u flag, no destructive push flags.
  */

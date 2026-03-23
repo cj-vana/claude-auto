@@ -6,7 +6,7 @@ import type { ParsedCommand } from "../types.js";
  * Equivalent to what the cron entry point does, but invoked manually.
  */
 export async function runCommand(args: ParsedCommand["args"]): Promise<void> {
-	const jobId = args.positional as string | undefined;
+	const jobId = args.jobId as string | undefined;
 	if (!jobId) {
 		console.error("Usage: claude-auto run <job-id>");
 		process.exitCode = 1;

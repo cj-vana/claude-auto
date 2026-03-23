@@ -14,6 +14,7 @@ import {
 	createBranch,
 	createPR,
 	hasChanges,
+	hasCommitsAhead,
 	pullLatest,
 	pushBranch,
 } from "./git-ops.js";
@@ -240,7 +241,10 @@ export async function executeRun(jobId: string): Promise<RunResult> {
 			});
 
 			// Push to same branch (PRFB-04)
-			const changed = await hasChanges(config.repo.path);
+			// Check both uncommitted changes AND committed-but-not-pushed changes
+			const changed =
+				(await hasChanges(config.repo.path)) ||
+				(await hasCommitsAhead(config.repo.path, `origin/${feedback.headRefName}`));
 			if (changed) {
 				// Check for divergence before push (same as pipeline/single-spawn paths)
 				const { canPush, conflicts } = await handlePrePushRebase(
@@ -329,7 +333,10 @@ export async function executeRun(jobId: string): Promise<RunResult> {
 				runContext,
 				triaged,
 			);
-			const changed = await hasChanges(config.repo.path);
+			// Check both uncommitted changes AND committed-but-not-pushed changes
+			const changed =
+				(await hasChanges(config.repo.path)) ||
+				(await hasCommitsAhead(config.repo.path, config.repo.branch));
 
 			let prUrl: string | undefined;
 			if (changed) {
@@ -432,8 +439,10 @@ export async function executeRun(jobId: string): Promise<RunResult> {
 			model: config.model,
 		});
 
-		// Step 7: Check for changes
-		const changed = await hasChanges(config.repo.path);
+		// Step 7: Check for changes (uncommitted OR committed-but-not-pushed)
+		const changed =
+			(await hasChanges(config.repo.path)) ||
+			(await hasCommitsAhead(config.repo.path, config.repo.branch));
 
 		let prUrl: string | undefined;
 		if (changed) {

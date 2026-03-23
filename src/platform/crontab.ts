@@ -1,3 +1,4 @@
+import { existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { JobConfig } from "../core/types.js";
@@ -56,14 +57,21 @@ async function writeCrontab(content: string): Promise<void> {
 }
 
 /**
- * Resolve the runner script path. For now, compute relative to this module.
+ * Resolve the runner script path.
+ * When bundled by tsup, this file lives in dist/ alongside claude-auto-run.js.
+ * When running from source (src/platform/), navigate up to project root.
  */
 function getRunnerPath(): string {
 	try {
 		const currentDir = dirname(fileURLToPath(import.meta.url));
+		// Bundled: runner is a sibling in the same dist/ directory
+		const siblingPath = join(currentDir, "claude-auto-run.js");
+		if (existsSync(siblingPath)) {
+			return siblingPath;
+		}
+		// Source: navigate from src/platform/ up to project root
 		return join(currentDir, "..", "..", "dist", "claude-auto-run.js");
 	} catch {
-		// Fallback for test/bundle environments
 		return join(process.cwd(), "dist", "claude-auto-run.js");
 	}
 }

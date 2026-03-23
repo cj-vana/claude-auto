@@ -16,6 +16,7 @@ vi.mock("../../src/runner/git-ops.js", () => ({
 	pullLatest: vi.fn(),
 	createBranch: vi.fn(),
 	hasChanges: vi.fn(),
+	hasCommitsAhead: vi.fn(),
 	pushBranch: vi.fn(),
 	createPR: vi.fn(),
 	checkoutExistingBranch: vi.fn(),
@@ -88,6 +89,7 @@ import {
 	createBranch,
 	createPR,
 	hasChanges,
+	hasCommitsAhead,
 	pullLatest,
 	pushBranch,
 } from "../../src/runner/git-ops.js";
@@ -112,6 +114,7 @@ const mockedLoadJobConfig = vi.mocked(loadJobConfig);
 const mockedPullLatest = vi.mocked(pullLatest);
 const mockedCreateBranch = vi.mocked(createBranch);
 const mockedHasChanges = vi.mocked(hasChanges);
+const mockedHasCommitsAhead = vi.mocked(hasCommitsAhead);
 const mockedPushBranch = vi.mocked(pushBranch);
 const mockedCreatePR = vi.mocked(createPR);
 const mockedSpawnClaude = vi.mocked(spawnClaude);
@@ -219,6 +222,7 @@ describe("executeRun", () => {
 		mockedPullLatest.mockResolvedValue(undefined);
 		mockedCreateBranch.mockResolvedValue("claude-auto/test-job/2026-03-21T00-00-00");
 		mockedHasChanges.mockResolvedValue(true);
+		mockedHasCommitsAhead.mockResolvedValue(false);
 		mockedPushBranch.mockResolvedValue(undefined);
 		mockedCreatePR.mockResolvedValue("https://github.com/test/repo/pull/42");
 		mockedSpawnClaude.mockResolvedValue(makeDefaultSpawnResult());
