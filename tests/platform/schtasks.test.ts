@@ -1,5 +1,4 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { ExecResult } from "../../src/util/exec.js";
 
 // Mock execCommand so we never touch real schtasks
 vi.mock("../../src/util/exec.js", () => ({
@@ -98,7 +97,7 @@ describe("SchtasksScheduler", () => {
 				(c) => c[0] === "schtasks" && c[1][0] === "/create",
 			);
 			expect(createCall).toBeDefined();
-			const args = createCall![1];
+			const args = createCall?.[1];
 			expect(args).toContain("/create");
 			expect(args).toContain("/tn");
 			expect(args).toContain("claude-auto-test-job");
@@ -142,7 +141,7 @@ describe("SchtasksScheduler", () => {
 				(c) => c[0] === "schtasks" && c[1][0] === "/create",
 			);
 			expect(createCall).toBeDefined();
-			const args = createCall![1];
+			const args = createCall?.[1];
 			expect(args).toContain("/sc");
 			expect(args).toContain("MINUTE");
 			expect(args).toContain("/mo");
@@ -203,9 +202,7 @@ describe("SchtasksScheduler", () => {
 			const { SchtasksScheduler } = await import("../../src/platform/schtasks.js");
 			const scheduler = new SchtasksScheduler();
 
-			mockExec.mockRejectedValue(
-				new Error("ERROR: The system cannot find the file specified."),
-			);
+			mockExec.mockRejectedValue(new Error("ERROR: The system cannot find the file specified."));
 
 			await expect(scheduler.unregister("nonexistent-job")).resolves.toBeUndefined();
 		});
@@ -228,9 +225,7 @@ describe("SchtasksScheduler", () => {
 			const { SchtasksScheduler } = await import("../../src/platform/schtasks.js");
 			const scheduler = new SchtasksScheduler();
 
-			mockExec.mockRejectedValue(
-				new Error("ERROR: The system cannot find the file specified."),
-			);
+			mockExec.mockRejectedValue(new Error("ERROR: The system cannot find the file specified."));
 
 			expect(await scheduler.isRegistered("nonexistent-job")).toBe(false);
 		});

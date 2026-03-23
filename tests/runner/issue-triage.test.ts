@@ -1,11 +1,11 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock execCommand before importing the module under test
 vi.mock("../../src/util/exec.js", () => ({
 	execCommand: vi.fn(),
 }));
 
-import { type ScoredIssue, triageIssues } from "../../src/runner/issue-triage.js";
+import { triageIssues } from "../../src/runner/issue-triage.js";
 import { execCommand } from "../../src/util/exec.js";
 
 const mockExecCommand = vi.mocked(execCommand);

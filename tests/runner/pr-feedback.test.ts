@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock the exec module
 vi.mock("../../src/util/exec.js", () => ({
@@ -304,11 +304,11 @@ describe("pr-feedback module", () => {
 			const result = await checkPendingPRFeedback("/repo", "job1", 3);
 
 			expect(result).not.toBeNull();
-			expect(result!.number).toBe(10);
-			expect(result!.title).toBe("Auto fix");
-			expect(result!.unresolvedThreads).toHaveLength(1);
-			expect(result!.currentRound).toBe(1);
-			expect(result!.reviewDecision).toBe("CHANGES_REQUESTED");
+			expect(result?.number).toBe(10);
+			expect(result?.title).toBe("Auto fix");
+			expect(result?.unresolvedThreads).toHaveLength(1);
+			expect(result?.currentRound).toBe(1);
+			expect(result?.reviewDecision).toBe("CHANGES_REQUESTED");
 		});
 
 		it("returns null when reviewDecision is not CHANGES_REQUESTED", async () => {

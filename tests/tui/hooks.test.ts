@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { JobConfig } from "../../src/core/types.js";
-import type { RunLogEntry } from "../../src/runner/types.js";
 import type { CostSummaryRow } from "../../src/runner/cost-tracker.js";
+import type { RunLogEntry } from "../../src/runner/types.js";
 
 // Mock all dependencies before importing the module under test
 vi.mock("../../src/core/job-manager.js", () => ({
@@ -20,12 +20,12 @@ vi.mock("../../src/core/schedule.js", () => ({
 	getNextRuns: vi.fn(),
 }));
 
-// Import after mocks are set up
-import { loadJobsWithMeta } from "../../src/tui/hooks/use-jobs.js";
 import { listJobs } from "../../src/core/job-manager.js";
+import { getNextRuns } from "../../src/core/schedule.js";
 import { getCostSummary } from "../../src/runner/cost-tracker.js";
 import { listRunLogs } from "../../src/runner/logger.js";
-import { getNextRuns } from "../../src/core/schedule.js";
+// Import after mocks are set up
+import { loadJobsWithMeta } from "../../src/tui/hooks/use-jobs.js";
 
 const mockListJobs = vi.mocked(listJobs);
 const mockGetCostSummary = vi.mocked(getCostSummary);

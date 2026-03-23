@@ -119,13 +119,13 @@ describe("cost-tracker", () => {
 
 			const jobA = rows.find((r) => r.job_id === "job-a");
 			expect(jobA).toBeDefined();
-			expect(jobA!.runs).toBe(2);
-			expect(jobA!.total_cost).toBeCloseTo(5.0, 2);
+			expect(jobA?.runs).toBe(2);
+			expect(jobA?.total_cost).toBeCloseTo(5.0, 2);
 
 			const jobB = rows.find((r) => r.job_id === "job-b");
 			expect(jobB).toBeDefined();
-			expect(jobB!.runs).toBe(1);
-			expect(jobB!.total_cost).toBeCloseTo(1.5, 2);
+			expect(jobB?.runs).toBe(1);
+			expect(jobB?.total_cost).toBeCloseTo(1.5, 2);
 		});
 
 		it("getCostSummary returns per-day breakdown when jobId is specified", () => {
@@ -138,8 +138,8 @@ describe("cost-tracker", () => {
 
 			const todayRow = rows.find((r) => r.day === today);
 			expect(todayRow).toBeDefined();
-			expect(todayRow!.runs).toBe(2);
-			expect(todayRow!.total_cost).toBeCloseTo(5.0, 2);
+			expect(todayRow?.runs).toBe(2);
+			expect(todayRow?.total_cost).toBeCloseTo(5.0, 2);
 		});
 
 		it("getCostSummary returns empty results when no runs exist", () => {

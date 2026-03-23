@@ -132,7 +132,7 @@ function getRunnerPath(): string {
  * Task name format: `claude-auto-{jobId}`
  */
 export class SchtasksScheduler implements Scheduler {
-	async register(job: JobConfig, env?: Record<string, string>): Promise<void> {
+	async register(job: JobConfig, _env?: Record<string, string>): Promise<void> {
 		const registered = await this.isRegistered(job.id);
 		if (registered) {
 			throw new SchedulerError("win32", `Job "${job.id}" is already registered`);

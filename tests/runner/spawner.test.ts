@@ -35,7 +35,7 @@ function emitResponse(
 	exitCode = 0,
 ) {
 	process.nextTick(() => {
-		child.stdout.write(JSON.stringify(jsonData) + "\n");
+		child.stdout.write(`${JSON.stringify(jsonData)}\n`);
 		child.stdout.end();
 		child.stderr.end();
 		child.emit("close", exitCode);

@@ -1,5 +1,4 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { ExecResult } from "../../src/util/exec.js";
 
 // Mock execCommand so we never touch real crontab
 vi.mock("../../src/util/exec.js", () => ({
@@ -49,7 +48,7 @@ describe("CrontabScheduler", () => {
 			const scheduler = new CrontabScheduler();
 
 			// Mock crontab -l returning existing content
-			mockExec.mockImplementation(async (cmd, args, opts) => {
+			mockExec.mockImplementation(async (cmd, args, _opts) => {
 				if (cmd === "crontab" && args[0] === "-l") {
 					return { stdout: "# existing\n0 0 * * * /bin/echo hello\n", stderr: "" };
 				}
@@ -83,7 +82,7 @@ describe("CrontabScheduler", () => {
 			// Should have called crontab - with stdin containing the new entry
 			const writeCall = mockExec.mock.calls.find((c) => c[0] === "crontab" && c[1][0] === "-");
 			expect(writeCall).toBeDefined();
-			const stdin = writeCall![2]?.stdin;
+			const stdin = writeCall?.[2]?.stdin;
 			expect(stdin).toContain("# claude-auto:test-job");
 			expect(stdin).toContain("CRON_TZ=America/Chicago");
 			expect(stdin).toContain("0 */6 * * *");
@@ -143,7 +142,7 @@ describe("CrontabScheduler", () => {
 				"0 9 * * * /bin/node runner.js --job-id keep-this >> /path/to/log 2>&1",
 			].join("\n");
 
-			mockExec.mockImplementation(async (cmd, args, opts) => {
+			mockExec.mockImplementation(async (cmd, args, _opts) => {
 				if (cmd === "crontab" && args[0] === "-l") {
 					return { stdout: existingCrontab, stderr: "" };
 				}
@@ -157,7 +156,7 @@ describe("CrontabScheduler", () => {
 
 			const writeCall = mockExec.mock.calls.find((c) => c[0] === "crontab" && c[1][0] === "-");
 			expect(writeCall).toBeDefined();
-			const stdin = writeCall![2]?.stdin;
+			const stdin = writeCall?.[2]?.stdin;
 			// Should NOT contain the removed job
 			expect(stdin).not.toContain("claude-auto:job-to-remove");
 			expect(stdin).not.toContain("CRON_TZ=America/Chicago");

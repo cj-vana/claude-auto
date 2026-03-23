@@ -57,7 +57,7 @@ describe("lock module", () => {
 			const release = await acquireLock("test-job-3");
 			expect(release).not.toBeNull();
 
-			await release!();
+			await release?.();
 			expect(mockRelease).toHaveBeenCalledOnce();
 		});
 

@@ -890,7 +890,7 @@ describe("executeRun", () => {
 
 			expect(result.pipelineStages).toBeDefined();
 			expect(result.pipelineStages).toHaveLength(3);
-			expect(result.pipelineStages![0]).toEqual(
+			expect(result.pipelineStages?.[0]).toEqual(
 				expect.objectContaining({
 					stage: "plan",
 					costUsd: 0.5,

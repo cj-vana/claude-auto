@@ -1,5 +1,5 @@
-import { useState, useCallback } from "react";
-import { useInput, useApp } from "ink";
+import { useApp, useInput } from "ink";
+import { useCallback, useState } from "react";
 import type { JobWithMeta } from "./use-jobs.js";
 
 /**

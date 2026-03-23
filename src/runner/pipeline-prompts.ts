@@ -202,7 +202,11 @@ export function buildImplementSystemPrompt(config: JobConfig): string {
  * @param diffOutput - Git diff of implementation changes
  * @returns Multi-section review prompt string
  */
-export function buildReviewPrompt(config: JobConfig, planText: string, diffOutput: string): string {
+export function buildReviewPrompt(
+	_config: JobConfig,
+	planText: string,
+	diffOutput: string,
+): string {
 	const sections: string[] = [];
 
 	// Section 1: Task framing with review instructions
@@ -261,7 +265,7 @@ export function buildReviewSystemPrompt(config: JobConfig): string {
  * @param reviewText - The review stage output text with issues to fix
  * @returns Multi-section fix prompt string
  */
-export function buildFixPrompt(config: JobConfig, reviewText: string): string {
+export function buildFixPrompt(_config: JobConfig, reviewText: string): string {
 	const sections: string[] = [];
 
 	// Section 1: Task framing

@@ -1,4 +1,4 @@
-import { mkdir, readFile, rm } from "node:fs/promises";
+import { readFile, rm } from "node:fs/promises";
 import { homedir, tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
@@ -124,7 +124,7 @@ describe("JobConfigSchema", () => {
 });
 
 describe("writeFileSafe", () => {
-	const testDir = join(tmpdir(), "claude-auto-test-" + Date.now());
+	const testDir = join(tmpdir(), `claude-auto-test-${Date.now()}`);
 
 	it("writes content to a file path (creates parent dirs) and can be read back", async () => {
 		const filePath = join(testDir, "nested", "dir", "test.txt");

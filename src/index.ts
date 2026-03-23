@@ -48,12 +48,12 @@ export { CrontabScheduler } from "./platform/crontab.js";
 export { detectPlatform, type Platform } from "./platform/detect.js";
 export type { CalendarInterval } from "./platform/launchd.js";
 export { cronToCalendarIntervals, LaunchdScheduler } from "./platform/launchd.js";
-export { cronToSchtasks, SchtasksScheduler } from "./platform/schtasks.js";
 export {
 	createScheduler,
 	type RegisteredJob,
 	type Scheduler,
 } from "./platform/scheduler.js";
+export { cronToSchtasks, SchtasksScheduler } from "./platform/schtasks.js";
 export type { RunContext } from "./runner/context-store.js";
 export { formatContextWindow, loadRunContext, saveRunContext } from "./runner/context-store.js";
 export type { BudgetConfig, CostSummaryRow, DailyCostRow } from "./runner/cost-tracker.js";

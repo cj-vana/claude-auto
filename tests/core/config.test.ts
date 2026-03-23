@@ -316,11 +316,11 @@ describe("pipeline config validation", () => {
 			pipeline: {},
 		});
 		expect(result.pipeline).toBeDefined();
-		expect(result.pipeline!.enabled).toBe(false);
-		expect(result.pipeline!.planModel).toBe("haiku");
-		expect(result.pipeline!.implementModel).toBe("opus");
-		expect(result.pipeline!.reviewModel).toBe("sonnet");
-		expect(result.pipeline!.maxReviewRounds).toBe(1);
+		expect(result.pipeline?.enabled).toBe(false);
+		expect(result.pipeline?.planModel).toBe("haiku");
+		expect(result.pipeline?.implementModel).toBe("opus");
+		expect(result.pipeline?.reviewModel).toBe("sonnet");
+		expect(result.pipeline?.maxReviewRounds).toBe(1);
 	});
 
 	it("accepts pipeline config with enabled: true and custom models", () => {
@@ -334,11 +334,11 @@ describe("pipeline config validation", () => {
 				maxReviewRounds: 3,
 			},
 		});
-		expect(result.pipeline!.enabled).toBe(true);
-		expect(result.pipeline!.planModel).toBe("opus");
-		expect(result.pipeline!.implementModel).toBe("sonnet");
-		expect(result.pipeline!.reviewModel).toBe("haiku");
-		expect(result.pipeline!.maxReviewRounds).toBe(3);
+		expect(result.pipeline?.enabled).toBe(true);
+		expect(result.pipeline?.planModel).toBe("opus");
+		expect(result.pipeline?.implementModel).toBe("sonnet");
+		expect(result.pipeline?.reviewModel).toBe("haiku");
+		expect(result.pipeline?.maxReviewRounds).toBe(3);
 	});
 
 	it("rejects pipeline config with invalid model string (not alias, not claude-*)", () => {
@@ -372,6 +372,6 @@ describe("pipeline config validation", () => {
 				planModel: "claude-3-5-haiku-latest",
 			},
 		});
-		expect(result.pipeline!.planModel).toBe("claude-3-5-haiku-latest");
+		expect(result.pipeline?.planModel).toBe("claude-3-5-haiku-latest");
 	});
 });

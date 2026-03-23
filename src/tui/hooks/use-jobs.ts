@@ -1,9 +1,8 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { listJobs } from "../../core/job-manager.js";
-import { getCostSummary, type CostSummaryRow } from "../../runner/cost-tracker.js";
-import { listRunLogs } from "../../runner/logger.js";
 import { getNextRuns } from "../../core/schedule.js";
-import type { JobConfig } from "../../core/types.js";
+import { type CostSummaryRow, getCostSummary } from "../../runner/cost-tracker.js";
+import { listRunLogs } from "../../runner/logger.js";
 import type { RunLogEntry } from "../../runner/types.js";
 
 /**
@@ -33,7 +32,7 @@ export async function loadJobsWithMeta(): Promise<JobWithMeta[]> {
 	const jobs = await listJobs();
 
 	// Load cost data (best-effort -- DB may not exist)
-	let costMap: Map<string, number> = new Map();
+	const costMap: Map<string, number> = new Map();
 	try {
 		const costRows = getCostSummary() as CostSummaryRow[];
 		for (const row of costRows) {
@@ -105,7 +104,7 @@ export function useJobs(pollIntervalMs = 3000): {
 	const [jobs, setJobs] = useState<JobWithMeta[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
-	const [refreshTick, setRefreshTick] = useState(0);
+	const [_refreshTick, setRefreshTick] = useState(0);
 
 	const refresh = () => setRefreshTick((t) => t + 1);
 
@@ -135,7 +134,7 @@ export function useJobs(pollIntervalMs = 3000): {
 			cancelled = true;
 			clearInterval(timer);
 		};
-	}, [pollIntervalMs, refreshTick]);
+	}, [pollIntervalMs]);
 
 	return { jobs, loading, error, refresh };
 }

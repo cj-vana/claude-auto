@@ -73,7 +73,7 @@ function getRunnerPath(): string {
  * Uses comment-tagged crontab entries for identification and CRUD.
  */
 export class CrontabScheduler implements Scheduler {
-	async register(job: JobConfig, env?: Record<string, string>): Promise<void> {
+	async register(job: JobConfig, _env?: Record<string, string>): Promise<void> {
 		const registered = await this.isRegistered(job.id);
 		if (registered) {
 			throw new SchedulerError("crontab", `Job "${job.id}" is already registered`);
@@ -85,7 +85,7 @@ export class CrontabScheduler implements Scheduler {
 		const command = `${process.execPath} ${runnerPath} --job-id ${job.id}`;
 		const block = buildEntryBlock(job.id, job.schedule.cron, command, job.schedule.timezone);
 
-		const updated = current.trimEnd() + "\n" + block + "\n";
+		const updated = `${current.trimEnd()}\n${block}\n`;
 		await writeCrontab(updated);
 	}
 

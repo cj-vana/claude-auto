@@ -22,8 +22,8 @@ const mockExec = vi.mocked(execCommand);
 const mockWriteFile = vi.mocked(writeFile);
 const mockUnlink = vi.mocked(unlink);
 const mockAccess = vi.mocked(access);
-const mockReaddir = vi.mocked(readdir);
-const mockReadFile = vi.mocked(readFile);
+const _mockReaddir = vi.mocked(readdir);
+const _mockReadFile = vi.mocked(readFile);
 
 describe("cronToCalendarIntervals", () => {
 	it("converts '0 9 * * *' to calendarIntervals with Hour:9 Minute:0", async () => {
@@ -38,7 +38,7 @@ describe("cronToCalendarIntervals", () => {
 		const result = cronToCalendarIntervals("0 */6 * * *");
 		expect(result.calendarIntervals).toBeDefined();
 		expect(result.calendarIntervals).toHaveLength(4);
-		const hours = result.calendarIntervals!.map((ci) => ci.Hour);
+		const hours = result.calendarIntervals?.map((ci) => ci.Hour);
 		expect(hours).toEqual([0, 6, 12, 18]);
 		// All should have Minute: 0
 		for (const ci of result.calendarIntervals!) {
@@ -258,9 +258,9 @@ describe("LaunchdScheduler", () => {
 			);
 			expect(bootstrapCall).toBeDefined();
 			// gui/{uid}
-			expect(bootstrapCall![1][1]).toMatch(/^gui\/\d+$/);
+			expect(bootstrapCall?.[1][1]).toMatch(/^gui\/\d+$/);
 			// plist path
-			expect(bootstrapCall![1][2]).toBe(paths.plistPath("bootstrap-test"));
+			expect(bootstrapCall?.[1][2]).toBe(paths.plistPath("bootstrap-test"));
 		});
 	});
 
@@ -278,7 +278,7 @@ describe("LaunchdScheduler", () => {
 				(c) => c[0] === "launchctl" && c[1][0] === "bootout",
 			);
 			expect(bootoutCall).toBeDefined();
-			expect(bootoutCall![1][1]).toMatch(/^gui\/\d+\/com\.claude-auto\.unreg-test$/);
+			expect(bootoutCall?.[1][1]).toMatch(/^gui\/\d+\/com\.claude-auto\.unreg-test$/);
 		});
 
 		it("deletes the plist file after bootout", async () => {

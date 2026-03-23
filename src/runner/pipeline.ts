@@ -50,7 +50,7 @@ const BUDGET_FIX = 0.15;
 export async function runPipeline(
 	config: JobConfig,
 	repoPath: string,
-	branchName: string,
+	_branchName: string,
 	runContext: RunContext[],
 	triaged: ScoredIssue[],
 ): Promise<PipelineResult> {
