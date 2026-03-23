@@ -55,7 +55,7 @@ function buildCommentBody(
 	status: RunStatus,
 	context: { prUrl?: string; summary?: string; error?: string; jobName: string },
 ): string {
-	const footer = "\n\n---\n*Automated by [claude-auto](https://github.com/your-org/claude-auto)*";
+	const footer = "\n\n---\n*Automated by [claude-auto](https://github.com/cj-vana/claude-auto)*";
 
 	switch (status) {
 		case "success": {
