@@ -1,7 +1,7 @@
 import type { JobConfig } from "../core/types.js";
 import type { RunResult, RunStatus } from "../runner/types.js";
 
-export type NotificationEvent = "success" | "no-changes" | "error" | "locked" | "git-error";
+export type NotificationEvent = "success" | "no-changes" | "error" | "locked" | "git-error" | "budget-exceeded" | "merge-conflict" | "needs-human-review";
 
 export interface NotificationPayload {
 	event: NotificationEvent;
@@ -44,10 +44,15 @@ export function shouldNotify(status: RunStatus, triggers: EventTriggers): boolea
 			return triggers.onSuccess !== false;
 		case "error":
 		case "git-error":
+		case "merge-conflict":
+		case "needs-human-review":
+			return triggers.onFailure !== false;
+		case "budget-exceeded":
 			return triggers.onFailure !== false;
 		case "no-changes":
 			return triggers.onNoChanges === true;
 		case "locked":
+		case "paused":
 			return triggers.onLocked === true;
 		default:
 			return false;
