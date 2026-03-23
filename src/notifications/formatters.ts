@@ -17,6 +17,9 @@ const EVENT_TITLES: Record<NotificationEvent, string> = {
 	"git-error": "Run Error",
 	"no-changes": "No Changes",
 	locked: "Run Skipped",
+	"budget-exceeded": "Budget Exceeded",
+	"merge-conflict": "Merge Conflict",
+	"needs-human-review": "Needs Human Review",
 };
 
 const DISCORD_COLORS: Record<NotificationEvent, number> = {
@@ -25,6 +28,9 @@ const DISCORD_COLORS: Record<NotificationEvent, number> = {
 	"git-error": 0xff0000,
 	"no-changes": 0xffaa00,
 	locked: 0x808080,
+	"budget-exceeded": 0xff00ff,
+	"merge-conflict": 0xff0000,
+	"needs-human-review": 0x00ccff,
 };
 
 const SLACK_EMOJI: Record<NotificationEvent, string> = {
@@ -33,6 +39,9 @@ const SLACK_EMOJI: Record<NotificationEvent, string> = {
 	"git-error": "\u274c",
 	"no-changes": "\ud83d\udd0d",
 	locked: "\ud83d\udd12",
+	"budget-exceeded": "\ud83d\udcb0",
+	"merge-conflict": "\u26a0\ufe0f",
+	"needs-human-review": "\ud83d\udc41\ufe0f",
 };
 
 /**

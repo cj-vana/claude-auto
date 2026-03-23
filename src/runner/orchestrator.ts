@@ -245,7 +245,7 @@ export async function executeRun(jobId: string): Promise<RunResult> {
 				// Check for divergence before push (same as pipeline/single-spawn paths)
 				const { canPush, conflicts } = await handlePrePushRebase(
 					config.repo.path,
-					config.branch,
+					config.repo.branch,
 					feedback.headRefName,
 				);
 				if (!canPush) {
