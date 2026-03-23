@@ -54,7 +54,10 @@ export async function runPipeline(
 	runContext: RunContext[],
 	triaged: ScoredIssue[],
 ): Promise<PipelineResult> {
-	const pipeline = config.pipeline!;
+	if (!config.pipeline) {
+		throw new Error("runPipeline called without pipeline config");
+	}
+	const pipeline = config.pipeline;
 	const totalBudget = config.guardrails.maxBudgetUsd;
 	const stages: PipelineStageResult[] = [];
 

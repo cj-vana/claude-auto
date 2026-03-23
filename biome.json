@@ -10,7 +10,15 @@
 	"linter": {
 		"enabled": true,
 		"rules": {
-			"recommended": true
+			"recommended": true,
+			"style": {
+				"noNonNullAssertion": "warn",
+				"useTemplate": "warn"
+			},
+			"correctness": {
+				"noUnusedImports": "warn",
+				"noUnusedFunctionParameters": "warn"
+			}
 		}
 	},
 	"formatter": {
