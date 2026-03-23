@@ -117,6 +117,8 @@ export type {
 	SpawnOptions,
 	SpawnResult,
 } from "./runner/types.js";
+// Phase 11: TUI Dashboard
+export { launchDashboard } from "./tui/index.js";
 export {
 	ConfigParseError,
 	ConfigValidationError,

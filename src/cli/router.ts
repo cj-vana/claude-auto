@@ -176,6 +176,11 @@ export async function runCli(argv: string[]): Promise<void> {
 			await costCommand(parsed.args);
 			break;
 		}
+		case "dashboard": {
+			const { launchDashboard } = await import("../tui/index.js");
+			await launchDashboard();
+			break;
+		}
 		default:
 			console.error(`Command '${parsed.command}' is not yet implemented.`);
 			break;

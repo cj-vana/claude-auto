@@ -9,6 +9,7 @@ export type CliCommand =
 	| "remove"
 	| "edit"
 	| "cost"
+	| "dashboard"
 	| "help";
 
 export interface ParsedCommand {
@@ -29,5 +30,6 @@ export const COMMANDS: Record<string, string> = {
 	edit: "Edit a job configuration",
 	remove: "Remove a job and unregister its schedule",
 	cost: "Show cost summary per job or per run",
+	dashboard: "Launch interactive terminal dashboard",
 	help: "Show this help message",
 };

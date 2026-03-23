@@ -47,6 +47,11 @@ describe("parseCommand", () => {
 		errorSpy.mockRestore();
 	});
 
+	it("parseCommand('dashboard') returns { command: 'dashboard', args: {} }", () => {
+		const result = parseCommand(["dashboard"]);
+		expect(result).toEqual({ command: "dashboard", args: {} });
+	});
+
 	it("parseCommand with --restrict-paths flag returns restrictPaths in args", () => {
 		const result = parseCommand([
 			"create",
