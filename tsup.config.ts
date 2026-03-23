@@ -17,4 +17,16 @@ export default defineConfig([
 		sourcemap: true,
 		target: "node22",
 	},
+	{
+		entry: ["src/tui/index.tsx"],
+		format: ["esm"],
+		dts: false,
+		clean: false,
+		sourcemap: true,
+		target: "node22",
+		esbuildOptions(options) {
+			options.jsx = "automatic";
+		},
+		external: ["ink", "react", "@inkjs/ui"],
+	},
 ]);
