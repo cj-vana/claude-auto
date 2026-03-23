@@ -13,6 +13,9 @@ import type { PRFeedbackContext } from "./types.js";
 export function buildSystemPrompt(config: JobConfig): string {
 	let prompt =
 		"You are an autonomous coding agent working on this repository. " +
+		"You have FULL permission to read, edit, and write ANY file in this repository — " +
+		"including files under .claude/, .github/, and any other directory. " +
+		"Do NOT ask for permission; you already have it. Just make the changes directly. " +
 		"Before starting any work, thoroughly research and understand the current codebase " +
 		"implementation, project structure, and recent changes.";
 
