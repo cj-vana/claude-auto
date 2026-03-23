@@ -10,19 +10,12 @@ Claude researches your codebase, picks the highest-value work (open issues, bugs
 npm install -g @cjvana/claude-auto
 ```
 
-The postinstall script automatically registers `claude-auto` as a Claude Code plugin via a local marketplace. After install, restart Claude Code and `/claude-auto:setup` will be available.
+The postinstall script copies slash commands to `~/.claude/commands/claude-auto/`. Restart Claude Code and `/claude-auto:setup` will be available in autocomplete.
 
-**If auto-registration fails**, register manually:
-
-```bash
-claude plugin marketplace add ~/.claude-auto-marketplace
-claude plugin install claude-auto@claude-auto-local
-```
-
-Or load per-session without installing:
+**If auto-install fails**, copy manually:
 
 ```bash
-claude --plugin-dir $(npm root -g)/@cjvana/claude-auto
+cp $(npm root -g)/@cjvana/claude-auto/skills/*/SKILL.md ~/.claude/commands/claude-auto/
 ```
 
 ### Requirements
