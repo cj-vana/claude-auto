@@ -33,8 +33,8 @@ export const JobConfigSchema = z.object({
 	systemPrompt: z.string().optional(),
 	guardrails: z
 		.object({
-			maxTurns: z.number().int().positive().default(50),
-			maxBudgetUsd: z.number().positive().default(5.0),
+			maxTurns: z.number().int().nonnegative().default(50),
+			maxBudgetUsd: z.number().nonnegative().default(5.0),
 			noNewDependencies: z.boolean().default(false),
 			noArchitectureChanges: z.boolean().default(false),
 			bugFixOnly: z.boolean().default(false),

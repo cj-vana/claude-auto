@@ -65,12 +65,16 @@ export function spawnClaude(options: SpawnOptions): Promise<SpawnResult> {
 			options.prompt,
 			"--output-format",
 			"json",
-			"--max-turns",
-			String(options.maxTurns),
-			"--max-budget-usd",
-			String(options.maxBudgetUsd),
 			"--dangerously-skip-permissions",
 		];
+
+		// Only pass limits when > 0 (0 means unlimited)
+		if (options.maxTurns && options.maxTurns > 0) {
+			args.push("--max-turns", String(options.maxTurns));
+		}
+		if (options.maxBudgetUsd && options.maxBudgetUsd > 0) {
+			args.push("--max-budget-usd", String(options.maxBudgetUsd));
+		}
 
 		if (options.appendSystemPrompt) {
 			args.push("--append-system-prompt", options.appendSystemPrompt);
