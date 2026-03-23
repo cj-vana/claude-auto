@@ -61,10 +61,10 @@ Requirements for v1.1 release. Each maps to roadmap phases.
 
 ### TUI Dashboard
 
-- [ ] **TUID-01**: User can launch an interactive terminal dashboard via `claude-auto dashboard`
-- [ ] **TUID-02**: Dashboard shows all jobs with live status, last run, next run, and cost summary
-- [ ] **TUID-03**: Dashboard supports keyboard navigation to pause, resume, or view logs for a job
-- [ ] **TUID-04**: Dashboard auto-refreshes when run logs are updated
+- [x] **TUID-01**: User can launch an interactive terminal dashboard via `claude-auto dashboard`
+- [x] **TUID-02**: Dashboard shows all jobs with live status, last run, next run, and cost summary
+- [x] **TUID-03**: Dashboard supports keyboard navigation to pause, resume, or view logs for a job
+- [x] **TUID-04**: Dashboard auto-refreshes when run logs are updated
 
 ## Future Requirements
 
@@ -120,10 +120,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | WNDW-02 | Phase 11 | Complete |
 | WNDW-03 | Phase 11 | Complete |
 | WNDW-04 | Phase 11 | Complete |
-| TUID-01 | Phase 11 | Pending |
-| TUID-02 | Phase 11 | Pending |
-| TUID-03 | Phase 11 | Pending |
-| TUID-04 | Phase 11 | Pending |
+| TUID-01 | Phase 11 | Complete |
+| TUID-02 | Phase 11 | Complete |
+| TUID-03 | Phase 11 | Complete |
+| TUID-04 | Phase 11 | Complete |
 
 **Coverage:**
 - v1.1 requirements: 32 total

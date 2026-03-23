@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Intelligence & Platform
 status: unknown
-stopped_at: Completed 11-01-PLAN.md
-last_updated: "2026-03-23T01:30:01.936Z"
+stopped_at: Completed 11-02-PLAN.md
+last_updated: "2026-03-23T01:32:29.732Z"
 progress:
   total_phases: 11
-  completed_phases: 10
+  completed_phases: 11
   total_plans: 25
-  completed_plans: 24
+  completed_plans: 25
 ---
 
 # Project State
@@ -62,6 +62,7 @@ Plan: 2 of 2
 | Phase 10 P02 | 5min | 2 tasks | 5 files |
 | Phase 10 P03 | 4min | 2 tasks | 3 files |
 | Phase 11 P01 | 3m38s | 2 tasks | 6 files |
+| Phase 11-02 P02 | 5min | 4 tasks | 19 files |
 
 ## Accumulated Context
 
@@ -98,6 +99,9 @@ Recent decisions affecting current work:
 - [Phase 10]: buildPipelinePRBody includes per-stage breakdown, review verdict, and total cost/duration
 - [Phase 11]: Refuse unsupported complex cron patterns with SchedulerError rather than multiple Windows tasks
 - [Phase 11]: Task name format claude-auto-{jobId} for consistent schtasks CSV query filtering
+- [Phase 11-02]: loadJobsWithMeta exported separately from useJobs hook for direct testability without React rendering
+- [Phase 11-02]: TUI pause/resume uses dynamic import of CLI commands to avoid coupling TUI to scheduler internals
+- [Phase 11-02]: Cost data loading is best-effort with try/catch -- DB absence never crashes dashboard
 
 ### Pending Todos
 
@@ -111,6 +115,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-23T01:30:01.934Z
-Stopped at: Completed 11-01-PLAN.md
+Last session: 2026-03-23T01:32:29.730Z
+Stopped at: Completed 11-02-PLAN.md
 Resume file: None
