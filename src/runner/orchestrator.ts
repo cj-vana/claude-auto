@@ -13,6 +13,7 @@ import {
 	checkoutExistingBranch,
 	createBranch,
 	createPR,
+	getFirstCommitSubject,
 	hasChanges,
 	hasCommitsAhead,
 	pullLatest,
@@ -373,7 +374,9 @@ export async function executeRun(jobId: string): Promise<RunResult> {
 				}
 
 				await pushBranch(config.repo.path, branchName);
-				const prTitle = `[claude-auto] ${pipelineResult.summary.slice(0, 72)}`;
+				const commitSubject = await getFirstCommitSubject(config.repo.path, config.repo.branch);
+				const titleText = commitSubject || pipelineResult.summary.slice(0, 72);
+				const prTitle = `[claude-auto] ${titleText}`;
 				const prBody = buildPipelinePRBody(pipelineResult, config);
 				prUrl = await createPR(config.repo.path, branchName, config.repo.branch, prTitle, prBody);
 			}
@@ -474,7 +477,9 @@ export async function executeRun(jobId: string): Promise<RunResult> {
 
 			// Step 8: Push and create PR
 			await pushBranch(config.repo.path, branchName);
-			const prTitle = `[claude-auto] ${spawnResult.summary.slice(0, 72)}`;
+			const commitSubject = await getFirstCommitSubject(config.repo.path, config.repo.branch);
+			const titleText = commitSubject || spawnResult.summary.slice(0, 72);
+			const prTitle = `[claude-auto] ${titleText}`;
 			const prBody = buildPRBody(spawnResult, config);
 			prUrl = await createPR(config.repo.path, branchName, config.repo.branch, prTitle, prBody);
 		}

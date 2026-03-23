@@ -248,6 +248,28 @@ export async function attemptRebase(
 }
 
 /**
+ * Get the first commit subject line on the current branch ahead of baseBranch.
+ * Used for PR titles — commit messages are more descriptive than raw Claude output.
+ * Returns empty string if no commits ahead or on error.
+ */
+export async function getFirstCommitSubject(repoPath: string, baseBranch: string): Promise<string> {
+	try {
+		const { stdout } = await execCommand("git", [
+			"-C",
+			repoPath,
+			"log",
+			"--reverse",
+			"--format=%s",
+			`${baseBranch}..HEAD`,
+		]);
+		const firstLine = stdout.trim().split("\n")[0] ?? "";
+		return firstLine;
+	} catch {
+		return "";
+	}
+}
+
+/**
  * Get the diff between the base branch and HEAD.
  * Best-effort: returns empty string on error.
  */
