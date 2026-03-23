@@ -2,7 +2,7 @@
 
 ## What This Is
 
-An npm-installable Claude Code plugin that lets developers set up autonomous cron jobs where Claude continuously works on their repositories. Each cron job spawns a headless Claude instance that researches the codebase, picks work to do (open issues, bugs it discovers, or features it wants to add), makes PRs, updates documentation, and notifies the user. Users configure everything through a guided conversation with Claude — repo, schedule, focus areas, system prompt, guardrails — and can run multiple instances targeting different repos or concerns.
+An npm-installable Claude Code plugin that lets developers set up autonomous cron jobs where Claude continuously works on their repositories. Each cron job spawns a headless Claude instance that researches the codebase, picks the highest-value work (open issues, bugs it discovers, or features it wants to add), makes PRs, updates documentation, and notifies the user. Claude learns from previous runs, iterates on reviewer feedback, and can run a multi-stage plan/implement/review pipeline. Users configure everything through a guided conversation with Claude — repo, schedule, focus areas, system prompt, guardrails — and can run multiple instances targeting different repos or concerns. Supports macOS, Linux, and Windows.
 
 ## Core Value
 
@@ -13,86 +13,70 @@ Claude autonomously and continuously improves codebases without human interventi
 ### Validated
 
 - ✓ Human-readable YAML config files with comment preservation — v1.0
-- ✓ Schedule accepts natural language or cron syntax, Claude normalizes — v1.0
-- ✓ System cron/launchd scheduling (macOS + Linux) with timezone support — v1.0
-- ✓ Headless Claude spawning with safety guarantees (--dangerously-skip-permissions) — v1.0
+- ✓ Schedule accepts natural language or cron syntax — v1.0
+- ✓ System cron/launchd scheduling with timezone support — v1.0
+- ✓ Headless Claude spawning with safety guarantees — v1.0
 - ✓ Work priority chain (issues → bugs → features) — v1.0
-- ✓ Git safety (new branch, never main, never force push, PR via gh) — v1.0
+- ✓ Git safety (new branch, never main, never force push) — v1.0
 - ✓ Codebase research, bug discovery, issue triage, doc updates — v1.0
-- ✓ Configurable guardrails (max turns, restrict paths, no new deps, bug-fix only) — v1.0
-- ✓ Local run logs (JSON append-only per run) — v1.0
-- ✓ Notifications: Discord, Slack, Telegram webhooks + GitHub issue comments — v1.0
-- ✓ Configurable event triggers per provider (onSuccess/onFailure/onNoChanges/onLocked) — v1.0
-- ✓ CLI management: list, pause, resume, edit, remove jobs — v1.0
-- ✓ Run summary reports — v1.0
-- ✓ npm package with Claude Code plugin auto-registration — v1.0
-- ✓ Guided wizard setup (/claude-auto:setup) with conversational system prompt crafting — v1.0
-- ✓ Auto-clone repos via gh — v1.0
+- ✓ Configurable guardrails (max turns, restrict paths, no new deps) — v1.0
+- ✓ Local run logs + notifications (Discord/Slack/Telegram/GitHub) — v1.0
+- ✓ CLI management + npm plugin with setup wizard — v1.0
+- ✓ Cross-run context persistence (SQLite, rolling window, dedup) — v1.1
+- ✓ Model selection per job (sonnet/opus/haiku) — v1.1
+- ✓ Cost tracking with daily/weekly/monthly budget enforcement — v1.1
+- ✓ PR feedback loop (review detection, iterative fixes, max rounds) — v1.1
+- ✓ Smarter issue triage (complexity scoring, spam filtering, label priority) — v1.1
+- ✓ Agent pipeline (plan→implement→review with per-stage models) — v1.1
+- ✓ Merge conflict resolution (auto-rebase with clean abort) — v1.1
+- ✓ Windows Task Scheduler support — v1.1
+- ✓ TUI dashboard (ink/React, live status, keyboard navigation) — v1.1
 
 ### Active
 
-- [ ] Cross-run context persistence — Claude remembers previous runs to avoid duplicate work
-- [ ] Model selection per job — Sonnet for routine, Opus for complex
-- [ ] Agent teams per job — planner + implementer + reviewer per run
-- [ ] Merge conflict resolution — auto-resolve when target branch diverged
-- [ ] Windows support via Task Scheduler
-- [ ] TUI dashboard for terminal-based job management
-- [ ] Smarter issue triage — complexity scoring, dependency detection, spam filtering
-- [ ] PR feedback loop — Claude reads review comments and iterates on its own PRs
-- [ ] Cost tracking — token usage per run/job, budget dashboards in CLI
+(None — v1.1 complete. Add requirements for next milestone.)
 
 ### Out of Scope
 
-- GUI/web dashboard — CLI-first, skill-first
-- Self-hosting infrastructure — runs on user's machine via system cron/launchd
-- Payment/billing — free tool
+- GUI/web dashboard — CLI-first, TUI covers terminal users
+- Self-hosting infrastructure — runs on user's machine
 - Auto-merging PRs — human review gate is intentional
-- Real-time streaming — defeats purpose of "wake up to PRs"
-
-## Current Milestone: v1.1
-
-**Goal:** Make Claude a smarter, more capable autonomous contributor — cross-run memory, agent teams, PR iteration, cost awareness, and broader platform support.
-
-**Target features:**
-- Cross-run context persistence
-- Model selection per job
-- Agent teams (planner/implementer/reviewer)
-- Merge conflict resolution
-- Windows Task Scheduler support
-- TUI dashboard
-- Smarter issue triage
-- PR feedback loop
-- Cost tracking
+- Real-time streaming — defeats purpose of headless autonomous operation
+- Full parallel agent teams — sequential pipeline first; parallel is experimental and 7x cost
 
 ## Context
 
-Shipped v1.0 with 3,193 LOC TypeScript + 5,214 LOC tests (315 tests).
-Tech stack: TypeScript ESM, Node 22, Zod v4, yaml (Document API), vitest, tsup, biome.
-Platform: crontab (Linux) + launchd (macOS) with native fetch for webhooks.
+Shipped v1.1 with 6,261 LOC TypeScript + 9,621 LOC tests (585 tests).
+Tech stack: TypeScript ESM, Node 22, Zod v4, yaml (Document API), better-sqlite3, ink + React, vitest, tsup, biome.
+Platform: crontab (Linux) + launchd (macOS) + schtasks (Windows).
 Distribution: npm package with Claude Code plugin system (postinstall auto-registration).
-CLI: `claude-auto` binary with 10 subcommands (list, logs, report, pause, resume, remove, edit, create, check-repo + help).
+CLI: `claude-auto` binary with 11 subcommands + interactive TUI dashboard.
 Plugin: 8 SKILL.md files including conversational setup wizard.
+Database: SQLite with WAL mode for cross-run context, cost tracking, PR feedback state.
 
 ## Constraints
 
 - **Runtime**: Claude Code headless mode with --dangerously-skip-permissions
 - **Distribution**: npm package with Claude Code plugin registration
 - **Git safety**: Never force push, never commit to main, always new branch + PR
-- **Platform**: macOS, Linux, and Windows (v1.1 adds Task Scheduler)
+- **Platform**: macOS, Linux, and Windows
 - **Auth**: Relies on user's existing git/gh authentication
 
 ## Key Decisions
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| npm package distribution | Standard JS ecosystem distribution, easy install | ✓ Good |
-| CLI spawning over Agent SDK | Agent SDK has orphaned process bug (#142); CLI is simpler for v1 | ✓ Good |
-| System cron/launchd for scheduling | No custom daemon needed, reliable, well-understood | ✓ Good |
-| YAML config with Document API | Comment preservation for human editing; multiline system prompts | ✓ Good |
-| Webhook-based notifications | Simple, no OAuth flows, native fetch — zero deps | ✓ Good |
+| npm package distribution | Standard JS ecosystem, easy install | ✓ Good |
+| CLI spawning over Agent SDK | Agent SDK orphaned process bug; CLI simpler | ✓ Good |
+| System cron/launchd/schtasks | No custom daemon, reliable, well-understood | ✓ Good |
+| YAML config with Document API | Comment preservation, multiline system prompts | ✓ Good |
+| Webhook notifications (native fetch) | Simple, no OAuth, zero deps | ✓ Good |
 | Skills call CLI for all mutations | Testable, deterministic; skills handle UX only | ✓ Good |
-| proper-lockfile for concurrency | Cross-platform, stale detection, atomic mkdir-based | ✓ Good |
-| No CLI framework (parseArgs only) | Minimal deps, sufficient for 10 subcommands | ✓ Good |
+| Sequential spawns for pipeline | Not Agent Teams API (7x cost, experimental) | ✓ Good |
+| better-sqlite3 for persistence | node:sqlite still experimental; sync API fits | ✓ Good |
+| Structured facts in context DB | No raw narrative — prevents hallucination amplification | ✓ Good |
+| ink + React for TUI (lazy loaded) | Zero startup cost for non-dashboard commands | ✓ Good |
+| parseArgs only (no CLI framework) | Minimal deps, sufficient for 11 subcommands | ✓ Good |
 
 ## Evolution
 
@@ -112,4 +96,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-21 after v1.1 milestone start*
+*Last updated: 2026-03-22 after v1.1 milestone*
