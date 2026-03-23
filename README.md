@@ -7,7 +7,7 @@ Claude researches your codebase, picks the highest-value work (open issues, bugs
 ## Install
 
 ```bash
-npm install -g @cj-vana/claude-auto
+npm install -g @cjvana/claude-auto
 ```
 
 This registers `claude-auto` as a Claude Code plugin. The `/claude-auto:setup` slash command becomes available in Claude Code sessions.
