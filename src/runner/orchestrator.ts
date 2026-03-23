@@ -21,7 +21,7 @@ import {
 } from "./git-ops.js";
 import type { ScoredIssue } from "./issue-triage.js";
 import { triageIssues } from "./issue-triage.js";
-import { acquireLock } from "./lock.js";
+import { acquireLock, acquireRepoLock } from "./lock.js";
 import { writeRunLog } from "./logger.js";
 import { runPipeline } from "./pipeline.js";
 import { checkPendingPRFeedback, postPRComment } from "./pr-feedback.js";
@@ -130,10 +130,27 @@ export async function executeRun(jobId: string): Promise<RunResult> {
 	let branchName: string | undefined;
 	let isFeedbackBranch = false;
 	let config: JobConfig | undefined;
+	let releaseRepoLock: (() => Promise<void>) | null = null;
 
 	try {
 		// Step 2: Load config
 		config = await loadJobConfig(paths.jobConfig(jobId));
+
+		// Step 2.1: Acquire repo-level lock (prevents concurrent runs on same repo)
+		releaseRepoLock = await acquireRepoLock(config.repo.path);
+		if (!releaseRepoLock) {
+			const result: RunResult = {
+				status: "locked",
+				jobId,
+				runId,
+				startedAt,
+				completedAt: new Date().toISOString(),
+				durationMs: Date.now() - startTime,
+				error: "Another job is currently running on this repository",
+			};
+			await writeRunLog(jobId, result);
+			return result;
+		}
 
 		// Defense-in-depth: check if job is paused
 		if (!config.enabled) {
@@ -562,6 +579,9 @@ export async function executeRun(jobId: string): Promise<RunResult> {
 
 		return result;
 	} finally {
+		if (releaseRepoLock) {
+			await releaseRepoLock().catch(() => {});
+		}
 		await releaseLock();
 	}
 }

@@ -10,6 +10,7 @@ vi.mock("nanoid", () => ({
 
 vi.mock("../../src/runner/lock.js", () => ({
 	acquireLock: vi.fn(),
+	acquireRepoLock: vi.fn(),
 }));
 
 vi.mock("../../src/runner/git-ops.js", () => ({
@@ -97,7 +98,7 @@ import {
 } from "../../src/runner/git-ops.js";
 import { triageIssues } from "../../src/runner/issue-triage.js";
 // Import mocked modules after mock declarations
-import { acquireLock } from "../../src/runner/lock.js";
+import { acquireLock, acquireRepoLock } from "../../src/runner/lock.js";
 import { writeRunLog } from "../../src/runner/logger.js";
 import { executeRun } from "../../src/runner/orchestrator.js";
 import { runPipeline } from "../../src/runner/pipeline.js";
@@ -112,6 +113,7 @@ import { buildAllowedTools, spawnClaude } from "../../src/runner/spawner.js";
 import { execCommand } from "../../src/util/exec.js";
 
 const mockedAcquireLock = vi.mocked(acquireLock);
+const mockedAcquireRepoLock = vi.mocked(acquireRepoLock);
 const mockedLoadJobConfig = vi.mocked(loadJobConfig);
 const mockedPullLatest = vi.mocked(pullLatest);
 const mockedCreateBranch = vi.mocked(createBranch);
@@ -221,6 +223,7 @@ describe("executeRun", () => {
 
 		// Default mocks: everything succeeds
 		mockedAcquireLock.mockResolvedValue(mockReleaseLock);
+		mockedAcquireRepoLock.mockResolvedValue(vi.fn().mockResolvedValue(undefined));
 		mockedLoadJobConfig.mockResolvedValue(makeDefaultConfig());
 		mockedPullLatest.mockResolvedValue(undefined);
 		mockedCreateBranch.mockResolvedValue("claude-auto/test-job/2026-03-21T00-00-00");
