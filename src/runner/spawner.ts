@@ -1,7 +1,43 @@
-import { spawn } from "node:child_process";
+import { execFileSync, spawn } from "node:child_process";
+import { existsSync } from "node:fs";
+import { homedir } from "node:os";
+import { join } from "node:path";
 import type { JobConfig } from "../core/types.js";
 import { SpawnError } from "../util/errors.js";
 import type { SpawnOptions, SpawnResult } from "./types.js";
+
+/**
+ * Resolve the full path to the `claude` binary.
+ * Cron and non-interactive shells often lack the user's PATH entries,
+ * so we check common install locations before falling back to bare "claude".
+ */
+function resolveClaudeBin(): string {
+	// Honor explicit override
+	if (process.env.CLAUDE_BIN && existsSync(process.env.CLAUDE_BIN)) {
+		return process.env.CLAUDE_BIN;
+	}
+
+	// Check common install locations
+	const candidates = [
+		join(homedir(), ".local", "bin", "claude"),
+		"/usr/local/bin/claude",
+		"/usr/bin/claude",
+	];
+
+	for (const candidate of candidates) {
+		if (existsSync(candidate)) {
+			return candidate;
+		}
+	}
+
+	// Try which/where as last resort
+	try {
+		return execFileSync("which", ["claude"], { encoding: "utf-8" }).trim();
+	} catch {
+		// Fall back to bare name — will fail with ENOENT if not in PATH
+		return "claude";
+	}
+}
 
 /**
  * Build the list of allowed tools for Claude based on job config guardrails.
@@ -88,7 +124,8 @@ export function spawnClaude(options: SpawnOptions): Promise<SpawnResult> {
 			args.push("--allowedTools", options.allowedTools.join(","));
 		}
 
-		const child = spawn("claude", args, {
+		const claudeBin = resolveClaudeBin();
+		const child = spawn(claudeBin, args, {
 			cwd: options.cwd,
 			env: { ...process.env, ...options.env },
 			stdio: ["ignore", "pipe", "pipe"],
