@@ -16,13 +16,18 @@ export interface Scheduler {
 
 /**
  * Factory function that returns the correct Scheduler implementation
- * for the current platform: CrontabScheduler on Linux, LaunchdScheduler on macOS.
+ * for the current platform: CrontabScheduler on Linux, LaunchdScheduler on macOS,
+ * SchtasksScheduler on Windows.
  */
 export async function createScheduler(): Promise<Scheduler> {
 	const platform = detectPlatform();
 	if (platform === "linux") {
 		const { CrontabScheduler } = await import("./crontab.js");
 		return new CrontabScheduler();
+	}
+	if (platform === "win32") {
+		const { SchtasksScheduler } = await import("./schtasks.js");
+		return new SchtasksScheduler();
 	}
 	const { LaunchdScheduler } = await import("./launchd.js");
 	return new LaunchdScheduler();

@@ -18,8 +18,14 @@ describe("detectPlatform", () => {
 		expect(detectPlatform()).toBe("linux");
 	});
 
-	it("throws SchedulerError for unsupported platform 'win32'", async () => {
+	it("returns 'win32' when process.platform is 'win32'", async () => {
 		vi.stubGlobal("process", { ...process, platform: "win32" });
+		const { detectPlatform } = await import("../../src/platform/detect.js");
+		expect(detectPlatform()).toBe("win32");
+	});
+
+	it("throws SchedulerError for unsupported platform 'freebsd'", async () => {
+		vi.stubGlobal("process", { ...process, platform: "freebsd" });
 		const { detectPlatform } = await import("../../src/platform/detect.js");
 		const { SchedulerError } = await import("../../src/util/errors.js");
 		expect(() => detectPlatform()).toThrow(SchedulerError);
@@ -46,5 +52,16 @@ describe("createScheduler", () => {
 	it("does not throw on current platform (darwin or linux)", async () => {
 		const { createScheduler } = await import("../../src/platform/scheduler.js");
 		await expect(createScheduler()).resolves.toBeDefined();
+	});
+
+	it("returns SchtasksScheduler on win32 with register/unregister/isRegistered/list methods", async () => {
+		vi.stubGlobal("process", { ...process, platform: "win32" });
+		const { createScheduler } = await import("../../src/platform/scheduler.js");
+		const scheduler = await createScheduler();
+		expect(scheduler).toBeDefined();
+		expect(typeof scheduler.register).toBe("function");
+		expect(typeof scheduler.unregister).toBe("function");
+		expect(typeof scheduler.isRegistered).toBe("function");
+		expect(typeof scheduler.list).toBe("function");
 	});
 });

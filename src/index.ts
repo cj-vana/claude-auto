@@ -48,6 +48,7 @@ export { CrontabScheduler } from "./platform/crontab.js";
 export { detectPlatform, type Platform } from "./platform/detect.js";
 export type { CalendarInterval } from "./platform/launchd.js";
 export { cronToCalendarIntervals, LaunchdScheduler } from "./platform/launchd.js";
+export { cronToSchtasks, SchtasksScheduler } from "./platform/schtasks.js";
 export {
 	createScheduler,
 	type RegisteredJob,
