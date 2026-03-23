@@ -5,50 +5,44 @@ vi.mock("../../src/util/exec.js", () => ({
 	execCommand: vi.fn(),
 }));
 
+import { cronToSchtasks, SchtasksScheduler } from "../../src/platform/schtasks.js";
 import { execCommand } from "../../src/util/exec.js";
 
 const mockExec = vi.mocked(execCommand);
 
 describe("cronToSchtasks", () => {
-	it("translates daily at 9am: '0 9 * * *'", async () => {
-		const { cronToSchtasks } = await import("../../src/platform/schtasks.js");
+	it("translates daily at 9am: '0 9 * * *'", () => {
 		const result = cronToSchtasks("0 9 * * *");
 		expect(result.args).toEqual(["/sc", "DAILY", "/st", "09:00"]);
 	});
 
-	it("translates every 30 minutes: '*/30 * * * *'", async () => {
-		const { cronToSchtasks } = await import("../../src/platform/schtasks.js");
+	it("translates every 30 minutes: '*/30 * * * *'", () => {
 		const result = cronToSchtasks("*/30 * * * *");
 		expect(result.args).toEqual(["/sc", "MINUTE", "/mo", "30"]);
 	});
 
-	it("translates every 6 hours: '0 */6 * * *'", async () => {
-		const { cronToSchtasks } = await import("../../src/platform/schtasks.js");
+	it("translates every 6 hours: '0 */6 * * *'", () => {
 		const result = cronToSchtasks("0 */6 * * *");
 		expect(result.args).toEqual(["/sc", "HOURLY", "/mo", "6", "/st", "00:00"]);
 	});
 
-	it("translates weekdays at 9am: '0 9 * * 1-5'", async () => {
-		const { cronToSchtasks } = await import("../../src/platform/schtasks.js");
+	it("translates weekdays at 9am: '0 9 * * 1-5'", () => {
 		const result = cronToSchtasks("0 9 * * 1-5");
 		expect(result.args).toEqual(["/sc", "WEEKLY", "/d", "MON,TUE,WED,THU,FRI", "/st", "09:00"]);
 	});
 
-	it("translates monthly on 15th at 9am: '0 9 15 * *'", async () => {
-		const { cronToSchtasks } = await import("../../src/platform/schtasks.js");
+	it("translates monthly on 15th at 9am: '0 9 15 * *'", () => {
 		const result = cronToSchtasks("0 9 15 * *");
 		expect(result.args).toEqual(["/sc", "MONTHLY", "/d", "15", "/st", "09:00"]);
 	});
 
 	it("throws SchedulerError for complex pattern: '0 9 1,15 * *'", async () => {
-		const { cronToSchtasks } = await import("../../src/platform/schtasks.js");
 		const { SchedulerError } = await import("../../src/util/errors.js");
 		expect(() => cronToSchtasks("0 9 1,15 * *")).toThrow(SchedulerError);
 		expect(() => cronToSchtasks("0 9 1,15 * *")).toThrow(/cannot be represented/);
 	});
 
-	it("translates weekly Sunday midnight: '0 0 * * 0'", async () => {
-		const { cronToSchtasks } = await import("../../src/platform/schtasks.js");
+	it("translates weekly Sunday midnight: '0 0 * * 0'", () => {
 		const result = cronToSchtasks("0 0 * * 0");
 		expect(result.args).toEqual(["/sc", "WEEKLY", "/d", "SUN", "/st", "00:00"]);
 	});
@@ -61,7 +55,6 @@ describe("SchtasksScheduler", () => {
 
 	describe("register", () => {
 		it("calls execCommand with schtasks /create and correct args", async () => {
-			const { SchtasksScheduler } = await import("../../src/platform/schtasks.js");
 			const scheduler = new SchtasksScheduler();
 
 			// First call: isRegistered check (query fails = not registered)
@@ -108,7 +101,6 @@ describe("SchtasksScheduler", () => {
 		});
 
 		it("includes schedule params from cronToSchtasks", async () => {
-			const { SchtasksScheduler } = await import("../../src/platform/schtasks.js");
 			const scheduler = new SchtasksScheduler();
 
 			mockExec.mockImplementation(async (cmd, args) => {
@@ -149,7 +141,6 @@ describe("SchtasksScheduler", () => {
 		});
 
 		it("throws SchedulerError if job already registered", async () => {
-			const { SchtasksScheduler } = await import("../../src/platform/schtasks.js");
 			const { SchedulerError } = await import("../../src/util/errors.js");
 			const scheduler = new SchtasksScheduler();
 
@@ -183,7 +174,6 @@ describe("SchtasksScheduler", () => {
 
 	describe("unregister", () => {
 		it("calls execCommand with schtasks /delete and correct args", async () => {
-			const { SchtasksScheduler } = await import("../../src/platform/schtasks.js");
 			const scheduler = new SchtasksScheduler();
 
 			mockExec.mockResolvedValue({ stdout: "", stderr: "" });
@@ -199,7 +189,6 @@ describe("SchtasksScheduler", () => {
 		});
 
 		it("does not throw if task does not exist", async () => {
-			const { SchtasksScheduler } = await import("../../src/platform/schtasks.js");
 			const scheduler = new SchtasksScheduler();
 
 			mockExec.mockRejectedValue(new Error("ERROR: The system cannot find the file specified."));
@@ -210,7 +199,6 @@ describe("SchtasksScheduler", () => {
 
 	describe("isRegistered", () => {
 		it("returns true when query succeeds", async () => {
-			const { SchtasksScheduler } = await import("../../src/platform/schtasks.js");
 			const scheduler = new SchtasksScheduler();
 
 			mockExec.mockResolvedValue({
@@ -222,7 +210,6 @@ describe("SchtasksScheduler", () => {
 		});
 
 		it("returns false when query throws (task not found)", async () => {
-			const { SchtasksScheduler } = await import("../../src/platform/schtasks.js");
 			const scheduler = new SchtasksScheduler();
 
 			mockExec.mockRejectedValue(new Error("ERROR: The system cannot find the file specified."));
@@ -233,7 +220,6 @@ describe("SchtasksScheduler", () => {
 
 	describe("list", () => {
 		it("parses CSV output into RegisteredJob[]", async () => {
-			const { SchtasksScheduler } = await import("../../src/platform/schtasks.js");
 			const scheduler = new SchtasksScheduler();
 
 			const csvOutput = [
@@ -251,7 +237,6 @@ describe("SchtasksScheduler", () => {
 		});
 
 		it("returns empty array when no matching tasks", async () => {
-			const { SchtasksScheduler } = await import("../../src/platform/schtasks.js");
 			const scheduler = new SchtasksScheduler();
 
 			const csvOutput = '"\\some-other-task","N/A","Disabled"\n';
@@ -263,7 +248,6 @@ describe("SchtasksScheduler", () => {
 		});
 
 		it("returns empty array when query throws", async () => {
-			const { SchtasksScheduler } = await import("../../src/platform/schtasks.js");
 			const scheduler = new SchtasksScheduler();
 
 			mockExec.mockRejectedValue(new Error("No tasks found"));

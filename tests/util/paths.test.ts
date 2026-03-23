@@ -18,19 +18,19 @@ describe("paths", () => {
 
 	it("paths.jobs returns a string ending with .claude-auto/jobs", () => {
 		expect(paths.jobs).toBe(join(expectedBase, "jobs"));
-		expect(paths.jobs.endsWith(".claude-auto/jobs")).toBe(true);
+		expect(paths.jobs.endsWith(join(".claude-auto", "jobs"))).toBe(true);
 	});
 
 	it('paths.jobDir("test-job") returns a string ending with .claude-auto/jobs/test-job', () => {
 		const result = paths.jobDir("test-job");
 		expect(result).toBe(join(expectedBase, "jobs", "test-job"));
-		expect(result.endsWith(".claude-auto/jobs/test-job")).toBe(true);
+		expect(result.endsWith(join(".claude-auto", "jobs", "test-job"))).toBe(true);
 	});
 
 	it('paths.jobConfig("test-job") returns a string ending with .claude-auto/jobs/test-job/config.yaml', () => {
 		const result = paths.jobConfig("test-job");
 		expect(result).toBe(join(expectedBase, "jobs", "test-job", "config.yaml"));
-		expect(result.endsWith(".claude-auto/jobs/test-job/config.yaml")).toBe(true);
+		expect(result.endsWith(join(".claude-auto", "jobs", "test-job", "config.yaml"))).toBe(true);
 	});
 });
 
