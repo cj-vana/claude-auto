@@ -81,10 +81,10 @@ describe("database singleton", () => {
 		expect(indexNames).toContain("idx_runs_job_started");
 	});
 
-	it("user_version is 2 after initialization", () => {
+	it("user_version is 3 after initialization", () => {
 		const db = getDatabase(":memory:");
 		const version = db.pragma("user_version", { simple: true });
-		expect(version).toBe(2);
+		expect(version).toBe(3);
 	});
 
 	it("closeDatabase() closes the connection and resets singleton", () => {
@@ -115,7 +115,7 @@ describe("database migration v2", () => {
 		expect(columnNames).toContain("pr_number");
 	});
 
-	it("fresh database has both v2 columns (full migration from 0 to 2)", () => {
+	it("fresh database has all migration columns (full migration from 0 to 3)", () => {
 		const db = getDatabase(":memory:");
 		const columns = db.prepare("PRAGMA table_info(runs)").all() as Array<{ name: string }>;
 		const columnNames = columns.map((c) => c.name);
@@ -129,8 +129,11 @@ describe("database migration v2", () => {
 		expect(columnNames).toContain("feedback_round");
 		expect(columnNames).toContain("pr_number");
 
-		// Version should be 2
+		// V3 columns
+		expect(columnNames).toContain("pipeline_stages");
+
+		// Version should be 3
 		const version = db.pragma("user_version", { simple: true });
-		expect(version).toBe(2);
+		expect(version).toBe(3);
 	});
 });

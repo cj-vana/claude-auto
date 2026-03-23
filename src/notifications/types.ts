@@ -1,7 +1,15 @@
 import type { JobConfig } from "../core/types.js";
 import type { RunResult, RunStatus } from "../runner/types.js";
 
-export type NotificationEvent = "success" | "no-changes" | "error" | "locked" | "git-error" | "budget-exceeded" | "merge-conflict" | "needs-human-review";
+export type NotificationEvent =
+	| "success"
+	| "no-changes"
+	| "error"
+	| "locked"
+	| "git-error"
+	| "budget-exceeded"
+	| "merge-conflict"
+	| "needs-human-review";
 
 export interface NotificationPayload {
 	event: NotificationEvent;

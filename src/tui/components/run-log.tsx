@@ -32,6 +32,10 @@ function statusColor(status: string): string {
 			return "gray";
 		case "budget-exceeded":
 			return "magenta";
+		case "merge-conflict":
+			return "red";
+		case "needs-human-review":
+			return "cyan";
 		default:
 			return "white";
 	}

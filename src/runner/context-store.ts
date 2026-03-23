@@ -27,11 +27,11 @@ export function saveRunContext(entry: RunLogEntry): void {
 		`INSERT INTO runs (
 			id, job_id, status, started_at, completed_at, duration_ms,
 			cost_usd, num_turns, session_id, model, pr_url, branch_name,
-			issue_number, summary, error, feedback_round, pr_number
+			issue_number, summary, error, feedback_round, pr_number, pipeline_stages
 		) VALUES (
 			@id, @job_id, @status, @started_at, @completed_at, @duration_ms,
 			@cost_usd, @num_turns, @session_id, @model, @pr_url, @branch_name,
-			@issue_number, @summary, @error, @feedback_round, @pr_number
+			@issue_number, @summary, @error, @feedback_round, @pr_number, @pipeline_stages
 		)`,
 	).run({
 		id: entry.runId,
@@ -51,6 +51,7 @@ export function saveRunContext(entry: RunLogEntry): void {
 		error: entry.error ?? null,
 		feedback_round: entry.feedbackRound ?? null,
 		pr_number: entry.prNumber ?? null,
+		pipeline_stages: entry.pipelineStages ? JSON.stringify(entry.pipelineStages) : null,
 	});
 }
 

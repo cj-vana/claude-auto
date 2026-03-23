@@ -242,6 +242,30 @@ export async function executeRun(jobId: string): Promise<RunResult> {
 			// Push to same branch (PRFB-04)
 			const changed = await hasChanges(config.repo.path);
 			if (changed) {
+				// Check for divergence before push (same as pipeline/single-spawn paths)
+				const { canPush, conflicts } = await handlePrePushRebase(
+					config.repo.path,
+					config.branch,
+					feedback.headRefName,
+				);
+				if (!canPush) {
+					// Merge conflict during feedback — return early
+					const mcResult: RunResult = {
+						status: "merge-conflict",
+						jobId,
+						runId,
+						startedAt,
+						completedAt: new Date().toISOString(),
+						durationMs: Date.now() - startTime,
+						error: `Merge conflict during PR feedback rebase: ${conflicts?.join(", ") ?? "unknown files"}`,
+						model: config.model,
+						feedbackRound: nextRound,
+						prNumber: feedback.number,
+					};
+					await writeRunLog(jobId, mcResult);
+					await sendNotifications(config, mcResult).catch(() => {});
+					return mcResult;
+				}
 				await pushBranch(config.repo.path, feedback.headRefName);
 				// Post PR comment summarizing changes (PRFB-04)
 				const commentBody = `## Feedback Addressed (Round ${nextRound}/${maxRounds})\n\n${spawnResult.summary}\n\n---\n*Automated by claude-auto*`;

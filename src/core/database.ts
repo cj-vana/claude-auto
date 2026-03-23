@@ -63,6 +63,13 @@ function migrateSchema(database: Database.Database): void {
 		`);
 		database.pragma("user_version = 2");
 	}
+
+	if (version < 3) {
+		database.exec(`
+			ALTER TABLE runs ADD COLUMN pipeline_stages TEXT;
+		`);
+		database.pragma("user_version = 3");
+	}
 }
 
 /**
