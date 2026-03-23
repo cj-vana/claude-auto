@@ -1,33 +1,20 @@
-import { readFileSync, writeFileSync, existsSync } from "node:fs";
-import { join } from "node:path";
-import { homedir } from "node:os";
-
-const CLAUDE_DIR = join(homedir(), ".claude");
-const PLUGINS_DIR = join(CLAUDE_DIR, "plugins");
-const INSTALLED_FILE = join(PLUGINS_DIR, "installed_plugins.json");
-const SETTINGS_FILE = join(CLAUDE_DIR, "settings.json");
-const PLUGIN_ID = "claude-auto";
+import { execFileSync } from "node:child_process";
 
 try {
-	// 1. Remove from installed_plugins.json
-	if (existsSync(INSTALLED_FILE)) {
-		const installed = JSON.parse(readFileSync(INSTALLED_FILE, "utf-8"));
-		if (installed.plugins && installed.plugins[PLUGIN_ID]) {
-			delete installed.plugins[PLUGIN_ID];
-			writeFileSync(INSTALLED_FILE, JSON.stringify(installed, null, 2) + "\n");
-		}
-	}
-
-	// 2. Remove from settings.json enabledPlugins
-	if (existsSync(SETTINGS_FILE)) {
-		const settings = JSON.parse(readFileSync(SETTINGS_FILE, "utf-8"));
-		if (settings.enabledPlugins && settings.enabledPlugins[PLUGIN_ID]) {
-			delete settings.enabledPlugins[PLUGIN_ID];
-			writeFileSync(SETTINGS_FILE, JSON.stringify(settings, null, 2) + "\n");
-		}
-	}
-
-	console.log("claude-auto: Plugin unregistered");
+	execFileSync("claude", ["plugin", "uninstall", "claude-auto@claude-auto-local"], {
+		stdio: "pipe",
+		timeout: 15000,
+	});
+	console.log("claude-auto: Plugin uninstalled");
 } catch {
-	// Best-effort: don't fail npm uninstall if cleanup fails
+	// Best-effort — don't fail npm uninstall
+}
+
+try {
+	execFileSync("claude", ["plugin", "marketplace", "remove", "claude-auto-local"], {
+		stdio: "pipe",
+		timeout: 15000,
+	});
+} catch {
+	// Marketplace removal is optional
 }
