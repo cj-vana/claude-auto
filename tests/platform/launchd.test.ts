@@ -8,6 +8,7 @@ vi.mock("../../src/util/exec.js", () => ({
 
 // Mock node:fs/promises
 vi.mock("node:fs/promises", () => ({
+	mkdir: vi.fn(),
 	writeFile: vi.fn(),
 	unlink: vi.fn(),
 	access: vi.fn(),

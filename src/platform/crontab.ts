@@ -1,4 +1,5 @@
 import { existsSync } from "node:fs";
+import { mkdir } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { JobConfig } from "../core/types.js";
@@ -86,6 +87,10 @@ export class CrontabScheduler implements Scheduler {
 		if (registered) {
 			throw new SchedulerError("crontab", `Job "${job.id}" is already registered`);
 		}
+
+		// Ensure the runs directory exists before registering the cron entry,
+		// since the entry redirects output to runs/cron.log
+		await mkdir(paths.jobLogs(job.id), { recursive: true });
 
 		const current = await readCrontab();
 

@@ -5,6 +5,15 @@ vi.mock("../../src/util/exec.js", () => ({
 	execCommand: vi.fn(),
 }));
 
+// Mock mkdir so register() doesn't create real directories
+vi.mock("node:fs/promises", async (importOriginal) => {
+	const actual = await importOriginal<typeof import("node:fs/promises")>();
+	return {
+		...actual,
+		mkdir: vi.fn(),
+	};
+});
+
 import { execCommand } from "../../src/util/exec.js";
 
 const mockExec = vi.mocked(execCommand);

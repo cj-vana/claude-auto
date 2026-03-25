@@ -1,5 +1,5 @@
 import { existsSync } from "node:fs";
-import { access, readdir, readFile, unlink, writeFile } from "node:fs/promises";
+import { access, mkdir, readdir, readFile, unlink, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -127,6 +127,10 @@ export class LaunchdScheduler implements Scheduler {
 		if (registered) {
 			throw new SchedulerError("launchd", `Job "${job.id}" is already registered`);
 		}
+
+		// Ensure the runs directory exists before registering the launchd job,
+		// since the plist redirects stdout/stderr to runs/launchd.log
+		await mkdir(paths.jobLogs(job.id), { recursive: true });
 
 		const scheduling = cronToCalendarIntervals(job.schedule.cron);
 		const runnerPath = getRunnerPath();
