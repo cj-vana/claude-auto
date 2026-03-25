@@ -220,6 +220,19 @@ describe("issue-triage", () => {
 		});
 	});
 
+	describe("malformed JSON", () => {
+		it("throws descriptive error when gh returns non-JSON", async () => {
+			mockExecCommand.mockResolvedValue({
+				stdout: "gh: Not logged in. Run gh auth login",
+				stderr: "",
+			});
+
+			await expect(triageIssues("/test/repo", [])).rejects.toThrow(
+				/Failed to parse gh issue list output as JSON/,
+			);
+		});
+	});
+
 	describe("edge cases", () => {
 		it("handles empty issue list", async () => {
 			mockGhIssues([]);

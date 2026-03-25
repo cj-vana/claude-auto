@@ -35,7 +35,13 @@ export async function writeRunLog(jobId: string, entry: RunLogEntry): Promise<vo
 export async function readRunLog(jobId: string, runId: string): Promise<RunLogEntry> {
 	const logPath = paths.jobLog(jobId, runId);
 	const content = await readFile(logPath, "utf-8");
-	return JSON.parse(content) as RunLogEntry;
+	try {
+		return JSON.parse(content) as RunLogEntry;
+	} catch (cause) {
+		throw new Error(`Failed to parse run log ${logPath} as JSON: ${content.slice(0, 200)}`, {
+			cause,
+		});
+	}
 }
 
 /**

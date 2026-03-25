@@ -99,6 +99,19 @@ describe("pr-feedback module", () => {
 		});
 	});
 
+	describe("listOpenPRsWithFeedback — malformed JSON", () => {
+		it("throws descriptive error when gh returns non-JSON", async () => {
+			mockExecCommand.mockResolvedValueOnce({
+				stdout: "Error: rate limit exceeded",
+				stderr: "",
+			});
+
+			await expect(listOpenPRsWithFeedback("/repo", "my-job")).rejects.toThrow(
+				/Failed to parse gh pr list output as JSON/,
+			);
+		});
+	});
+
 	describe("getRepoOwnerName", () => {
 		it("parses owner.login and name correctly", async () => {
 			mockExecCommand.mockResolvedValueOnce({
@@ -112,6 +125,19 @@ describe("pr-feedback module", () => {
 			expect(mockExecCommand).toHaveBeenCalledWith("gh", ["repo", "view", "--json", "owner,name"], {
 				cwd: "/repo",
 			});
+		});
+	});
+
+	describe("getRepoOwnerName — malformed JSON", () => {
+		it("throws descriptive error when gh returns non-JSON", async () => {
+			mockExecCommand.mockResolvedValueOnce({
+				stdout: "<html>502 Bad Gateway</html>",
+				stderr: "",
+			});
+
+			await expect(getRepoOwnerName("/repo")).rejects.toThrow(
+				/Failed to parse gh repo view output as JSON/,
+			);
 		});
 	});
 
@@ -203,6 +229,38 @@ describe("pr-feedback module", () => {
 
 			const result = await getUnresolvedThreads("/repo", 10);
 			expect(result).toHaveLength(0);
+		});
+	});
+
+	describe("getUnresolvedThreads — malformed responses", () => {
+		it("throws descriptive error when GraphQL returns non-JSON", async () => {
+			mockExecCommand.mockResolvedValueOnce({
+				stdout: JSON.stringify({ owner: { login: "o" }, name: "r" }),
+				stderr: "",
+			});
+			mockExecCommand.mockResolvedValueOnce({
+				stdout: "Internal Server Error",
+				stderr: "",
+			});
+
+			await expect(getUnresolvedThreads("/repo", 42)).rejects.toThrow(
+				/Failed to parse GraphQL response as JSON/,
+			);
+		});
+
+		it("throws descriptive error when GraphQL response has unexpected structure", async () => {
+			mockExecCommand.mockResolvedValueOnce({
+				stdout: JSON.stringify({ owner: { login: "o" }, name: "r" }),
+				stderr: "",
+			});
+			mockExecCommand.mockResolvedValueOnce({
+				stdout: JSON.stringify({ errors: [{ message: "Not found" }] }),
+				stderr: "",
+			});
+
+			await expect(getUnresolvedThreads("/repo", 42)).rejects.toThrow(
+				/Unexpected GraphQL response structure for PR #42/,
+			);
 		});
 	});
 

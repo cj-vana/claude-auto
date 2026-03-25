@@ -83,7 +83,14 @@ export async function triageIssues(
 		{ cwd: repoPath },
 	);
 
-	const issues: GhIssue[] = JSON.parse(stdout);
+	let issues: GhIssue[];
+	try {
+		issues = JSON.parse(stdout);
+	} catch (cause) {
+		throw new Error(`Failed to parse gh issue list output as JSON: ${stdout.slice(0, 200)}`, {
+			cause,
+		});
+	}
 	const previousSet = new Set(previousIssues);
 
 	const scored: ScoredIssue[] = [];

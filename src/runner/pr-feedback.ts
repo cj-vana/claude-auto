@@ -41,7 +41,14 @@ export async function listOpenPRsWithFeedback(
 		{ cwd: repoPath },
 	);
 
-	const prs: PRWithFeedback[] = JSON.parse(stdout);
+	let prs: PRWithFeedback[];
+	try {
+		prs = JSON.parse(stdout);
+	} catch (cause) {
+		throw new Error(`Failed to parse gh pr list output as JSON: ${stdout.slice(0, 200)}`, {
+			cause,
+		});
+	}
 	return prs.filter((pr) => pr.headRefName.startsWith(`claude-auto/${jobId}/`));
 }
 
@@ -56,7 +63,14 @@ export async function getRepoOwnerName(repoPath: string): Promise<{ owner: strin
 		cwd: repoPath,
 	});
 
-	const data = JSON.parse(stdout);
+	let data: { owner: { login: string }; name: string };
+	try {
+		data = JSON.parse(stdout);
+	} catch (cause) {
+		throw new Error(`Failed to parse gh repo view output as JSON: ${stdout.slice(0, 200)}`, {
+			cause,
+		});
+	}
 	return { owner: data.owner.login, name: data.name };
 }
 
@@ -84,8 +98,21 @@ export async function getUnresolvedThreads(
 		cwd: repoPath,
 	});
 
-	const data = JSON.parse(stdout);
-	const nodes = data.data.repository.pullRequest.reviewThreads.nodes;
+	let data: Record<string, unknown>;
+	try {
+		data = JSON.parse(stdout);
+	} catch (cause) {
+		throw new Error(`Failed to parse GraphQL response as JSON: ${stdout.slice(0, 200)}`, { cause });
+	}
+
+	// Navigate the GraphQL response with safe access — the shape may differ on errors
+	// biome-ignore lint/suspicious/noExplicitAny: GraphQL response shape is dynamic and varies on errors
+	const nodes = (data as any)?.data?.repository?.pullRequest?.reviewThreads?.nodes;
+	if (!Array.isArray(nodes)) {
+		throw new Error(
+			`Unexpected GraphQL response structure for PR #${prNumber}: ${stdout.slice(0, 200)}`,
+		);
+	}
 
 	return nodes
 		.filter((thread: { isResolved: boolean }) => !thread.isResolved)
