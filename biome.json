@@ -28,6 +28,6 @@
 		"lineEnding": "lf"
 	},
 	"files": {
-		"includes": ["**/*.ts", "**/*.json", "!!**/dist/", "!!**/node_modules/", "!!**/.planning/"]
+		"includes": ["**/*.ts", "**/*.json", "!!**/dist", "!!**/node_modules", "!!**/.planning"]
 	}
 }
