@@ -141,6 +141,14 @@ describe("readRunLog", () => {
 		expect(result.costUsd).toBe(1.5);
 	});
 
+	it("throws descriptive error when log file contains invalid JSON", async () => {
+		mockedReadFile.mockResolvedValue("this is not valid json {{{");
+
+		await expect(readRunLog("test-job", "run-corrupt")).rejects.toThrow(
+			/Failed to parse run log.*as JSON/,
+		);
+	});
+
 	it("throws when log file doesn't exist (ENOENT)", async () => {
 		const error = new Error("ENOENT: no such file or directory") as NodeJS.ErrnoException;
 		error.code = "ENOENT";
