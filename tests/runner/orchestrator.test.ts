@@ -975,6 +975,30 @@ describe("executeRun", () => {
 			expect(mockedAttemptRebase).toHaveBeenCalledWith("/tmp/test-repo", "main", "origin");
 		});
 
+		it("calls attemptRebase with repo remote (not branch name) on feedback path", async () => {
+			const feedbackCtx = {
+				number: 42,
+				title: "Fix auth bug",
+				headRefName: "claude-auto/test-job/2026-03-20T00-00-00",
+				url: "https://github.com/test/repo/pull/42",
+				reviewDecision: "CHANGES_REQUESTED",
+				unresolvedThreads: [
+					{
+						id: "thread-1",
+						isResolved: false,
+						comments: [{ body: "Fix this", author: { login: "reviewer" } }],
+					},
+				],
+				currentRound: 0,
+			};
+			mockedCheckPendingPRFeedback.mockResolvedValue(feedbackCtx);
+
+			await executeRun("test-job");
+
+			// Must pass config.repo.remote ("origin"), NOT feedback.headRefName
+			expect(mockedAttemptRebase).toHaveBeenCalledWith("/tmp/test-repo", "main", "origin");
+		});
+
 		it("proceeds with push when attemptRebase returns diverged:true, rebased:true", async () => {
 			mockedAttemptRebase.mockResolvedValue({ diverged: true, rebased: true, conflicts: [] });
 

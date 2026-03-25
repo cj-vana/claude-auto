@@ -268,7 +268,7 @@ export async function executeRun(jobId: string): Promise<RunResult> {
 				const { canPush, conflicts } = await handlePrePushRebase(
 					config.repo.path,
 					config.repo.branch,
-					feedback.headRefName,
+					config.repo.remote,
 				);
 				if (!canPush) {
 					// Merge conflict during feedback — return early
