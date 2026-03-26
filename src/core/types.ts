@@ -6,10 +6,10 @@ const ModelSchema = z.union([
 ]);
 
 export const PipelineConfigSchema = z.object({
-	enabled: z.boolean().default(false),
-	planModel: ModelSchema.default("haiku"),
+	enabled: z.boolean().default(true),
+	planModel: ModelSchema.default("opus"),
 	implementModel: ModelSchema.default("opus"),
-	reviewModel: ModelSchema.default("sonnet"),
+	reviewModel: ModelSchema.default("opus"),
 	maxReviewRounds: z.number().int().positive().default(1),
 });
 

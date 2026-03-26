@@ -45,16 +45,27 @@ export function buildPlanPrompt(
 ): string {
 	const sections: string[] = [];
 
-	// Section 1: Task framing
-	sections.push(`## Task: Create an Implementation Plan
+	// Section 1: Task framing with explicit research steps
+	sections.push(`## Task: Research and Create an Implementation Plan
 
-Research the codebase thoroughly and produce a concrete, actionable plan.
+You are the PLANNING stage. Your job is to deeply understand the codebase and produce a precise, actionable plan that another Claude instance will execute.
 
-**Output Requirements:**
-1. A clear statement of what will be changed and why
-2. A numbered list of specific files to modify
-3. For each file: the exact changes to make
-4. Expected test commands to verify the changes
+### Research Steps (do ALL of these before planning)
+
+1. **Read project docs**: Check for CLAUDE.md, README.md, CONTRIBUTING.md, or similar files that describe conventions, architecture, and build/test commands.
+2. **Understand the build system**: Find the test command, linter, type checker, and build command. Run the test suite to know the current state (what passes, what fails).
+3. **Study existing patterns**: Read 2-3 files similar to what you'll modify. Note naming conventions, error handling patterns, import style, and test patterns.
+4. **If fixing an issue**: Read the full issue including comments. Check for related issues or PRs. Search the codebase for relevant code.
+5. **If discovering bugs**: Run tests, linter, and type checker. Grep for TODO/FIXME/HACK comments. Look for error handling gaps.
+6. **Check recent git history**: Run \`git log --oneline -20\` to understand recent changes and avoid conflicting with in-progress work.
+
+### Plan Output Requirements
+
+1. **What and why**: A clear statement of the problem and your proposed solution
+2. **Files to modify**: A numbered list of specific files with the exact changes for each
+3. **New files** (if any): Full path and purpose
+4. **Test strategy**: How to verify the changes work (specific test commands to run)
+5. **Risk assessment**: What could go wrong, what existing functionality might break
 
 Do NOT make any changes yourself. Only produce the plan.`);
 
@@ -93,7 +104,10 @@ Do NOT make any changes yourself. Only produce the plan.`);
 export function buildPlanSystemPrompt(config: JobConfig): string {
 	let prompt =
 		"You are the PLANNING stage of an autonomous coding pipeline. " +
-		"Research the codebase thoroughly. Produce an actionable plan, not a vague description.";
+		"Your plan will be handed to a separate Claude instance that has never seen this codebase, " +
+		"so it must be specific enough to execute without ambiguity. " +
+		"Include exact file paths, function names, and code patterns. " +
+		"A vague plan produces vague code. A precise plan produces correct code.";
 
 	if (config.systemPrompt) {
 		prompt += `\n\n${config.systemPrompt}`;
@@ -214,13 +228,19 @@ export function buildReviewPrompt(
 
 Review the implementation against the plan and the diff below.
 
-**Verdict Criteria:**
-- PASS if: Changes correctly implement the plan, no breaking changes,
-  no security issues, code follows project conventions.
-- FAIL ONLY if: Breaking changes, security vulnerabilities, logic errors,
-  changes that don't match the plan, or missing error handling.
+### Review Checklist
 
-Do NOT nitpick style. Focus on correctness and safety.`);
+1. **Correctness**: Do the changes match the plan? Is the logic correct?
+2. **Tests**: Run the test suite. Do all tests pass? Were new tests added for new behavior?
+3. **Regressions**: Could these changes break existing functionality?
+4. **Security**: Any injection risks, credential leaks, or unsafe patterns?
+5. **Conventions**: Does the code follow the project's existing patterns and style?
+
+**Verdict Criteria:**
+- PASS if: Changes correctly implement the plan, tests pass, no breaking changes, no security issues.
+- FAIL ONLY if: Tests fail, breaking changes, security vulnerabilities, logic errors, changes that don't match the plan, or missing error handling for edge cases.
+
+Do NOT nitpick style. Focus on correctness, test results, and safety.`);
 
 	// Section 2: Original plan
 	sections.push(`## Original Plan\n${planText}`);
