@@ -1,4 +1,4 @@
-import { PipelineConfigSchema, type JobConfig } from "../core/types.js";
+import { type JobConfig, PipelineConfigSchema } from "../core/types.js";
 import type { RunContext } from "./context-store.js";
 import { getDiffFromBase } from "./git-ops.js";
 import type { ScoredIssue } from "./issue-triage.js";
