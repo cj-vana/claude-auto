@@ -145,7 +145,14 @@ export function spawnClaude(options: SpawnOptions): Promise<SpawnResult> {
 		child.on("close", (code: number | null) => {
 			try {
 				// The last non-empty line of stdout with --output-format json is the result JSON
-				const jsonLine = stdout.trim().split("\n").pop() ?? "";
+				const trimmed = stdout.trim();
+				if (trimmed.length === 0) {
+					throw new SpawnError(
+						`Claude process produced no output (exit code ${code ?? "unknown"}). stderr: ${stderr}`,
+						code ?? 1,
+					);
+				}
+				const jsonLine = trimmed.split("\n").pop() ?? "";
 				const parsed = JSON.parse(jsonLine);
 
 				resolve({
@@ -160,12 +167,14 @@ export function spawnClaude(options: SpawnOptions): Promise<SpawnResult> {
 					subtype: parsed.subtype ?? "success",
 					errors: parsed.errors,
 				});
-			} catch {
+			} catch (parseError) {
 				reject(
-					new SpawnError(
-						`Claude process exited with code ${code ?? "unknown"}. stderr: ${stderr}`,
-						code ?? 1,
-					),
+					parseError instanceof SpawnError
+						? parseError
+						: new SpawnError(
+								`Claude process exited with code ${code ?? "unknown"}. stderr: ${stderr}`,
+								code ?? 1,
+							),
 				);
 			}
 		});

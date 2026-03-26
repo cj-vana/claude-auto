@@ -105,6 +105,14 @@ export async function getUnresolvedThreads(
 		throw new Error(`Failed to parse GraphQL response as JSON: ${stdout.slice(0, 200)}`, { cause });
 	}
 
+	// Check for GraphQL-level errors before navigating the response
+	// biome-ignore lint/suspicious/noExplicitAny: GraphQL response shape is dynamic and varies on errors
+	const gqlErrors = (data as any)?.errors;
+	if (Array.isArray(gqlErrors) && gqlErrors.length > 0) {
+		const messages = gqlErrors.map((e: { message?: string }) => e.message ?? "unknown").join("; ");
+		throw new Error(`GraphQL errors for PR #${prNumber}: ${messages}`);
+	}
+
 	// Navigate the GraphQL response with safe access — the shape may differ on errors
 	// biome-ignore lint/suspicious/noExplicitAny: GraphQL response shape is dynamic and varies on errors
 	const nodes = (data as any)?.data?.repository?.pullRequest?.reviewThreads?.nodes;
@@ -212,7 +220,7 @@ export async function checkPendingPRFeedback(
 		const currentRound = getFeedbackRound(jobId, pr.number);
 
 		if (currentRound >= maxRounds) {
-			return null;
+			continue;
 		}
 
 		return {

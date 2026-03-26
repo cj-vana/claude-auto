@@ -282,6 +282,39 @@ describe("spawnClaude", () => {
 		expect(result.errors).toEqual(["Rate limit exceeded", "Max turns reached"]);
 	});
 
+	it("rejects with SpawnError mentioning 'no output' when stdout is empty", async () => {
+		const { child } = createMockChildProcess();
+		mockedSpawn.mockReturnValue(child as never);
+
+		const promise = spawnClaude(defaultOptions);
+
+		process.nextTick(() => {
+			// Claude exits without writing any stdout
+			child.stdout.end();
+			child.stderr.write("some stderr\n");
+			child.stderr.end();
+			child.emit("close", 0);
+		});
+
+		await expect(promise).rejects.toThrow(/no output/i);
+	});
+
+	it("rejects with SpawnError mentioning 'no output' when stdout is whitespace-only", async () => {
+		const { child } = createMockChildProcess();
+		mockedSpawn.mockReturnValue(child as never);
+
+		const promise = spawnClaude(defaultOptions);
+
+		process.nextTick(() => {
+			child.stdout.write("   \n  \n");
+			child.stdout.end();
+			child.stderr.end();
+			child.emit("close", 0);
+		});
+
+		await expect(promise).rejects.toThrow(/no output/i);
+	});
+
 	it("rejects with SpawnError when process exits non-zero and JSON parse fails", async () => {
 		const { child } = createMockChildProcess();
 		mockedSpawn.mockReturnValue(child as never);
