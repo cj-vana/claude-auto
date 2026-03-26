@@ -291,7 +291,9 @@ describe("pr-feedback module", () => {
 			const mockPrepare = vi.fn().mockReturnValue({
 				get: vi.fn().mockReturnValue({ count: 0 }),
 			});
-			mockGetDatabase.mockReturnValue({ prepare: mockPrepare } as any);
+			mockGetDatabase.mockReturnValue({ prepare: mockPrepare } as unknown as ReturnType<
+				typeof getDatabase
+			>);
 
 			const result = getFeedbackRound("my-job", 42);
 			expect(result).toBe(0);
@@ -301,7 +303,9 @@ describe("pr-feedback module", () => {
 			const mockPrepare = vi.fn().mockReturnValue({
 				get: vi.fn().mockReturnValue({ count: 3 }),
 			});
-			mockGetDatabase.mockReturnValue({ prepare: mockPrepare } as any);
+			mockGetDatabase.mockReturnValue({ prepare: mockPrepare } as unknown as ReturnType<
+				typeof getDatabase
+			>);
 
 			const result = getFeedbackRound("my-job", 42);
 			expect(result).toBe(3);
@@ -358,7 +362,9 @@ describe("pr-feedback module", () => {
 			const mockPrepare = vi.fn().mockReturnValue({
 				get: vi.fn().mockReturnValue({ count: 1 }),
 			});
-			mockGetDatabase.mockReturnValue({ prepare: mockPrepare } as any);
+			mockGetDatabase.mockReturnValue({ prepare: mockPrepare } as unknown as ReturnType<
+				typeof getDatabase
+			>);
 
 			const result = await checkPendingPRFeedback("/repo", "job1", 3);
 
@@ -437,7 +443,9 @@ describe("pr-feedback module", () => {
 			const mockPrepare = vi.fn().mockReturnValue({
 				get: vi.fn().mockReturnValue({ count: 3 }),
 			});
-			mockGetDatabase.mockReturnValue({ prepare: mockPrepare } as any);
+			mockGetDatabase.mockReturnValue({ prepare: mockPrepare } as unknown as ReturnType<
+				typeof getDatabase
+			>);
 
 			const result = await checkPendingPRFeedback("/repo", "job1", 3);
 			expect(result).toBeNull();
@@ -588,7 +596,9 @@ describe("pr-feedback module", () => {
 				.mockReturnValueOnce({ count: 3 }) // PR #10 at max
 				.mockReturnValueOnce({ count: 1 }); // PR #20 still actionable
 			const mockPrepare = vi.fn().mockReturnValue({ get: mockGet });
-			mockGetDatabase.mockReturnValue({ prepare: mockPrepare } as any);
+			mockGetDatabase.mockReturnValue({ prepare: mockPrepare } as unknown as ReturnType<
+				typeof getDatabase
+			>);
 
 			const result = await checkPendingPRFeedback("/repo", "job1", 3);
 

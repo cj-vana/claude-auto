@@ -42,7 +42,7 @@ describe("cronToCalendarIntervals", () => {
 		const hours = result.calendarIntervals?.map((ci) => ci.Hour);
 		expect(hours).toEqual([0, 6, 12, 18]);
 		// All should have Minute: 0
-		for (const ci of result.calendarIntervals!) {
+		for (const ci of result.calendarIntervals ?? []) {
 			expect(ci.Minute).toBe(0);
 		}
 	});
@@ -52,7 +52,7 @@ describe("cronToCalendarIntervals", () => {
 		const result = cronToCalendarIntervals("30 9 * * 1-5");
 		expect(result.calendarIntervals).toBeDefined();
 		expect(result.calendarIntervals).toHaveLength(5);
-		for (const ci of result.calendarIntervals!) {
+		for (const ci of result.calendarIntervals ?? []) {
 			expect(ci.Minute).toBe(30);
 			expect(ci.Hour).toBe(9);
 			expect(ci.Weekday).toBeGreaterThanOrEqual(1);
