@@ -310,16 +310,16 @@ describe("maxFeedbackRounds field validation", () => {
 });
 
 describe("pipeline config validation", () => {
-	it("accepts pipeline config with all defaults (enabled: false, default models, maxReviewRounds: 1)", () => {
+	it("accepts pipeline config with all defaults (enabled: true, opus models, maxReviewRounds: 1)", () => {
 		const result = JobConfigSchema.parse({
 			...validConfigBase,
 			pipeline: {},
 		});
 		expect(result.pipeline).toBeDefined();
-		expect(result.pipeline?.enabled).toBe(false);
-		expect(result.pipeline?.planModel).toBe("haiku");
+		expect(result.pipeline?.enabled).toBe(true);
+		expect(result.pipeline?.planModel).toBe("opus");
 		expect(result.pipeline?.implementModel).toBe("opus");
-		expect(result.pipeline?.reviewModel).toBe("sonnet");
+		expect(result.pipeline?.reviewModel).toBe("opus");
 		expect(result.pipeline?.maxReviewRounds).toBe(1);
 	});
 

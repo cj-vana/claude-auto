@@ -158,6 +158,7 @@ function makeDefaultConfig(): JobConfig {
 		},
 		notifications: {},
 		enabled: true,
+		pipeline: { enabled: false, planModel: "opus", implementModel: "opus", reviewModel: "opus", maxReviewRounds: 1 },
 	};
 }
 
@@ -811,14 +812,16 @@ describe("executeRun", () => {
 			expect(result.status).toBe("success");
 		});
 
-		it("uses single spawnClaude when config.pipeline is undefined", async () => {
-			// Default config has no pipeline field
-			mockedLoadJobConfig.mockResolvedValue(makeDefaultConfig());
+		it("uses pipeline by default when config.pipeline is undefined", async () => {
+			// Config without pipeline field should default to pipeline enabled
+			const config = makeDefaultConfig();
+			delete (config as Record<string, unknown>).pipeline;
+			mockedLoadJobConfig.mockResolvedValue(config);
 
 			await executeRun("test-job");
 
-			expect(mockedRunPipeline).not.toHaveBeenCalled();
-			expect(mockedSpawnClaude).toHaveBeenCalled();
+			expect(mockedRunPipeline).toHaveBeenCalled();
+			expect(mockedSpawnClaude).not.toHaveBeenCalled();
 		});
 
 		it("uses single spawnClaude when config.pipeline.enabled is false", async () => {
@@ -1095,11 +1098,14 @@ describe("executeRun", () => {
 
 	// --- All existing tests continue to pass verification ---
 
-	it("all existing tests pass with no pipeline config (backward compatible)", async () => {
-		// Default config has no pipeline field; verify the normal path is unchanged
+	it("uses pipeline by default when no pipeline config provided", async () => {
+		// Config without pipeline field defaults to pipeline enabled
+		const config = makeDefaultConfig();
+		delete (config as Record<string, unknown>).pipeline;
+		mockedLoadJobConfig.mockResolvedValue(config);
 		const result = await executeRun("test-job");
 		expect(result.status).toBe("success");
-		expect(mockedRunPipeline).not.toHaveBeenCalled();
-		expect(mockedSpawnClaude).toHaveBeenCalled();
+		expect(mockedRunPipeline).toHaveBeenCalled();
+		expect(mockedSpawnClaude).not.toHaveBeenCalled();
 	});
 });

@@ -1,4 +1,4 @@
-import type { JobConfig } from "../core/types.js";
+import { PipelineConfigSchema, type JobConfig } from "../core/types.js";
 import type { RunContext } from "./context-store.js";
 import { getDiffFromBase } from "./git-ops.js";
 import type { ScoredIssue } from "./issue-triage.js";
@@ -54,10 +54,8 @@ export async function runPipeline(
 	runContext: RunContext[],
 	triaged: ScoredIssue[],
 ): Promise<PipelineResult> {
-	if (!config.pipeline) {
-		throw new Error("runPipeline called without pipeline config");
-	}
-	const pipeline = config.pipeline;
+	// Use explicit pipeline config or fall back to schema defaults
+	const pipeline = config.pipeline ?? PipelineConfigSchema.parse({});
 	const totalBudget = config.guardrails.maxBudgetUsd;
 	const stages: PipelineStageResult[] = [];
 

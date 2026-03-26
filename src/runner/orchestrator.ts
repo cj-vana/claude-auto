@@ -342,7 +342,9 @@ export async function executeRun(jobId: string): Promise<RunResult> {
 		}
 
 		// Step 5: Pipeline or single-spawn path
-		if (config.pipeline?.enabled) {
+		// Pipeline is enabled by default. Only skip if explicitly disabled.
+		const pipelineEnabled = config.pipeline?.enabled ?? true;
+		if (pipelineEnabled) {
 			// --- PIPELINE PATH (PIPE-01, PIPE-02, PIPE-03) ---
 			const pipelineResult = await runPipeline(
 				config,
