@@ -253,8 +253,9 @@ describe("pr-feedback module", () => {
 				stdout: JSON.stringify({ owner: { login: "o" }, name: "r" }),
 				stderr: "",
 			});
+			// Response with no errors array but also no valid data structure
 			mockExecCommand.mockResolvedValueOnce({
-				stdout: JSON.stringify({ errors: [{ message: "Not found" }] }),
+				stdout: JSON.stringify({ data: { repository: null } }),
 				stderr: "",
 			});
 
@@ -290,7 +291,9 @@ describe("pr-feedback module", () => {
 			const mockPrepare = vi.fn().mockReturnValue({
 				get: vi.fn().mockReturnValue({ count: 0 }),
 			});
-			mockGetDatabase.mockReturnValue({ prepare: mockPrepare } as any);
+			mockGetDatabase.mockReturnValue({ prepare: mockPrepare } as unknown as ReturnType<
+				typeof getDatabase
+			>);
 
 			const result = getFeedbackRound("my-job", 42);
 			expect(result).toBe(0);
@@ -300,7 +303,9 @@ describe("pr-feedback module", () => {
 			const mockPrepare = vi.fn().mockReturnValue({
 				get: vi.fn().mockReturnValue({ count: 3 }),
 			});
-			mockGetDatabase.mockReturnValue({ prepare: mockPrepare } as any);
+			mockGetDatabase.mockReturnValue({ prepare: mockPrepare } as unknown as ReturnType<
+				typeof getDatabase
+			>);
 
 			const result = getFeedbackRound("my-job", 42);
 			expect(result).toBe(3);
@@ -357,7 +362,9 @@ describe("pr-feedback module", () => {
 			const mockPrepare = vi.fn().mockReturnValue({
 				get: vi.fn().mockReturnValue({ count: 1 }),
 			});
-			mockGetDatabase.mockReturnValue({ prepare: mockPrepare } as any);
+			mockGetDatabase.mockReturnValue({ prepare: mockPrepare } as unknown as ReturnType<
+				typeof getDatabase
+			>);
 
 			const result = await checkPendingPRFeedback("/repo", "job1", 3);
 
@@ -436,7 +443,9 @@ describe("pr-feedback module", () => {
 			const mockPrepare = vi.fn().mockReturnValue({
 				get: vi.fn().mockReturnValue({ count: 3 }),
 			});
-			mockGetDatabase.mockReturnValue({ prepare: mockPrepare } as any);
+			mockGetDatabase.mockReturnValue({ prepare: mockPrepare } as unknown as ReturnType<
+				typeof getDatabase
+			>);
 
 			const result = await checkPendingPRFeedback("/repo", "job1", 3);
 			expect(result).toBeNull();
@@ -499,6 +508,127 @@ describe("pr-feedback module", () => {
 
 			const result = await checkPendingPRFeedback("/repo", "job1", 3);
 			expect(result).toBeNull();
+		});
+
+		it("skips max-rounds PR and returns next actionable candidate", async () => {
+			// listOpenPRsWithFeedback — two PRs with CHANGES_REQUESTED
+			mockExecCommand.mockResolvedValueOnce({
+				stdout: JSON.stringify([
+					{
+						number: 10,
+						title: "PR at max rounds",
+						headRefName: "claude-auto/job1/2026-01-01T00-00-00",
+						reviewDecision: "CHANGES_REQUESTED",
+						url: "https://github.com/o/r/pull/10",
+					},
+					{
+						number: 20,
+						title: "PR still actionable",
+						headRefName: "claude-auto/job1/2026-01-02T00-00-00",
+						reviewDecision: "CHANGES_REQUESTED",
+						url: "https://github.com/o/r/pull/20",
+					},
+				]),
+				stderr: "",
+			});
+
+			// getUnresolvedThreads for PR #10: getRepoOwnerName
+			mockExecCommand.mockResolvedValueOnce({
+				stdout: JSON.stringify({ owner: { login: "o" }, name: "r" }),
+				stderr: "",
+			});
+			// GraphQL for PR #10 — has unresolved threads
+			mockExecCommand.mockResolvedValueOnce({
+				stdout: JSON.stringify({
+					data: {
+						repository: {
+							pullRequest: {
+								reviewThreads: {
+									nodes: [
+										{
+											id: "t1",
+											isResolved: false,
+											comments: {
+												nodes: [{ body: "Fix this", author: { login: "human" } }],
+											},
+										},
+									],
+								},
+							},
+						},
+					},
+				}),
+				stderr: "",
+			});
+
+			// getUnresolvedThreads for PR #20: getRepoOwnerName
+			mockExecCommand.mockResolvedValueOnce({
+				stdout: JSON.stringify({ owner: { login: "o" }, name: "r" }),
+				stderr: "",
+			});
+			// GraphQL for PR #20 — has unresolved threads
+			mockExecCommand.mockResolvedValueOnce({
+				stdout: JSON.stringify({
+					data: {
+						repository: {
+							pullRequest: {
+								reviewThreads: {
+									nodes: [
+										{
+											id: "t2",
+											isResolved: false,
+											comments: {
+												nodes: [{ body: "Also fix this", author: { login: "human" } }],
+											},
+										},
+									],
+								},
+							},
+						},
+					},
+				}),
+				stderr: "",
+			});
+
+			// getFeedbackRound: PR #10 returns 3 (at max), PR #20 returns 1
+			const mockGet = vi
+				.fn()
+				.mockReturnValueOnce({ count: 3 }) // PR #10 at max
+				.mockReturnValueOnce({ count: 1 }); // PR #20 still actionable
+			const mockPrepare = vi.fn().mockReturnValue({ get: mockGet });
+			mockGetDatabase.mockReturnValue({ prepare: mockPrepare } as unknown as ReturnType<
+				typeof getDatabase
+			>);
+
+			const result = await checkPendingPRFeedback("/repo", "job1", 3);
+
+			// Should skip PR #10 (at max rounds) and return PR #20
+			expect(result).not.toBeNull();
+			expect(result?.number).toBe(20);
+			expect(result?.title).toBe("PR still actionable");
+			expect(result?.currentRound).toBe(1);
+		});
+	});
+
+	describe("getUnresolvedThreads — GraphQL errors", () => {
+		it("throws descriptive error when GraphQL response contains errors array", async () => {
+			mockExecCommand.mockResolvedValueOnce({
+				stdout: JSON.stringify({ owner: { login: "o" }, name: "r" }),
+				stderr: "",
+			});
+			mockExecCommand.mockResolvedValueOnce({
+				stdout: JSON.stringify({
+					errors: [
+						{ message: "Could not resolve to a Repository" },
+						{ message: "Authentication required" },
+					],
+				}),
+				stderr: "",
+			});
+
+			await expect(getUnresolvedThreads("/repo", 42)).rejects.toThrow(
+				/GraphQL errors for PR #42: Could not resolve to a Repository; Authentication required/,
+			);
 		});
 	});
 });

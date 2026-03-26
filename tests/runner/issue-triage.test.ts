@@ -279,10 +279,10 @@ describe("issue-triage", () => {
 			expect(numbers).not.toContain(2); // WONTFIX -> skipped
 
 			// Check scoring for case-insensitive label matching
-			const bugIssue = result.find((r) => r.number === 1)!;
-			expect(bugIssue.score).toBe(70); // 50 + 20 (Bug)
+			const bugIssue = result.find((r) => r.number === 1);
+			expect(bugIssue?.score).toBe(70); // 50 + 20 (Bug)
 
-			const gfiIssue = result.find((r) => r.number === 3)!;
+			const gfiIssue = result.find((r) => r.number === 3);
 			expect(gfiIssue.score).toBe(80); // 50 + 30 (Good First Issue)
 		});
 	});

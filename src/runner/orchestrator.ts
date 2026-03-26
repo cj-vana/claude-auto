@@ -541,6 +541,7 @@ export async function executeRun(jobId: string): Promise<RunResult> {
 		return result;
 	} catch (error) {
 		const isGitError = error instanceof GitOpsError;
+		const errorMessage = error instanceof Error ? error.message : String(error);
 		const result: RunResult = {
 			status: isGitError ? "git-error" : "error",
 			jobId,
@@ -548,7 +549,7 @@ export async function executeRun(jobId: string): Promise<RunResult> {
 			startedAt,
 			completedAt: new Date().toISOString(),
 			durationMs: Date.now() - startTime,
-			error: error instanceof Error ? error.message : String(error),
+			error: errorMessage,
 			branchName,
 		};
 
@@ -557,7 +558,7 @@ export async function executeRun(jobId: string): Promise<RunResult> {
 		// Best-effort notifications on error
 		if (config) {
 			await sendNotifications(config, result).catch(() => {});
-			const errorIssueNumber = result.summary ? extractIssueNumber(result.summary) : undefined;
+			const errorIssueNumber = errorMessage ? extractIssueNumber(errorMessage) : undefined;
 			if (errorIssueNumber) {
 				await postIssueComment({
 					repoPath: config.repo.path,

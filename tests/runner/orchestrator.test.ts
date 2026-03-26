@@ -158,7 +158,13 @@ function makeDefaultConfig(): JobConfig {
 		},
 		notifications: {},
 		enabled: true,
-		pipeline: { enabled: false, planModel: "opus", implementModel: "opus", reviewModel: "opus", maxReviewRounds: 1 },
+		pipeline: {
+			enabled: false,
+			planModel: "opus",
+			implementModel: "opus",
+			reviewModel: "opus",
+			maxReviewRounds: 1,
+		},
 	};
 }
 
