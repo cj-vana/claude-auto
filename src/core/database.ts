@@ -57,17 +57,28 @@ function migrateSchema(database: Database.Database): void {
 	}
 
 	if (version < 2) {
-		database.exec(`
-			ALTER TABLE runs ADD COLUMN feedback_round INTEGER;
-			ALTER TABLE runs ADD COLUMN pr_number INTEGER;
-		`);
+		// Individual try-catch per ALTER so partial migration failure is recoverable.
+		// If the first ALTER succeeds but the second fails (e.g., power loss),
+		// re-running won't crash on the already-added column.
+		try {
+			database.exec("ALTER TABLE runs ADD COLUMN feedback_round INTEGER");
+		} catch {
+			/* column may already exist */
+		}
+		try {
+			database.exec("ALTER TABLE runs ADD COLUMN pr_number INTEGER");
+		} catch {
+			/* column may already exist */
+		}
 		database.pragma("user_version = 2");
 	}
 
 	if (version < 3) {
-		database.exec(`
-			ALTER TABLE runs ADD COLUMN pipeline_stages TEXT;
-		`);
+		try {
+			database.exec("ALTER TABLE runs ADD COLUMN pipeline_stages TEXT");
+		} catch {
+			/* column may already exist */
+		}
 		database.pragma("user_version = 3");
 	}
 }

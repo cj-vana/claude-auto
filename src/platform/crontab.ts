@@ -115,11 +115,15 @@ export class CrontabScheduler implements Scheduler {
 				skipping = true;
 				continue;
 			}
-			if (
-				skipping &&
-				(line.startsWith("CRON_TZ=") || (!line.startsWith("#") && line.trim() !== ""))
-			) {
-				continue;
+			if (skipping) {
+				if (line.startsWith("CRON_TZ=")) {
+					continue;
+				}
+				if (!line.startsWith("#") && line.trim() !== "") {
+					// Found the cron entry line — skip it and stop skipping
+					skipping = false;
+					continue;
+				}
 			}
 			skipping = false;
 			filtered.push(line);
