@@ -243,4 +243,21 @@ describe("formatTelegram", () => {
 			expect(() => formatTelegram(makePayload({ event }), "chat-999")).not.toThrow();
 		}
 	});
+
+	it("truncates message text exceeding 4096 characters", () => {
+		const longSummary = "A".repeat(5000);
+		const result = formatTelegram(makePayload({ summary: longSummary }), "chat-999") as {
+			text: string;
+		};
+
+		expect(result.text.length).toBeLessThanOrEqual(4096);
+		expect(result.text.endsWith("...")).toBe(true);
+	});
+
+	it("does not truncate message text under 4096 characters", () => {
+		const result = formatTelegram(makePayload(), "chat-999") as { text: string };
+
+		expect(result.text.length).toBeLessThan(4096);
+		expect(result.text.endsWith("...")).toBe(false);
+	});
 });
