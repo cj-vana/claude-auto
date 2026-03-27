@@ -115,6 +115,23 @@ describe("database migration v2", () => {
 		expect(columnNames).toContain("pr_number");
 	});
 
+	it("migration v2 is idempotent if re-run (partial failure recovery)", () => {
+		// Regression: if migration 2 failed partway (e.g., after adding feedback_round
+		// but before pr_number), user_version stays at 1. Re-running migrateSchema would
+		// try ALTER TABLE ADD COLUMN feedback_round again and crash without IF NOT EXISTS.
+		const db = getDatabase(":memory:");
+		// Simulate: manually set version back to 1 and re-initialize
+		db.pragma("user_version = 1");
+		closeDatabase();
+		// Re-open should not throw even though columns already exist
+		const db2 = getDatabase(":memory:");
+		const columns = db2.prepare("PRAGMA table_info(runs)").all() as Array<{ name: string }>;
+		const columnNames = columns.map((c) => c.name);
+		expect(columnNames).toContain("feedback_round");
+		expect(columnNames).toContain("pr_number");
+		expect(columnNames).toContain("pipeline_stages");
+	});
+
 	it("fresh database has all migration columns (full migration from 0 to 3)", () => {
 		const db = getDatabase(":memory:");
 		const columns = db.prepare("PRAGMA table_info(runs)").all() as Array<{ name: string }>;

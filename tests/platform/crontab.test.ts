@@ -174,6 +174,72 @@ describe("CrontabScheduler", () => {
 			expect(stdin).toContain("0 0 * * * /bin/echo other");
 			expect(stdin).toContain("# claude-auto:keep-this");
 		});
+
+		it("does not delete non-claude-auto entries immediately following the removed block", async () => {
+			const { CrontabScheduler } = await import("../../src/platform/crontab.js");
+			const scheduler = new CrontabScheduler();
+
+			// Regression: the unregister state machine previously left `skipping = true`
+			// after consuming the cron entry line, so the next non-comment line was also deleted.
+			const existingCrontab = [
+				"# claude-auto:job-to-remove",
+				"CRON_TZ=America/Chicago",
+				"0 */6 * * * /bin/node runner.js --job-id job-to-remove >> /path/to/log 2>&1",
+				"0 10 * * * /bin/echo unrelated-job",
+				"30 8 * * 1-5 /usr/bin/backup.sh",
+			].join("\n");
+
+			mockExec.mockImplementation(async (cmd, args, _opts) => {
+				if (cmd === "crontab" && args[0] === "-l") {
+					return { stdout: existingCrontab, stderr: "" };
+				}
+				if (cmd === "crontab" && args[0] === "-") {
+					return { stdout: "", stderr: "" };
+				}
+				return { stdout: "", stderr: "" };
+			});
+
+			await scheduler.unregister("job-to-remove");
+
+			const writeCall = mockExec.mock.calls.find((c) => c[0] === "crontab" && c[1][0] === "-");
+			expect(writeCall).toBeDefined();
+			const stdin = writeCall?.[2]?.stdin;
+			// Removed job should be gone
+			expect(stdin).not.toContain("claude-auto:job-to-remove");
+			expect(stdin).not.toContain("CRON_TZ=America/Chicago");
+			expect(stdin).not.toContain("job-to-remove");
+			// Adjacent non-claude-auto entries MUST be preserved
+			expect(stdin).toContain("0 10 * * * /bin/echo unrelated-job");
+			expect(stdin).toContain("30 8 * * 1-5 /usr/bin/backup.sh");
+		});
+
+		it("removes entry without CRON_TZ and preserves next entry", async () => {
+			const { CrontabScheduler } = await import("../../src/platform/crontab.js");
+			const scheduler = new CrontabScheduler();
+
+			const existingCrontab = [
+				"# claude-auto:simple-job",
+				"0 9 * * * /bin/node runner.js --job-id simple-job >> /path/log 2>&1",
+				"0 0 * * * /bin/echo keep-me",
+			].join("\n");
+
+			mockExec.mockImplementation(async (cmd, args, _opts) => {
+				if (cmd === "crontab" && args[0] === "-l") {
+					return { stdout: existingCrontab, stderr: "" };
+				}
+				if (cmd === "crontab" && args[0] === "-") {
+					return { stdout: "", stderr: "" };
+				}
+				return { stdout: "", stderr: "" };
+			});
+
+			await scheduler.unregister("simple-job");
+
+			const writeCall = mockExec.mock.calls.find((c) => c[0] === "crontab" && c[1][0] === "-");
+			const stdin = writeCall?.[2]?.stdin;
+			expect(stdin).not.toContain("simple-job");
+			expect(stdin).toContain("0 0 * * * /bin/echo keep-me");
+		});
 	});
 
 	describe("isRegistered", () => {

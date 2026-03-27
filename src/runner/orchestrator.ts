@@ -585,6 +585,6 @@ export async function executeRun(jobId: string): Promise<RunResult> {
 		if (releaseRepoLock) {
 			await releaseRepoLock().catch(() => {});
 		}
-		await releaseLock();
+		await releaseLock().catch(() => {});
 	}
 }
