@@ -142,6 +142,48 @@ describe("postIssueComment", () => {
 		expect(body).toContain("Analyzed but nothing to change");
 	});
 
+	it("posts specific comment for budget-exceeded status", async () => {
+		await postIssueComment({
+			repoPath: "/repo",
+			issueNumber: 42,
+			status: "budget-exceeded",
+			jobName: "Job G",
+		});
+
+		expect(mockExecCommand).toHaveBeenCalledTimes(1);
+		const body = mockExecCommand.mock.calls[0][1][4];
+		expect(body).toContain("budget limit");
+		expect(body).toContain("Job G");
+	});
+
+	it("posts specific comment for merge-conflict status", async () => {
+		await postIssueComment({
+			repoPath: "/repo",
+			issueNumber: 42,
+			status: "merge-conflict",
+			jobName: "Job H",
+		});
+
+		expect(mockExecCommand).toHaveBeenCalledTimes(1);
+		const body = mockExecCommand.mock.calls[0][1][4];
+		expect(body).toContain("merge conflict");
+		expect(body).toContain("Job H");
+	});
+
+	it("posts specific comment for needs-human-review status", async () => {
+		await postIssueComment({
+			repoPath: "/repo",
+			issueNumber: 42,
+			status: "needs-human-review",
+			jobName: "Job I",
+		});
+
+		expect(mockExecCommand).toHaveBeenCalledTimes(1);
+		const body = mockExecCommand.mock.calls[0][1][4];
+		expect(body).toContain("human review");
+		expect(body).toContain("Job I");
+	});
+
 	it("does NOT call execCommand for locked status", async () => {
 		await postIssueComment({
 			repoPath: "/repo",

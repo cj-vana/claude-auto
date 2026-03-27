@@ -85,6 +85,12 @@ function buildCommentBody(
 			parts.push(`\n**Job:** ${context.jobName}`);
 			return parts.join("") + footer;
 		}
+		case "budget-exceeded":
+			return `Claude Auto could not work on this issue — the job's budget limit has been reached.\n\n**Job:** ${context.jobName}${footer}`;
+		case "merge-conflict":
+			return `Claude Auto encountered a merge conflict while working on this issue. Manual resolution may be needed.\n\n**Job:** ${context.jobName}${footer}`;
+		case "needs-human-review":
+			return `Claude Auto worked on this issue but the PR needs human review before it can proceed.\n\n**Job:** ${context.jobName}${footer}`;
 		default:
 			return `Claude Auto run completed with status: ${status}${footer}`;
 	}

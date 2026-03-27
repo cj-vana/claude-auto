@@ -175,9 +175,17 @@ export function formatTelegram(payload: NotificationPayload, chatId: string): ob
 	lines.push("");
 	lines.push("<i>Automated by claude-auto</i>");
 
+	// Telegram enforces a 4096-character limit on sendMessage.
+	// Truncate to avoid silent HTTP 400 failures.
+	const MAX_TELEGRAM_LENGTH = 4096;
+	let text = lines.join("\n");
+	if (text.length > MAX_TELEGRAM_LENGTH) {
+		text = `${text.slice(0, MAX_TELEGRAM_LENGTH - 3)}...`;
+	}
+
 	return {
 		chat_id: chatId,
-		text: lines.join("\n"),
+		text,
 		parse_mode: "HTML",
 	};
 }

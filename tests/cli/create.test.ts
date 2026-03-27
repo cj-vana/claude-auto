@@ -373,6 +373,68 @@ describe("createCommand", () => {
 		expect(createJobCall.guardrails.restrictToPaths).toBeUndefined();
 	});
 
+	it("throws error when --max-turns is not a valid number", async () => {
+		mockRepoExists();
+		mockedValidateCronExpression.mockImplementation(() => {});
+
+		await expect(
+			createCommand({
+				name: "Test Job",
+				repo: "/home/user/repos/my-project",
+				schedule: "0 */6 * * *",
+				maxTurns: "invalid",
+			}),
+		).rejects.toThrow("Invalid --max-turns");
+
+		expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("Invalid --max-turns"));
+	});
+
+	it("throws error when --max-budget is not a valid number", async () => {
+		mockRepoExists();
+		mockedValidateCronExpression.mockImplementation(() => {});
+
+		await expect(
+			createCommand({
+				name: "Test Job",
+				repo: "/home/user/repos/my-project",
+				schedule: "0 */6 * * *",
+				maxBudget: "abc",
+			}),
+		).rejects.toThrow("Invalid --max-budget");
+
+		expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("Invalid --max-budget"));
+	});
+
+	it("throws error when --max-turns is zero or negative", async () => {
+		mockRepoExists();
+		mockedValidateCronExpression.mockImplementation(() => {});
+
+		await expect(
+			createCommand({
+				name: "Test Job",
+				repo: "/home/user/repos/my-project",
+				schedule: "0 */6 * * *",
+				maxTurns: "0",
+			}),
+		).rejects.toThrow("Invalid --max-turns");
+	});
+
+	it("throws error when --focus contains invalid focus areas", async () => {
+		mockRepoExists();
+		mockedValidateCronExpression.mockImplementation(() => {});
+
+		await expect(
+			createCommand({
+				name: "Test Job",
+				repo: "/home/user/repos/my-project",
+				schedule: "0 */6 * * *",
+				focus: "open-issues,invalid-area",
+			}),
+		).rejects.toThrow("Invalid focus area");
+
+		expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("invalid-area"));
+	});
+
 	it("uses default focus and system timezone when not specified", async () => {
 		const job = makeJob();
 		mockRepoExists();

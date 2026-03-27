@@ -66,12 +66,29 @@ export async function createCommand(args: ParsedCommand["args"]): Promise<void> 
 		systemPrompt = await readFile(args.systemPromptFile as string, "utf-8");
 	}
 
-	// Parse focus areas
-	const focus = focusStr.split(",").map((s) => s.trim()) as JobConfig["focus"];
+	// Parse and validate focus areas (match edit command validation)
+	const validFocusAreas = new Set(["open-issues", "bug-discovery", "features", "documentation"]);
+	const focusItems = focusStr.split(",").map((s) => s.trim());
+	const invalidFocus = focusItems.filter((f) => !validFocusAreas.has(f));
+	if (invalidFocus.length > 0) {
+		console.error(
+			`Invalid focus area(s): ${invalidFocus.join(", ")}. Valid: ${[...validFocusAreas].join(", ")}`,
+		);
+		throw new Error(`Invalid focus area(s): ${invalidFocus.join(", ")}`);
+	}
+	const focus = focusItems as JobConfig["focus"];
 
-	// Parse guardrails
+	// Parse guardrails with NaN validation (match edit command validation)
 	const maxTurns = args.maxTurns ? Number(args.maxTurns) : 50;
+	if (Number.isNaN(maxTurns) || maxTurns <= 0) {
+		console.error("Invalid --max-turns: must be a positive integer");
+		throw new Error("Invalid --max-turns: must be a positive integer");
+	}
 	const maxBudgetUsd = args.maxBudget ? Number(args.maxBudget) : 5.0;
+	if (Number.isNaN(maxBudgetUsd) || maxBudgetUsd <= 0) {
+		console.error("Invalid --max-budget: must be a positive number");
+		throw new Error("Invalid --max-budget: must be a positive number");
+	}
 	const noNewDependencies = Boolean(args.noNewDeps);
 	const noArchitectureChanges = Boolean(args.noArchChanges);
 	const bugFixOnly = Boolean(args.bugFixOnly);
