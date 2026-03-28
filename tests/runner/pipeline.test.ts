@@ -181,7 +181,7 @@ describe("runPipeline", () => {
 		expect(fixCall.model).toBe("opus");
 	});
 
-	it("budget is split correctly (15%/55%/15%/15% of maxBudgetUsd)", async () => {
+	it("budget is split correctly (15%/55%/15%/15% of maxBudgetUsd) for single round", async () => {
 		const config = makeDefaultConfig({
 			guardrails: {
 				...makeDefaultConfig().guardrails,
@@ -196,10 +196,48 @@ describe("runPipeline", () => {
 		expect(mockedSpawnClaude.mock.calls[0][0].maxBudgetUsd).toBeCloseTo(1.5);
 		// Implement: 55% of 10 = 5.5
 		expect(mockedSpawnClaude.mock.calls[1][0].maxBudgetUsd).toBeCloseTo(5.5);
-		// Review: 15% of 10 = 1.5
+		// Review: 30% / 1 round / 2 = 15% of 10 = 1.5
 		expect(mockedSpawnClaude.mock.calls[2][0].maxBudgetUsd).toBeCloseTo(1.5);
-		// Fix: 15% of 10 = 1.5
+		// Fix: 30% / 1 round / 2 = 15% of 10 = 1.5
 		expect(mockedSpawnClaude.mock.calls[3][0].maxBudgetUsd).toBeCloseTo(1.5);
+	});
+
+	it("budget for review+fix is divided across multiple rounds so total never exceeds 100%", async () => {
+		const config = makeDefaultConfig({
+			guardrails: {
+				...makeDefaultConfig().guardrails,
+				maxBudgetUsd: 10.0,
+			},
+			pipeline: {
+				enabled: true,
+				planModel: "haiku",
+				implementModel: "opus",
+				reviewModel: "sonnet",
+				maxReviewRounds: 3,
+			},
+		});
+
+		// All reviews fail
+		mockedParseReviewVerdict.mockReturnValue("fail");
+
+		await runPipeline(config, "/tmp/test-repo", "work-branch", [], []);
+
+		// Plan: 15% = 1.5
+		expect(mockedSpawnClaude.mock.calls[0][0].maxBudgetUsd).toBeCloseTo(1.5);
+		// Implement: 55% = 5.5
+		expect(mockedSpawnClaude.mock.calls[1][0].maxBudgetUsd).toBeCloseTo(5.5);
+		// Each review: 30% / 3 / 2 = 5% = 0.5
+		// Each fix: 30% / 3 / 2 = 5% = 0.5
+		for (let i = 2; i < mockedSpawnClaude.mock.calls.length; i++) {
+			expect(mockedSpawnClaude.mock.calls[i][0].maxBudgetUsd).toBeCloseTo(0.5);
+		}
+
+		// Total budget: 1.5 + 5.5 + 3*(0.5+0.5) = 10.0 (exactly 100%)
+		const totalAllocated = mockedSpawnClaude.mock.calls.reduce(
+			(sum, call) => sum + call[0].maxBudgetUsd,
+			0,
+		);
+		expect(totalAllocated).toBeCloseTo(10.0);
 	});
 
 	it("plan result text is passed to implement prompt", async () => {
@@ -292,31 +330,31 @@ describe("runPipeline", () => {
 		expect(result.reviewVerdict).toBe("fail");
 	});
 
-	it("PipelineResult.summary is the final stage's summary", async () => {
+	it("PipelineResult.summary uses implement stage summary (not review verdict text)", async () => {
 		const config = makeDefaultConfig();
 		mockedSpawnClaude
 			.mockResolvedValueOnce(makeSpawnResult({ summary: "Plan summary" }))
 			.mockResolvedValueOnce(makeSpawnResult({ summary: "Implement summary" }))
-			.mockResolvedValueOnce(makeSpawnResult({ summary: "Review summary" }));
+			.mockResolvedValueOnce(makeSpawnResult({ summary: "VERDICT: PASS. Looks good." }));
 		mockedParseReviewVerdict.mockReturnValue("pass");
 
 		const result = await runPipeline(config, "/tmp/test-repo", "work-branch", [], []);
 
-		expect(result.summary).toBe("Review summary");
+		expect(result.summary).toBe("Implement summary");
 	});
 
-	it("PipelineResult.summary is fix summary when review fails", async () => {
+	it("PipelineResult.summary uses implement summary even when fix stage runs", async () => {
 		const config = makeDefaultConfig();
 		mockedSpawnClaude
 			.mockResolvedValueOnce(makeSpawnResult({ summary: "Plan summary" }))
 			.mockResolvedValueOnce(makeSpawnResult({ summary: "Implement summary" }))
-			.mockResolvedValueOnce(makeSpawnResult({ summary: "Review summary" }))
-			.mockResolvedValueOnce(makeSpawnResult({ summary: "Fix summary" }));
+			.mockResolvedValueOnce(makeSpawnResult({ summary: "VERDICT: FAIL. Missing tests." }))
+			.mockResolvedValueOnce(makeSpawnResult({ summary: "Fixed the missing tests" }));
 		mockedParseReviewVerdict.mockReturnValue("fail");
 
 		const result = await runPipeline(config, "/tmp/test-repo", "work-branch", [], []);
 
-		expect(result.summary).toBe("Fix summary");
+		expect(result.summary).toBe("Implement summary");
 	});
 
 	it("PipelineResult.stages contains all stage results", async () => {

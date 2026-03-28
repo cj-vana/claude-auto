@@ -23,11 +23,8 @@ const BUDGET_PLAN = 0.15;
 /** Budget fraction allocated to the implement stage (55%). */
 const BUDGET_IMPLEMENT = 0.55;
 
-/** Budget fraction allocated to each review round (15%). */
-const BUDGET_REVIEW = 0.15;
-
-/** Budget fraction allocated to each fix round (15%). */
-const BUDGET_FIX = 0.15;
+/** Total budget fraction reserved for all review+fix rounds combined (30%). */
+const BUDGET_REVIEW_FIX_POOL = 0.3;
 
 /**
  * Run the multi-stage pipeline: plan -> implement -> review -> optional fix.
@@ -97,6 +94,11 @@ export async function runPipeline(
 	let reviewVerdict: "pass" | "fail" | "skipped" = "skipped";
 	const maxRounds = pipeline.maxReviewRounds ?? 1;
 
+	// Divide the review+fix budget pool equally across all possible rounds
+	// so total allocation never exceeds 100% regardless of maxReviewRounds.
+	const reviewBudgetPerRound = (totalBudget * BUDGET_REVIEW_FIX_POOL) / maxRounds / 2;
+	const fixBudgetPerRound = reviewBudgetPerRound;
+
 	for (let round = 0; round < maxRounds; round++) {
 		// Get diff for review
 		const diffOutput = await getDiffFromBase(repoPath, config.repo.branch);
@@ -110,7 +112,7 @@ export async function runPipeline(
 			cwd: repoPath,
 			prompt: reviewPrompt,
 			maxTurns: 15,
-			maxBudgetUsd: totalBudget * BUDGET_REVIEW,
+			maxBudgetUsd: reviewBudgetPerRound,
 			allowedTools: reviewTools,
 			appendSystemPrompt: reviewSystemPrompt,
 			model: pipeline.reviewModel,
@@ -130,7 +132,7 @@ export async function runPipeline(
 			cwd: repoPath,
 			prompt: fixPrompt,
 			maxTurns: 20,
-			maxBudgetUsd: totalBudget * BUDGET_FIX,
+			maxBudgetUsd: fixBudgetPerRound,
 			allowedTools: fixTools,
 			appendSystemPrompt: fixSystemPrompt,
 			model: pipeline.implementModel,
@@ -142,6 +144,11 @@ export async function runPipeline(
 	// --- Aggregate results ---
 	const totalCostUsd = stages.reduce((sum, s) => sum + s.spawnResult.costUsd, 0);
 	const totalDurationMs = stages.reduce((sum, s) => sum + s.spawnResult.durationMs, 0);
+
+	// Use the implement stage summary for PR descriptions. The review/fix stage
+	// summaries contain verdict text ("VERDICT: PASS...") which makes poor PR
+	// titles and bodies. The implement summary describes the actual changes made.
+	const implementStage = stages.find((s) => s.stage === "implement");
 	const lastStage = stages[stages.length - 1];
 
 	return {
@@ -149,6 +156,6 @@ export async function runPipeline(
 		reviewVerdict,
 		totalCostUsd,
 		totalDurationMs,
-		summary: lastStage.spawnResult.summary,
+		summary: implementStage?.spawnResult.summary ?? lastStage.spawnResult.summary,
 	};
 }

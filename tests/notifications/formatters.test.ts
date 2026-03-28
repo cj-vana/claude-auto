@@ -261,3 +261,33 @@ describe("formatTelegram", () => {
 		expect(result.text.endsWith("...")).toBe(false);
 	});
 });
+
+describe("formatDuration in formatters", () => {
+	it("formats hour-long durations as Xh Ym instead of large minute counts", () => {
+		// 1h 2m 30s = 3750000ms — should show "1h 2m" not "62m 30s"
+		const payload = makePayload({ durationMs: 3750000 });
+
+		const discord = formatDiscord(payload) as {
+			embeds: Array<{ fields: Array<{ name: string; value: string }> }>;
+		};
+		const durationField = discord.embeds[0].fields.find((f) => f.name === "Duration");
+		expect(durationField?.value).toBe("1h 2m");
+
+		const slack = formatSlack(payload) as { blocks: Array<{ text?: { text: string } }> };
+		const sectionText = slack.blocks[1]?.text?.text ?? "";
+		expect(sectionText).toContain("1h 2m");
+
+		const telegram = formatTelegram(payload, "chat-999") as { text: string };
+		expect(telegram.text).toContain("1h 2m");
+	});
+
+	it("formats sub-minute durations as Xs", () => {
+		const payload = makePayload({ durationMs: 15000 });
+
+		const discord = formatDiscord(payload) as {
+			embeds: Array<{ fields: Array<{ name: string; value: string }> }>;
+		};
+		const durationField = discord.embeds[0].fields.find((f) => f.name === "Duration");
+		expect(durationField?.value).toBe("15s");
+	});
+});
