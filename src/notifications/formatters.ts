@@ -1,14 +1,22 @@
 import type { NotificationEvent, NotificationPayload } from "./types.js";
 
 /**
- * Format duration in milliseconds to "Xm Ys" string.
+ * Format duration in milliseconds to a human-readable string.
+ * For hours+, shows "Xh Ym". For minutes+, shows "Xm Ys". For <1m, shows "Xs".
  */
 function formatDuration(ms: number): string {
 	const totalSeconds = Math.floor(ms / 1000);
-	const minutes = Math.floor(totalSeconds / 60);
+	const hours = Math.floor(totalSeconds / 3600);
+	const minutes = Math.floor((totalSeconds % 3600) / 60);
 	const seconds = totalSeconds % 60;
-	if (minutes === 0) return `${seconds}s`;
-	return `${minutes}m ${seconds}s`;
+
+	if (hours > 0) {
+		return `${hours}h ${minutes}m`;
+	}
+	if (minutes > 0) {
+		return `${minutes}m ${seconds}s`;
+	}
+	return `${seconds}s`;
 }
 
 const EVENT_TITLES: Record<NotificationEvent, string> = {
