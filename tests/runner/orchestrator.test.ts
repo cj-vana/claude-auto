@@ -305,7 +305,6 @@ describe("executeRun", () => {
 		expect(mockedPushBranch).toHaveBeenCalledWith(
 			"/tmp/test-repo",
 			"claude-auto/test-job/2026-03-21T00-00-00",
-			"origin",
 		);
 		expect(mockedCreatePR).toHaveBeenCalled();
 		expect(mockedWriteRunLog).toHaveBeenCalledWith(
@@ -649,7 +648,6 @@ describe("executeRun", () => {
 		expect(mockedCheckoutExistingBranch).toHaveBeenCalledWith(
 			"/tmp/test-repo",
 			"claude-auto/test-job/2026-03-20T00-00-00",
-			"origin",
 		);
 		expect(mockedCreateBranch).not.toHaveBeenCalled();
 
