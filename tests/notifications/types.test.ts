@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { JobConfig } from "../../src/core/types.js";
-import type { RunResult } from "../../src/runner/types.js";
 import { buildPayload } from "../../src/notifications/types.js";
+import type { RunResult } from "../../src/runner/types.js";
 
 function makeJobConfig(): JobConfig {
 	return {
