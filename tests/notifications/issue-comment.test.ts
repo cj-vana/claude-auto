@@ -31,6 +31,20 @@ describe("extractIssueNumber", () => {
 		expect(extractIssueNumber("no issue here")).toBeUndefined();
 	});
 
+	it("prefers keyword-prefixed #N over bare #N appearing earlier in text", () => {
+		// "PR #5" appears before "fixes #42" — should extract 42 (keyword match), not 5
+		expect(extractIssueNumber("Created PR #5 that fixes #42")).toBe(42);
+	});
+
+	it("falls back to bare #N when no keyword prefix exists", () => {
+		expect(extractIssueNumber("Working on issue #7 today")).toBe(7);
+	});
+
+	it("requires whitespace between keyword and # to avoid partial word matches", () => {
+		// "prefixes" contains "fixes" but shouldn't match as a keyword
+		expect(extractIssueNumber("prefixes#99 and fixes #42")).toBe(42);
+	});
+
 	it("extracts issue from PR title '[claude-auto] Fix #42 - broken login'", () => {
 		expect(extractIssueNumber("[claude-auto] Fix #42 - broken login")).toBe(42);
 	});

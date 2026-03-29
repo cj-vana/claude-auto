@@ -3,13 +3,21 @@ import { execCommand } from "../util/exec.js";
 
 /**
  * Extract a GitHub issue number from text.
- * Looks for patterns like: #42, fixes #7, closes #123, resolves #99
+ * Looks for patterns like: fixes #7, closes #123, resolves #99, #42
+ * Prefers keyword-prefixed matches (fixes/closes/resolves) over bare #N
+ * to avoid false positives from PR references, line numbers, etc.
  * Returns the first matched issue number, or undefined if none found.
  */
 export function extractIssueNumber(text: string): number | undefined {
-	const match = text.match(/(?:fixes|closes|resolves|fix|close|resolve)?\s*#(\d+)/i);
-	if (match?.[1]) {
-		return Number.parseInt(match[1], 10);
+	// First: try keyword-prefixed matches (highest confidence)
+	const keywordMatch = text.match(/(?:fixes|closes|resolves|fix|close|resolve)\s+#(\d+)/i);
+	if (keywordMatch?.[1]) {
+		return Number.parseInt(keywordMatch[1], 10);
+	}
+	// Fallback: bare #N (lower confidence, but still useful)
+	const bareMatch = text.match(/#(\d+)/);
+	if (bareMatch?.[1]) {
+		return Number.parseInt(bareMatch[1], 10);
 	}
 	return undefined;
 }

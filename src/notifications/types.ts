@@ -67,13 +67,29 @@ export function shouldNotify(status: RunStatus, triggers: EventTriggers): boolea
 	}
 }
 
+function mapStatusToEvent(status: RunStatus): NotificationEvent {
+	switch (status) {
+		case "success":
+		case "no-changes":
+		case "error":
+		case "locked":
+		case "git-error":
+		case "budget-exceeded":
+		case "merge-conflict":
+		case "needs-human-review":
+			return status;
+		default:
+			return "error";
+	}
+}
+
 /**
  * Build a NotificationPayload from job config and run result.
  * Maps RunResult + JobConfig into the shape formatters consume.
  */
 export function buildPayload(config: JobConfig, result: RunResult): NotificationPayload {
 	return {
-		event: result.status as NotificationEvent,
+		event: mapStatusToEvent(result.status),
 		jobId: config.id,
 		jobName: config.name,
 		runId: result.runId,

@@ -232,6 +232,81 @@ describe("pr-feedback module", () => {
 		});
 	});
 
+	describe("getUnresolvedThreads — null author (ghost/deleted users)", () => {
+		it("treats null author as human and does not crash", async () => {
+			mockExecCommand.mockResolvedValueOnce({
+				stdout: JSON.stringify({ owner: { login: "o" }, name: "r" }),
+				stderr: "",
+			});
+			mockExecCommand.mockResolvedValueOnce({
+				stdout: JSON.stringify({
+					data: {
+						repository: {
+							pullRequest: {
+								reviewThreads: {
+									nodes: [
+										{
+											id: "thread-ghost",
+											isResolved: false,
+											comments: {
+												nodes: [{ body: "Please fix", author: null }],
+											},
+										},
+									],
+								},
+							},
+						},
+					},
+				}),
+				stderr: "",
+			});
+
+			const result = await getUnresolvedThreads("/repo", 42);
+
+			// Thread should be included (null author treated as human)
+			expect(result).toHaveLength(1);
+			expect(result[0].id).toBe("thread-ghost");
+			expect(result[0].comments[0].author.login).toBe("ghost");
+		});
+
+		it("filters bot-only threads even when mixed with null-author comments", async () => {
+			mockExecCommand.mockResolvedValueOnce({
+				stdout: JSON.stringify({ owner: { login: "o" }, name: "r" }),
+				stderr: "",
+			});
+			mockExecCommand.mockResolvedValueOnce({
+				stdout: JSON.stringify({
+					data: {
+						repository: {
+							pullRequest: {
+								reviewThreads: {
+									nodes: [
+										{
+											id: "thread-mixed",
+											isResolved: false,
+											comments: {
+												nodes: [
+													{ body: "Bot comment", author: { login: "dependabot[bot]" } },
+													{ body: "Ghost comment", author: null },
+												],
+											},
+										},
+									],
+								},
+							},
+						},
+					},
+				}),
+				stderr: "",
+			});
+
+			const result = await getUnresolvedThreads("/repo", 42);
+
+			// Thread included because null author is treated as human
+			expect(result).toHaveLength(1);
+		});
+	});
+
 	describe("getUnresolvedThreads — malformed responses", () => {
 		it("throws descriptive error when GraphQL returns non-JSON", async () => {
 			mockExecCommand.mockResolvedValueOnce({

@@ -343,6 +343,20 @@ describe("runPipeline", () => {
 		expect(result.summary).toBe("Implement summary");
 	});
 
+	it("PipelineResult.summary falls back safely when implement stage summary is undefined", async () => {
+		const config = makeDefaultConfig();
+		mockedSpawnClaude
+			.mockResolvedValueOnce(makeSpawnResult({ summary: "Plan summary" }))
+			.mockResolvedValueOnce(makeSpawnResult({ summary: undefined as unknown as string }))
+			.mockResolvedValueOnce(makeSpawnResult({ summary: "VERDICT: PASS" }));
+		mockedParseReviewVerdict.mockReturnValue("pass");
+
+		const result = await runPipeline(config, "/tmp/test-repo", "work-branch", [], []);
+
+		// Should fall back to lastStage summary when implement summary is undefined
+		expect(result.summary).toBe("VERDICT: PASS");
+	});
+
 	it("PipelineResult.summary uses implement summary even when fix stage runs", async () => {
 		const config = makeDefaultConfig();
 		mockedSpawnClaude

@@ -156,6 +156,9 @@ export async function runPipeline(
 		reviewVerdict,
 		totalCostUsd,
 		totalDurationMs,
-		summary: implementStage?.spawnResult.summary ?? lastStage.spawnResult.summary,
+		summary:
+			implementStage?.spawnResult.summary ??
+			lastStage?.spawnResult.summary ??
+			"No summary available",
 	};
 }

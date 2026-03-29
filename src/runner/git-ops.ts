@@ -84,9 +84,13 @@ export async function hasCommitsAhead(repoPath: string, baseRef: string): Promis
  * Push branch to origin with upstream tracking.
  * Safety: only uses -u flag, no destructive push flags.
  */
-export async function pushBranch(repoPath: string, branchName: string): Promise<void> {
+export async function pushBranch(
+	repoPath: string,
+	branchName: string,
+	remote = "origin",
+): Promise<void> {
 	try {
-		await execCommand("git", ["-C", repoPath, "push", "-u", "origin", branchName]);
+		await execCommand("git", ["-C", repoPath, "push", "-u", remote, branchName]);
 	} catch (err) {
 		throw new GitOpsError(
 			"pushBranch",
@@ -106,11 +110,15 @@ export async function pushBranch(repoPath: string, branchName: string): Promise<
  * 2. Checkout the branch (may already exist locally or be created from remote tracking)
  * 3. Hard reset to match origin exactly (safe because claude-auto never has local-only state)
  */
-export async function checkoutExistingBranch(repoPath: string, branchName: string): Promise<void> {
+export async function checkoutExistingBranch(
+	repoPath: string,
+	branchName: string,
+	remote = "origin",
+): Promise<void> {
 	try {
-		await execCommand("git", ["-C", repoPath, "fetch", "origin", branchName]);
+		await execCommand("git", ["-C", repoPath, "fetch", remote, branchName]);
 		await execCommand("git", ["-C", repoPath, "checkout", branchName]);
-		await execCommand("git", ["-C", repoPath, "reset", "--hard", `origin/${branchName}`]);
+		await execCommand("git", ["-C", repoPath, "reset", "--hard", `${remote}/${branchName}`]);
 	} catch (err) {
 		throw new GitOpsError(
 			"checkoutExistingBranch",

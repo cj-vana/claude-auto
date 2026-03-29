@@ -240,7 +240,7 @@ export async function executeRun(jobId: string): Promise<RunResult> {
 			}
 
 			// Checkout existing PR branch (PRFB-02)
-			await checkoutExistingBranch(config.repo.path, feedback.headRefName);
+			await checkoutExistingBranch(config.repo.path, feedback.headRefName, config.repo.remote);
 			branchName = feedback.headRefName;
 			isFeedbackBranch = true;
 
@@ -297,7 +297,7 @@ export async function executeRun(jobId: string): Promise<RunResult> {
 					await sendNotifications(config, mcResult).catch(() => {});
 					return mcResult;
 				}
-				await pushBranch(config.repo.path, feedback.headRefName);
+				await pushBranch(config.repo.path, feedback.headRefName, config.repo.remote);
 				// Post PR comment summarizing changes (PRFB-04)
 				const commentBody = `## Feedback Addressed (Round ${nextRound}/${maxRounds})\n\n${spawnResult.summary}\n\n---\n*Automated by claude-auto*`;
 				await postPRComment(config.repo.path, feedback.number, commentBody).catch(() => {});
@@ -401,7 +401,7 @@ export async function executeRun(jobId: string): Promise<RunResult> {
 					return result;
 				}
 
-				await pushBranch(config.repo.path, branchName);
+				await pushBranch(config.repo.path, branchName, config.repo.remote);
 				const commitSubject = await getFirstCommitSubject(config.repo.path, config.repo.branch);
 				const titleText = commitSubject || pipelineResult.summary.slice(0, 72);
 				const prTitle = `[claude-auto] ${titleText}`;
@@ -504,7 +504,7 @@ export async function executeRun(jobId: string): Promise<RunResult> {
 			}
 
 			// Step 8: Push and create PR
-			await pushBranch(config.repo.path, branchName);
+			await pushBranch(config.repo.path, branchName, config.repo.remote);
 			const commitSubject = await getFirstCommitSubject(config.repo.path, config.repo.branch);
 			const titleText = commitSubject || spawnResult.summary.slice(0, 72);
 			const prTitle = `[claude-auto] ${titleText}`;
