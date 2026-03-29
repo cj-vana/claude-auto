@@ -164,6 +164,34 @@ describe("git-ops module", () => {
 		});
 	});
 
+	describe("pushBranch — custom remote", () => {
+		it("uses custom remote instead of hardcoded origin", async () => {
+			await pushBranch("/repo/path", "claude-auto/job/2026-01-01T00-00-00", "upstream");
+
+			expect(mockExecCommand).toHaveBeenCalledWith("git", [
+				"-C",
+				"/repo/path",
+				"push",
+				"-u",
+				"upstream",
+				"claude-auto/job/2026-01-01T00-00-00",
+			]);
+		});
+
+		it("defaults to origin when remote is not specified", async () => {
+			await pushBranch("/repo/path", "claude-auto/job/2026-01-01T00-00-00");
+
+			expect(mockExecCommand).toHaveBeenCalledWith("git", [
+				"-C",
+				"/repo/path",
+				"push",
+				"-u",
+				"origin",
+				"claude-auto/job/2026-01-01T00-00-00",
+			]);
+		});
+	});
+
 	describe("createPR", () => {
 		it("calls gh pr create and returns the URL from stdout", async () => {
 			mockExecCommand.mockResolvedValueOnce({
@@ -244,6 +272,27 @@ describe("git-ops module", () => {
 			mockExecCommand.mockRejectedValueOnce(new Error("fetch failed"));
 
 			await expect(checkoutExistingBranch("/repo", "branch")).rejects.toThrow(GitOpsError);
+		});
+	});
+
+	describe("checkoutExistingBranch — custom remote", () => {
+		it("uses custom remote instead of hardcoded origin", async () => {
+			await checkoutExistingBranch("/repo/path", "claude-auto/job/2026-01-01T00-00-00", "upstream");
+
+			expect(mockExecCommand).toHaveBeenNthCalledWith(1, "git", [
+				"-C",
+				"/repo/path",
+				"fetch",
+				"upstream",
+				"claude-auto/job/2026-01-01T00-00-00",
+			]);
+			expect(mockExecCommand).toHaveBeenNthCalledWith(3, "git", [
+				"-C",
+				"/repo/path",
+				"reset",
+				"--hard",
+				"upstream/claude-auto/job/2026-01-01T00-00-00",
+			]);
 		});
 	});
 

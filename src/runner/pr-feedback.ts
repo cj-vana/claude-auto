@@ -124,22 +124,25 @@ export async function getUnresolvedThreads(
 
 	return nodes
 		.filter((thread: { isResolved: boolean }) => !thread.isResolved)
-		.filter((thread: { comments: { nodes: Array<{ author: { login: string } }> } }) => {
-			// Filter out threads where ALL comments are from bots
-			const hasHumanComment = thread.comments.nodes.some((c) => !c.author.login.endsWith("[bot]"));
+		.filter((thread: { comments: { nodes: Array<{ author: { login: string } | null }> } }) => {
+			// Filter out threads where ALL comments are from bots.
+			// Treat null author (deleted/ghost users) as human to err on the safe side.
+			const hasHumanComment = thread.comments.nodes.some(
+				(c) => !c.author || !c.author.login.endsWith("[bot]"),
+			);
 			return hasHumanComment;
 		})
 		.map(
 			(thread: {
 				id: string;
 				isResolved: boolean;
-				comments: { nodes: Array<{ body: string; author: { login: string } }> };
+				comments: { nodes: Array<{ body: string; author: { login: string } | null }> };
 			}) => ({
 				id: thread.id,
 				isResolved: thread.isResolved,
 				comments: thread.comments.nodes.map((c) => ({
 					body: c.body,
-					author: { login: c.author.login },
+					author: { login: c.author?.login ?? "ghost" },
 				})),
 			}),
 		);
