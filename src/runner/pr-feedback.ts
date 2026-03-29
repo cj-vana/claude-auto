@@ -92,11 +92,24 @@ export async function getUnresolvedThreads(
 ): Promise<ReviewThread[]> {
 	const { owner, name } = await getRepoOwnerName(repoPath);
 
-	const query = `query { repository(owner: "${owner}", name: "${name}") { pullRequest(number: ${prNumber}) { reviewThreads(first: 100) { nodes { id isResolved comments(first: 10) { nodes { body author { login } } } } } } } }`;
+	const query = `query($owner: String!, $name: String!, $prNumber: Int!) { repository(owner: $owner, name: $name) { pullRequest(number: $prNumber) { reviewThreads(first: 100) { nodes { id isResolved comments(first: 10) { nodes { body author { login } } } } } } } }`;
 
-	const { stdout } = await execCommand("gh", ["api", "graphql", "-f", `query=${query}`], {
-		cwd: repoPath,
-	});
+	const { stdout } = await execCommand(
+		"gh",
+		[
+			"api",
+			"graphql",
+			"-f",
+			`query=${query}`,
+			"-F",
+			`owner=${owner}`,
+			"-F",
+			`name=${name}`,
+			"-F",
+			`prNumber=${prNumber}`,
+		],
+		{ cwd: repoPath },
+	);
 
 	let data: Record<string, unknown>;
 	try {

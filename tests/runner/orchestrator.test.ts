@@ -1104,6 +1104,58 @@ describe("executeRun", () => {
 		});
 	});
 
+	// --- Null summary fallback tests ---
+
+	describe("null summary fallback", () => {
+		it("falls back to 'autonomous improvements' when commitSubject is empty and pipelineResult.summary is undefined", async () => {
+			mockedLoadJobConfig.mockResolvedValue({
+				...makeDefaultConfig(),
+				pipeline: {
+					enabled: true,
+					planModel: "opus",
+					implementModel: "sonnet",
+					reviewModel: "sonnet",
+					maxReviewRounds: 1,
+				},
+			} as JobConfig);
+			mockedRunPipeline.mockResolvedValue(
+				makeDefaultPipelineResult({ summary: undefined as unknown as string }),
+			);
+			mockedGetFirstCommitSubject.mockResolvedValue("");
+			mockedHasChanges.mockResolvedValue(true);
+
+			const result = await executeRun("test-job");
+
+			expect(result.status).toBe("success");
+			expect(mockedCreatePR).toHaveBeenCalledWith(
+				expect.any(String),
+				expect.any(String),
+				expect.any(String),
+				"[claude-auto] autonomous improvements",
+				expect.any(String),
+			);
+		});
+
+		it("falls back to 'autonomous improvements' when commitSubject is empty and spawnResult.summary is undefined (single-spawn path)", async () => {
+			mockedSpawnClaude.mockResolvedValue(
+				makeDefaultSpawnResult({ summary: undefined as unknown as string }),
+			);
+			mockedGetFirstCommitSubject.mockResolvedValue("");
+			mockedHasChanges.mockResolvedValue(true);
+
+			const result = await executeRun("test-job");
+
+			expect(result.status).toBe("success");
+			expect(mockedCreatePR).toHaveBeenCalledWith(
+				expect.any(String),
+				expect.any(String),
+				expect.any(String),
+				"[claude-auto] autonomous improvements",
+				expect.any(String),
+			);
+		});
+	});
+
 	// --- All existing tests continue to pass verification ---
 
 	it("uses pipeline by default when no pipeline config provided", async () => {
