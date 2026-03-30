@@ -13,7 +13,9 @@ import {
 	createBranch,
 	createPR,
 	getDiffFromBase,
+	getFirstCommitSubject,
 	hasChanges,
+	hasCommitsAhead,
 	pullLatest,
 	pushBranch,
 } from "../../src/runner/git-ops.js";
@@ -401,6 +403,79 @@ describe("git-ops module", () => {
 				"rebase",
 				"--abort",
 			]);
+		});
+	});
+
+	describe("hasCommitsAhead", () => {
+		it("returns true when there are commits ahead of baseRef", async () => {
+			mockExecCommand.mockResolvedValueOnce({
+				stdout: "abc1234 feat: add feature\ndef5678 fix: bug fix\n",
+				stderr: "",
+			});
+
+			const result = await hasCommitsAhead("/repo/path", "origin/main");
+
+			expect(result).toBe(true);
+			expect(mockExecCommand).toHaveBeenCalledWith("git", [
+				"-C",
+				"/repo/path",
+				"log",
+				"--oneline",
+				"origin/main..HEAD",
+			]);
+		});
+
+		it("returns false when there are no commits ahead of baseRef", async () => {
+			mockExecCommand.mockResolvedValueOnce({ stdout: "", stderr: "" });
+
+			const result = await hasCommitsAhead("/repo/path", "origin/main");
+
+			expect(result).toBe(false);
+		});
+
+		it("returns false on error (best-effort)", async () => {
+			mockExecCommand.mockRejectedValueOnce(new Error("bad ref"));
+
+			const result = await hasCommitsAhead("/repo/path", "invalid-ref");
+
+			expect(result).toBe(false);
+		});
+	});
+
+	describe("getFirstCommitSubject", () => {
+		it("returns the first commit subject ahead of baseBranch", async () => {
+			mockExecCommand.mockResolvedValueOnce({
+				stdout: "fix: resolve null crash\nfeat: add dashboard\n",
+				stderr: "",
+			});
+
+			const result = await getFirstCommitSubject("/repo/path", "main");
+
+			expect(result).toBe("fix: resolve null crash");
+			expect(mockExecCommand).toHaveBeenCalledWith("git", [
+				"-C",
+				"/repo/path",
+				"log",
+				"--reverse",
+				"--format=%s",
+				"main..HEAD",
+			]);
+		});
+
+		it("returns empty string when no commits ahead", async () => {
+			mockExecCommand.mockResolvedValueOnce({ stdout: "", stderr: "" });
+
+			const result = await getFirstCommitSubject("/repo/path", "main");
+
+			expect(result).toBe("");
+		});
+
+		it("returns empty string on error (best-effort)", async () => {
+			mockExecCommand.mockRejectedValueOnce(new Error("bad ref"));
+
+			const result = await getFirstCommitSubject("/repo/path", "main");
+
+			expect(result).toBe("");
 		});
 	});
 

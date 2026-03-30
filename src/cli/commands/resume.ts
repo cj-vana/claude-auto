@@ -42,7 +42,7 @@ export async function resumeCommand(args: ParsedCommand["args"]): Promise<void> 
 
 	await scheduler.register(updatedConfig);
 
-	const nextRuns = getNextRuns(config.schedule.cron, config.schedule.timezone, 1);
+	const nextRuns = getNextRuns(updatedConfig.schedule.cron, updatedConfig.schedule.timezone, 1);
 	const nextRunStr = nextRuns.length > 0 ? nextRuns[0].toLocaleString() : "unknown";
 
 	console.log(`Job ${jobId} resumed. Next run: ${nextRunStr}`);

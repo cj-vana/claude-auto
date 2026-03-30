@@ -118,6 +118,28 @@ describe("resumeCommand", () => {
 		expect(output).toContain("not found");
 	});
 
+	it("uses updatedConfig (not stale config) for schedule display", async () => {
+		const job = makeJob({
+			enabled: false,
+			schedule: { cron: "0 */6 * * *", timezone: "UTC" },
+		});
+		const updatedJob = {
+			...job,
+			enabled: true,
+			schedule: { cron: "0 */12 * * *", timezone: "America/New_York" },
+		};
+		mockedReadJob.mockResolvedValue(job);
+		mockedUpdateJob.mockResolvedValue(updatedJob);
+		mockScheduler();
+		const nextRun = new Date(Date.now() + 3600000);
+		mockedGetNextRuns.mockReturnValue([nextRun]);
+
+		await resumeCommand({ jobId: "abc123" });
+
+		// getNextRuns must be called with updatedConfig's schedule, not the old one
+		expect(mockedGetNextRuns).toHaveBeenCalledWith("0 */12 * * *", "America/New_York", 1);
+	});
+
 	it("unregisters first if already registered (defensive)", async () => {
 		const job = makeJob({ enabled: false });
 		const updatedJob = { ...job, enabled: true };
