@@ -83,7 +83,12 @@ export function parseCommand(argv: string[]): ParsedCommand {
 			const key = flagKeyMap[arg] ?? arg.replace(/^--/, "");
 			const value = rest[++i];
 			if (arg === "--limit") {
-				args[key] = Number.parseInt(value, 10);
+				const parsed = Number.parseInt(value, 10);
+				if (Number.isNaN(parsed)) {
+					console.error(`Invalid value for --limit: "${value}" (expected a number)`);
+					return { command: "help", args: {} };
+				}
+				args[key] = parsed;
 			} else {
 				args[key] = value;
 			}

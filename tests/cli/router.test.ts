@@ -52,6 +52,14 @@ describe("parseCommand", () => {
 		expect(result).toEqual({ command: "dashboard", args: {} });
 	});
 
+	it("parseCommand('logs', '--limit', 'abc') returns help due to invalid limit", () => {
+		const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+		const result = parseCommand(["logs", "abc123", "--limit", "abc"]);
+		expect(result).toEqual({ command: "help", args: {} });
+		expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("Invalid value for --limit"));
+		errorSpy.mockRestore();
+	});
+
 	it("parseCommand with --restrict-paths flag returns restrictPaths in args", () => {
 		const result = parseCommand([
 			"create",

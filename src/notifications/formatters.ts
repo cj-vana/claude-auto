@@ -177,7 +177,7 @@ export function formatTelegram(payload: NotificationPayload, chatId: string): ob
 
 	if (payload.prUrl) {
 		lines.push("");
-		lines.push(`<a href="${payload.prUrl}">View PR</a>`);
+		lines.push(`<a href="${escapeHtml(payload.prUrl)}">View PR</a>`);
 	}
 
 	lines.push("");
@@ -199,5 +199,9 @@ export function formatTelegram(payload: NotificationPayload, chatId: string): ob
 }
 
 function escapeHtml(text: string): string {
-	return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+	return text
+		.replace(/&/g, "&amp;")
+		.replace(/</g, "&lt;")
+		.replace(/>/g, "&gt;")
+		.replace(/"/g, "&quot;");
 }

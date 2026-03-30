@@ -213,6 +213,38 @@ describe("CrontabScheduler", () => {
 			expect(stdin).toContain("30 8 * * 1-5 /usr/bin/backup.sh");
 		});
 
+		it("removes cron entry even when blank line separates marker from entry", async () => {
+			const { CrontabScheduler } = await import("../../src/platform/crontab.js");
+			const scheduler = new CrontabScheduler();
+
+			// Regression: if a blank line sits between the marker comment and the
+			// cron entry, the state machine previously reset `skipping` to false,
+			// leaving the cron entry in place.
+			const existingCrontab = [
+				"# claude-auto:job-to-remove",
+				"",
+				"0 */6 * * * /bin/node runner.js --job-id job-to-remove >> /path/to/log 2>&1",
+				"0 10 * * * /bin/echo keep-me",
+			].join("\n");
+
+			mockExec.mockImplementation(async (cmd, args, _opts) => {
+				if (cmd === "crontab" && args[0] === "-l") {
+					return { stdout: existingCrontab, stderr: "" };
+				}
+				if (cmd === "crontab" && args[0] === "-") {
+					return { stdout: "", stderr: "" };
+				}
+				return { stdout: "", stderr: "" };
+			});
+
+			await scheduler.unregister("job-to-remove");
+
+			const writeCall = mockExec.mock.calls.find((c) => c[0] === "crontab" && c[1][0] === "-");
+			const stdin = writeCall?.[2]?.stdin;
+			expect(stdin).not.toContain("job-to-remove");
+			expect(stdin).toContain("0 10 * * * /bin/echo keep-me");
+		});
+
 		it("removes entry without CRON_TZ and preserves next entry", async () => {
 			const { CrontabScheduler } = await import("../../src/platform/crontab.js");
 			const scheduler = new CrontabScheduler();
