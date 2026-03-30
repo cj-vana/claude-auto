@@ -124,8 +124,11 @@ export class CrontabScheduler implements Scheduler {
 					skipping = false;
 					continue;
 				}
+				// Blank lines or comments between marker and cron entry:
+				// keep them in the output but stay in skipping mode
+				filtered.push(line);
+				continue;
 			}
-			skipping = false;
 			filtered.push(line);
 		}
 

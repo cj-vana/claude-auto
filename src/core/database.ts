@@ -60,26 +60,34 @@ function migrateSchema(database: Database.Database): void {
 		// Individual try-catch per ALTER so partial migration failure is recoverable.
 		// If the first ALTER succeeds but the second fails (e.g., power loss),
 		// re-running won't crash on the already-added column.
-		try {
-			database.exec("ALTER TABLE runs ADD COLUMN feedback_round INTEGER");
-		} catch {
-			/* column may already exist */
-		}
-		try {
-			database.exec("ALTER TABLE runs ADD COLUMN pr_number INTEGER");
-		} catch {
-			/* column may already exist */
-		}
+		addColumnIfNotExists(database, "runs", "feedback_round", "INTEGER");
+		addColumnIfNotExists(database, "runs", "pr_number", "INTEGER");
 		database.pragma("user_version = 2");
 	}
 
 	if (version < 3) {
-		try {
-			database.exec("ALTER TABLE runs ADD COLUMN pipeline_stages TEXT");
-		} catch {
-			/* column may already exist */
-		}
+		addColumnIfNotExists(database, "runs", "pipeline_stages", "TEXT");
 		database.pragma("user_version = 3");
+	}
+}
+
+/**
+ * Add a column to a table, ignoring "duplicate column" errors.
+ * Re-throws any other error (e.g., database corruption, permissions).
+ */
+function addColumnIfNotExists(
+	database: Database.Database,
+	table: string,
+	column: string,
+	type: string,
+): void {
+	try {
+		database.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${type}`);
+	} catch (err) {
+		const msg = err instanceof Error ? err.message : String(err);
+		if (!msg.includes("duplicate column name")) {
+			throw err;
+		}
 	}
 }
 

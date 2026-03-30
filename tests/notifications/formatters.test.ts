@@ -254,6 +254,29 @@ describe("formatTelegram", () => {
 		expect(result.text.endsWith("...")).toBe(true);
 	});
 
+	it("escapes double quotes in prUrl to prevent HTML attribute injection", () => {
+		const result = formatTelegram(
+			makePayload({ prUrl: 'https://example.com/"><script>alert(1)</script>' }),
+			"chat-999",
+		) as { text: string };
+
+		// prUrl must be escaped in the href attribute
+		expect(result.text).not.toContain('href="https://example.com/">');
+		expect(result.text).toContain("&quot;");
+		expect(result.text).not.toContain("<script>");
+	});
+
+	it("escapes special HTML characters in user-provided fields", () => {
+		const result = formatTelegram(
+			makePayload({ summary: 'Fixed <div> & "quotes"' }),
+			"chat-999",
+		) as { text: string };
+
+		expect(result.text).toContain("&lt;div&gt;");
+		expect(result.text).toContain("&amp;");
+		expect(result.text).toContain("&quot;quotes&quot;");
+	});
+
 	it("does not truncate message text under 4096 characters", () => {
 		const result = formatTelegram(makePayload(), "chat-999") as { text: string };
 
