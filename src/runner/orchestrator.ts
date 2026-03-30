@@ -189,7 +189,7 @@ export async function executeRun(jobId: string): Promise<RunResult> {
 					model: config.model,
 				};
 				await writeRunLog(jobId, result);
-				await sendNotifications(config, result).catch(() => {});
+				await sendNotifications(config, result).catch((err) => console.warn("[claude-auto]", err));
 				return result;
 			}
 		}
@@ -205,8 +205,8 @@ export async function executeRun(jobId: string): Promise<RunResult> {
 				config.id,
 				config.maxFeedbackRounds ?? 3,
 			);
-		} catch {
-			// PR feedback check is best-effort; fall through to normal work
+		} catch (err) {
+			console.warn("[claude-auto] PR feedback check failed:", err);
 		}
 
 		if (feedback) {
@@ -221,7 +221,7 @@ export async function executeRun(jobId: string): Promise<RunResult> {
 					config.repo.path,
 					feedback.number,
 					`Claude Auto has reached the maximum feedback iteration limit (${maxRounds} rounds). This PR needs human review.\n\n---\n*Automated by claude-auto*`,
-				).catch(() => {});
+				).catch((err) => console.warn("[claude-auto]", err));
 
 				const result: RunResult = {
 					status: "needs-human-review",
@@ -235,7 +235,7 @@ export async function executeRun(jobId: string): Promise<RunResult> {
 					model: config.model,
 				};
 				await writeRunLog(jobId, result);
-				await sendNotifications(config, result).catch(() => {});
+				await sendNotifications(config, result).catch((err) => console.warn("[claude-auto]", err));
 				return result;
 			}
 
@@ -248,8 +248,8 @@ export async function executeRun(jobId: string): Promise<RunResult> {
 			let runContext: RunContext[] = [];
 			try {
 				runContext = loadRunContext(jobId);
-			} catch {
-				// Context loading is best-effort
+			} catch (err) {
+				console.warn("[claude-auto] Context loading failed:", err);
 			}
 
 			const feedbackPrompt = buildFeedbackPrompt(config, feedback, runContext);
@@ -294,13 +294,17 @@ export async function executeRun(jobId: string): Promise<RunResult> {
 						prNumber: feedback.number,
 					};
 					await writeRunLog(jobId, mcResult);
-					await sendNotifications(config, mcResult).catch(() => {});
+					await sendNotifications(config, mcResult).catch((err) =>
+						console.warn("[claude-auto]", err),
+					);
 					return mcResult;
 				}
 				await pushBranch(config.repo.path, feedback.headRefName, config.repo.remote);
 				// Post PR comment summarizing changes (PRFB-04)
 				const commentBody = `## Feedback Addressed (Round ${nextRound}/${maxRounds})\n\n${spawnResult.summary}\n\n---\n*Automated by claude-auto*`;
-				await postPRComment(config.repo.path, feedback.number, commentBody).catch(() => {});
+				await postPRComment(config.repo.path, feedback.number, commentBody).catch((err) =>
+					console.warn("[claude-auto]", err),
+				);
 			}
 
 			const result: RunResult = {
@@ -322,7 +326,7 @@ export async function executeRun(jobId: string): Promise<RunResult> {
 			};
 
 			await writeRunLog(jobId, result);
-			await sendNotifications(config, result).catch(() => {});
+			await sendNotifications(config, result).catch((err) => console.warn("[claude-auto]", err));
 			return result;
 		}
 
@@ -335,8 +339,8 @@ export async function executeRun(jobId: string): Promise<RunResult> {
 		let runContext: RunContext[] = [];
 		try {
 			runContext = loadRunContext(jobId);
-		} catch {
-			// Context loading is best-effort
+		} catch (err) {
+			console.warn("[claude-auto] Context loading failed:", err);
 		}
 
 		// Step 4.6: Triage issues (TRIG-01, TRIG-02, TRIG-03)
@@ -346,8 +350,8 @@ export async function executeRun(jobId: string): Promise<RunResult> {
 				.filter((c) => c.issue_number != null)
 				.map((c) => c.issue_number as number);
 			triaged = await triageIssues(config.repo.path, previousIssues);
-		} catch {
-			// Triage is best-effort; fall through to generic prompt
+		} catch (err) {
+			console.warn("[claude-auto] Issue triage failed:", err);
 		}
 
 		// Step 5: Pipeline or single-spawn path
@@ -397,13 +401,16 @@ export async function executeRun(jobId: string): Promise<RunResult> {
 						})),
 					};
 					await writeRunLog(jobId, result);
-					await sendNotifications(config, result).catch(() => {});
+					await sendNotifications(config, result).catch((err) =>
+						console.warn("[claude-auto]", err),
+					);
 					return result;
 				}
 
 				await pushBranch(config.repo.path, branchName, config.repo.remote);
 				const commitSubject = await getFirstCommitSubject(config.repo.path, config.repo.branch);
-				const titleText = commitSubject || pipelineResult.summary.slice(0, 72);
+				const titleText =
+					commitSubject || (pipelineResult.summary ?? "autonomous improvements").slice(0, 72);
 				const prTitle = `[claude-auto] ${titleText}`;
 				const prBody = buildPipelinePRBody(pipelineResult, config);
 				prUrl = await createPR(config.repo.path, branchName, config.repo.branch, prTitle, prBody);
@@ -432,7 +439,7 @@ export async function executeRun(jobId: string): Promise<RunResult> {
 			};
 
 			await writeRunLog(jobId, result);
-			await sendNotifications(config, result).catch(() => {});
+			await sendNotifications(config, result).catch((err) => console.warn("[claude-auto]", err));
 
 			// Extract issue number from pipeline summary
 			const pipelineIssueNumber = pipelineResult.summary
@@ -446,7 +453,7 @@ export async function executeRun(jobId: string): Promise<RunResult> {
 					prUrl: result.prUrl,
 					summary: result.summary,
 					jobName: config.name,
-				}).catch(() => {});
+				}).catch((err) => console.warn("[claude-auto]", err));
 			}
 
 			return result;
@@ -499,14 +506,15 @@ export async function executeRun(jobId: string): Promise<RunResult> {
 					model: config.model,
 				};
 				await writeRunLog(jobId, result);
-				await sendNotifications(config, result).catch(() => {});
+				await sendNotifications(config, result).catch((err) => console.warn("[claude-auto]", err));
 				return result;
 			}
 
 			// Step 8: Push and create PR
 			await pushBranch(config.repo.path, branchName, config.repo.remote);
 			const commitSubject = await getFirstCommitSubject(config.repo.path, config.repo.branch);
-			const titleText = commitSubject || spawnResult.summary.slice(0, 72);
+			const titleText =
+				commitSubject || (spawnResult.summary ?? "autonomous improvements").slice(0, 72);
 			const prTitle = `[claude-auto] ${titleText}`;
 			const prBody = buildPRBody(spawnResult, config);
 			prUrl = await createPR(config.repo.path, branchName, config.repo.branch, prTitle, prBody);
@@ -535,7 +543,7 @@ export async function executeRun(jobId: string): Promise<RunResult> {
 		await writeRunLog(jobId, result);
 
 		// Best-effort notifications (never fail the run)
-		await sendNotifications(config, result).catch(() => {});
+		await sendNotifications(config, result).catch((err) => console.warn("[claude-auto]", err));
 		if (issueNumber) {
 			await postIssueComment({
 				repoPath: config.repo.path,
@@ -544,7 +552,7 @@ export async function executeRun(jobId: string): Promise<RunResult> {
 				prUrl: result.prUrl,
 				summary: result.summary,
 				jobName: config.name,
-			}).catch(() => {});
+			}).catch((err) => console.warn("[claude-auto]", err));
 		}
 
 		return result;
@@ -562,11 +570,11 @@ export async function executeRun(jobId: string): Promise<RunResult> {
 			branchName,
 		};
 
-		await writeRunLog(jobId, result).catch(() => {}); // Don't fail on log write error
+		await writeRunLog(jobId, result).catch((err) => console.warn("[claude-auto]", err)); // Don't fail on log write error
 
 		// Best-effort notifications on error
 		if (config) {
-			await sendNotifications(config, result).catch(() => {});
+			await sendNotifications(config, result).catch((err) => console.warn("[claude-auto]", err));
 			const errorIssueNumber = errorMessage ? extractIssueNumber(errorMessage) : undefined;
 			if (errorIssueNumber) {
 				await postIssueComment({
@@ -575,7 +583,7 @@ export async function executeRun(jobId: string): Promise<RunResult> {
 					status: result.status,
 					error: result.error,
 					jobName: config.name,
-				}).catch(() => {});
+				}).catch((err) => console.warn("[claude-auto]", err));
 			}
 		}
 
@@ -584,16 +592,16 @@ export async function executeRun(jobId: string): Promise<RunResult> {
 			try {
 				await execCommand("git", ["-C", config.repo.path, "checkout", config.repo.branch]);
 				await execCommand("git", ["-C", config.repo.path, "branch", "-D", branchName]);
-			} catch {
-				// Cleanup is best-effort
+			} catch (err) {
+				console.warn("[claude-auto] Branch cleanup failed:", err);
 			}
 		}
 
 		return result;
 	} finally {
 		if (releaseRepoLock) {
-			await releaseRepoLock().catch(() => {});
+			await releaseRepoLock().catch((err) => console.warn("[claude-auto]", err));
 		}
-		await releaseLock().catch(() => {});
+		await releaseLock().catch((err) => console.warn("[claude-auto]", err));
 	}
 }

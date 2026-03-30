@@ -307,6 +307,73 @@ describe("pr-feedback module", () => {
 		});
 	});
 
+	describe("getUnresolvedThreads — GraphQL variable injection safety", () => {
+		it("passes owner/name/prNumber as -F variable flags instead of interpolating into query", async () => {
+			mockExecCommand.mockResolvedValueOnce({
+				stdout: JSON.stringify({ owner: { login: "myorg" }, name: "myrepo" }),
+				stderr: "",
+			});
+			mockExecCommand.mockResolvedValueOnce({
+				stdout: JSON.stringify({
+					data: {
+						repository: {
+							pullRequest: {
+								reviewThreads: { nodes: [] },
+							},
+						},
+					},
+				}),
+				stderr: "",
+			});
+
+			await getUnresolvedThreads("/repo", 42);
+
+			// The GraphQL call (second execCommand call) must use -F flags for variables
+			const graphqlCall = mockExecCommand.mock.calls[1];
+			expect(graphqlCall[0]).toBe("gh");
+			const args = graphqlCall[1];
+			expect(args).toContain("-F");
+			expect(args).toContain("owner=myorg");
+			expect(args).toContain("name=myrepo");
+			expect(args).toContain("prNumber=42");
+
+			// The query string must use $variables, not interpolated values
+			const queryArg = args[args.indexOf("-f") + 1];
+			expect(queryArg).toContain("$owner");
+			expect(queryArg).toContain("$name");
+			expect(queryArg).toContain("$prNumber");
+			expect(queryArg).not.toContain('"myorg"');
+			expect(queryArg).not.toContain('"myrepo"');
+		});
+
+		it("handles owner/name with special characters safely via variable flags", async () => {
+			mockExecCommand.mockResolvedValueOnce({
+				stdout: JSON.stringify({ owner: { login: 'my"org' }, name: 'my"repo' }),
+				stderr: "",
+			});
+			mockExecCommand.mockResolvedValueOnce({
+				stdout: JSON.stringify({
+					data: {
+						repository: {
+							pullRequest: {
+								reviewThreads: { nodes: [] },
+							},
+						},
+					},
+				}),
+				stderr: "",
+			});
+
+			await getUnresolvedThreads("/repo", 42);
+
+			// Special characters are passed via -F flags, not embedded in the query
+			const graphqlCall = mockExecCommand.mock.calls[1];
+			const args = graphqlCall[1];
+			expect(args).toContain('owner=my"org');
+			expect(args).toContain('name=my"repo');
+		});
+	});
+
 	describe("getUnresolvedThreads — malformed responses", () => {
 		it("throws descriptive error when GraphQL returns non-JSON", async () => {
 			mockExecCommand.mockResolvedValueOnce({
