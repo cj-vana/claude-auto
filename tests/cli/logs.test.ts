@@ -87,4 +87,13 @@ describe("logsCommand", () => {
 
 		expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("Usage"));
 	});
+
+	it("sets process.exitCode = 1 when jobId is missing", async () => {
+		process.exitCode = undefined;
+
+		await logsCommand({});
+
+		expect(process.exitCode).toBe(1);
+		process.exitCode = undefined;
+	});
 });

@@ -110,7 +110,7 @@ export async function createCommand(args: ParsedCommand["args"]): Promise<void> 
 	}
 	if (args.notifyTelegram) {
 		const telegramStr = args.notifyTelegram as string;
-		const colonIndex = telegramStr.indexOf(":");
+		const colonIndex = telegramStr.lastIndexOf(":");
 		if (colonIndex > 0) {
 			notifications.telegram = {
 				botToken: telegramStr.slice(0, colonIndex),

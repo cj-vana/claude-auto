@@ -13,11 +13,12 @@ let db: Database.Database | null = null;
  */
 export function getDatabase(dbPath?: string): Database.Database {
 	if (!db) {
-		db = new Database(dbPath ?? paths.database);
-		db.pragma("journal_mode = WAL");
-		db.pragma("synchronous = normal");
-		db.pragma("foreign_keys = ON");
-		migrateSchema(db);
+		const newDb = new Database(dbPath ?? paths.database);
+		newDb.pragma("journal_mode = WAL");
+		newDb.pragma("synchronous = normal");
+		newDb.pragma("foreign_keys = ON");
+		migrateSchema(newDb);
+		db = newDb;
 	}
 	return db;
 }

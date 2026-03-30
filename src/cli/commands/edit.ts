@@ -45,6 +45,7 @@ export async function editCommand(args: ParsedCommand["args"]): Promise<void> {
 			validateCronExpression(cronExpr);
 		} catch (err) {
 			console.error(`Invalid schedule: ${err instanceof Error ? err.message : String(err)}`);
+			process.exitCode = 1;
 			return;
 		}
 		updates.schedule = { ...config.schedule, cron: cronExpr };
@@ -71,6 +72,7 @@ export async function editCommand(args: ParsedCommand["args"]): Promise<void> {
 		const n = Number.parseInt(String(args.maxTurns), 10);
 		if (Number.isNaN(n) || n <= 0) {
 			console.error("Invalid --max-turns: must be a positive integer");
+			process.exitCode = 1;
 			return;
 		}
 		updates.guardrails = { ...config.guardrails, maxTurns: n };
@@ -82,6 +84,7 @@ export async function editCommand(args: ParsedCommand["args"]): Promise<void> {
 		const n = Number.parseFloat(String(args.maxBudget));
 		if (Number.isNaN(n) || n <= 0) {
 			console.error("Invalid --max-budget: must be a positive number");
+			process.exitCode = 1;
 			return;
 		}
 		updates.guardrails = {
@@ -102,6 +105,7 @@ export async function editCommand(args: ParsedCommand["args"]): Promise<void> {
 			console.error(
 				`Invalid focus area(s): ${invalid.join(", ")}. Valid: ${[...validFocusAreas].join(", ")}`,
 			);
+			process.exitCode = 1;
 			return;
 		}
 		updates.focus = focusItems;

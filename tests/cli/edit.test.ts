@@ -205,6 +205,53 @@ describe("editCommand", () => {
 		expect(scheduler.register).toHaveBeenCalledWith(updatedJob);
 	});
 
+	it("sets process.exitCode = 1 on invalid cron schedule", async () => {
+		const job = makeJob();
+		mockedReadJob.mockResolvedValue(job);
+		mockedValidateCronExpression.mockImplementation(() => {
+			throw new Error("Invalid cron");
+		});
+		process.exitCode = undefined;
+
+		await editCommand({ jobId: "abc123", schedule: "invalid" });
+
+		expect(process.exitCode).toBe(1);
+		process.exitCode = undefined;
+	});
+
+	it("sets process.exitCode = 1 on invalid --max-turns", async () => {
+		const job = makeJob();
+		mockedReadJob.mockResolvedValue(job);
+		process.exitCode = undefined;
+
+		await editCommand({ jobId: "abc123", maxTurns: "abc" });
+
+		expect(process.exitCode).toBe(1);
+		process.exitCode = undefined;
+	});
+
+	it("sets process.exitCode = 1 on invalid --max-budget", async () => {
+		const job = makeJob();
+		mockedReadJob.mockResolvedValue(job);
+		process.exitCode = undefined;
+
+		await editCommand({ jobId: "abc123", maxBudget: "abc" });
+
+		expect(process.exitCode).toBe(1);
+		process.exitCode = undefined;
+	});
+
+	it("sets process.exitCode = 1 on invalid --focus area", async () => {
+		const job = makeJob();
+		mockedReadJob.mockResolvedValue(job);
+		process.exitCode = undefined;
+
+		await editCommand({ jobId: "abc123", focus: "invalid-area" });
+
+		expect(process.exitCode).toBe(1);
+		process.exitCode = undefined;
+	});
+
 	it("edits max-turns: validates positive integer", async () => {
 		const job = makeJob();
 		mockedReadJob.mockResolvedValue(job);

@@ -320,6 +320,43 @@ describe("createCommand", () => {
 		);
 	});
 
+	it("parses Telegram token correctly when bot token contains a colon", async () => {
+		const job = makeJob();
+		mockRepoExists();
+		mockedValidateCronExpression.mockImplementation(() => {});
+		mockedCreateJob.mockResolvedValue(job);
+		mockedDescribeSchedule.mockReturnValue("Every 6 hours");
+		mockedGetNextRuns.mockReturnValue([new Date("2026-01-01T06:00:00Z")]);
+		mockScheduler();
+
+		// Telegram bot tokens have format "123456789:ABCdefGHIjkl" — they contain a colon.
+		// The user provides "botToken:chatId", so the full string has two colons.
+		await createCommand({
+			name: "Test Job",
+			repo: "/home/user/repos/my-project",
+			schedule: "0 */6 * * *",
+			notifyTelegram: "123456789:ABCdefGHIjkl:-100987654321",
+		});
+
+		const defaultTriggers = {
+			onSuccess: true,
+			onFailure: true,
+			onNoChanges: false,
+			onLocked: false,
+		};
+		expect(mockedCreateJob).toHaveBeenCalledWith(
+			expect.objectContaining({
+				notifications: expect.objectContaining({
+					telegram: {
+						botToken: "123456789:ABCdefGHIjkl",
+						chatId: "-100987654321",
+						...defaultTriggers,
+					},
+				}),
+			}),
+		);
+	});
+
 	it("passes restrictToPaths array in guardrails when --restrict-paths provided", async () => {
 		const job = makeJob({
 			guardrails: {

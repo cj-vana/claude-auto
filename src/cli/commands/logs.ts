@@ -11,6 +11,7 @@ export async function logsCommand(args: ParsedCommand["args"]): Promise<void> {
 
 	if (!jobId) {
 		console.error("Usage: claude-auto logs <job-id> [--limit N]");
+		process.exitCode = 1;
 		return;
 	}
 
