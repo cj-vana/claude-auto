@@ -1168,4 +1168,52 @@ describe("executeRun", () => {
 		expect(mockedRunPipeline).toHaveBeenCalled();
 		expect(mockedSpawnClaude).not.toHaveBeenCalled();
 	});
+
+	it("includes issueNumber in pipeline run result when summary references an issue", async () => {
+		const releaseFn = vi.fn().mockResolvedValue(undefined);
+		mockedAcquireLock.mockResolvedValue(releaseFn);
+		mockedAcquireRepoLock.mockResolvedValue(releaseFn);
+
+		const config = {
+			...makeDefaultConfig(),
+			pipeline: {
+				enabled: true,
+				planModel: "opus",
+				implementModel: "opus",
+				reviewModel: "opus",
+				maxReviewRounds: 1,
+			},
+		};
+		mockedLoadJobConfig.mockResolvedValue(config);
+
+		mockedPullLatest.mockResolvedValue(undefined);
+		mockedCreateBranch.mockResolvedValue("claude-auto/test/branch");
+		mockedHasChanges.mockResolvedValue(true);
+		mockedHasCommitsAhead.mockResolvedValue(false);
+		mockedAttemptRebase.mockResolvedValue({ diverged: false, rebased: false, conflicts: [] });
+		mockedPushBranch.mockResolvedValue(undefined);
+		mockedCreatePR.mockResolvedValue("https://github.com/test/repo/pull/99");
+		mockedGetFirstCommitSubject.mockResolvedValue("fix: resolve issue #42");
+		mockedExtractIssueNumber.mockReturnValue(42);
+		mockedRunPipeline.mockResolvedValue({
+			stages: [
+				{ stage: "plan", spawnResult: makeDefaultSpawnResult() },
+				{ stage: "implement", spawnResult: makeDefaultSpawnResult() },
+			],
+			reviewVerdict: "pass",
+			totalCostUsd: 1.5,
+			totalDurationMs: 5000,
+			summary: "Fixed issue #42 by updating validation logic",
+		});
+
+		const result = await executeRun("test-job");
+
+		// The issueNumber should be extracted from pipeline summary and included in result
+		expect(result.issueNumber).toBe(42);
+		// It should also be persisted in the run log
+		expect(mockedWriteRunLog).toHaveBeenCalledWith(
+			"test-job",
+			expect.objectContaining({ issueNumber: 42 }),
+		);
+	});
 });

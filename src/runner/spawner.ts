@@ -17,22 +17,26 @@ function resolveClaudeBin(): string {
 		return process.env.CLAUDE_BIN;
 	}
 
-	// Check common install locations
-	const candidates = [
-		join(homedir(), ".local", "bin", "claude"),
-		"/usr/local/bin/claude",
-		"/usr/bin/claude",
-	];
+	const isWindows = process.platform === "win32";
+
+	// Check common install locations (platform-specific)
+	const candidates: string[] = isWindows
+		? [
+				join(process.env.APPDATA ?? "", "npm", "claude.cmd"),
+				join(process.env.LOCALAPPDATA ?? "", "Programs", "claude", "claude.exe"),
+			]
+		: [join(homedir(), ".local", "bin", "claude"), "/usr/local/bin/claude", "/usr/bin/claude"];
 
 	for (const candidate of candidates) {
-		if (existsSync(candidate)) {
+		if (candidate && existsSync(candidate)) {
 			return candidate;
 		}
 	}
 
-	// Try which/where as last resort
+	// Try which (Unix) or where (Windows) as last resort
 	try {
-		return execFileSync("which", ["claude"], { encoding: "utf-8" }).trim();
+		const lookupCmd = isWindows ? "where" : "which";
+		return execFileSync(lookupCmd, ["claude"], { encoding: "utf-8" }).trim().split("\n")[0];
 	} catch {
 		// Fall back to bare name — will fail with ENOENT if not in PATH
 		return "claude";
