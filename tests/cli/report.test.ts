@@ -161,22 +161,23 @@ describe("reportCommand", () => {
 		expect(output).toContain("No runs found");
 	});
 
-	it('counts budget-exceeded, merge-conflict, needs-human-review, and paused statuses', async () => {
+	it("counts budget-exceeded, merge-conflict, needs-human-review, and paused statuses", async () => {
 		const job = makeJob();
 		mockedReadJob.mockResolvedValue(job);
 		mockedListRunLogs.mockResolvedValue([
-			makeRunLog({ status: 'success', costUsd: 1.0, runId: 'r1' }),
-			makeRunLog({ status: 'budget-exceeded', costUsd: 0, runId: 'r2', prUrl: undefined }),
-			makeRunLog({ status: 'merge-conflict', costUsd: 0.5, runId: 'r3', prUrl: undefined }),
-			makeRunLog({ status: 'needs-human-review', costUsd: 0.3, runId: 'r4', prUrl: undefined }),
-			makeRunLog({ status: 'paused' as any, costUsd: 0, runId: 'r5', prUrl: undefined }),
+			makeRunLog({ status: "success", costUsd: 1.0, runId: "r1" }),
+			makeRunLog({ status: "budget-exceeded", costUsd: 0, runId: "r2", prUrl: undefined }),
+			makeRunLog({ status: "merge-conflict", costUsd: 0.5, runId: "r3", prUrl: undefined }),
+			makeRunLog({ status: "needs-human-review", costUsd: 0.3, runId: "r4", prUrl: undefined }),
+			// biome-ignore lint/suspicious/noExplicitAny: testing unknown status handling
+			makeRunLog({ status: "paused" as any, costUsd: 0, runId: "r5", prUrl: undefined }),
 		]);
 
-		await reportCommand({ jobId: 'job-abc' });
+		await reportCommand({ jobId: "job-abc" });
 
-		const output = logSpy.mock.calls.map((c) => c[0]).join('\n');
+		const output = logSpy.mock.calls.map((c) => c[0]).join("\n");
 		// All 5 runs should be counted
-		expect(output).toContain('5');
+		expect(output).toContain("5");
 		// Budget exceeded, merge conflict, needs review should appear when > 0
 		expect(output).toMatch(/Budget exceeded.*1/);
 		expect(output).toMatch(/Merge conflicts.*1/);

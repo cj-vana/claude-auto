@@ -416,6 +416,11 @@ export async function executeRun(jobId: string): Promise<RunResult> {
 				prUrl = await createPR(config.repo.path, branchName, config.repo.branch, prTitle, prBody);
 			}
 
+			// Extract issue number from pipeline summary
+			const pipelineIssueNumber = pipelineResult.summary
+				? extractIssueNumber(pipelineResult.summary)
+				: undefined;
+
 			const result: RunResult = {
 				status: changed ? "success" : "no-changes",
 				jobId,
@@ -429,6 +434,7 @@ export async function executeRun(jobId: string): Promise<RunResult> {
 				numTurns: pipelineResult.stages.reduce((sum, s) => sum + s.spawnResult.numTurns, 0),
 				sessionId: pipelineResult.stages[pipelineResult.stages.length - 1]?.spawnResult.sessionId,
 				branchName,
+				issueNumber: pipelineIssueNumber,
 				model: config.model,
 				pipelineStages: pipelineResult.stages.map((s) => ({
 					stage: s.stage,
@@ -441,10 +447,6 @@ export async function executeRun(jobId: string): Promise<RunResult> {
 			await writeRunLog(jobId, result);
 			await sendNotifications(config, result).catch((err) => console.warn("[claude-auto]", err));
 
-			// Extract issue number from pipeline summary
-			const pipelineIssueNumber = pipelineResult.summary
-				? extractIssueNumber(pipelineResult.summary)
-				: undefined;
 			if (pipelineIssueNumber) {
 				await postIssueComment({
 					repoPath: config.repo.path,

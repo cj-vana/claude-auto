@@ -25,11 +25,7 @@ function resolveClaudeBin(): string {
 				join(process.env.APPDATA ?? "", "npm", "claude.cmd"),
 				join(process.env.LOCALAPPDATA ?? "", "Programs", "claude", "claude.exe"),
 			]
-		: [
-				join(homedir(), ".local", "bin", "claude"),
-				"/usr/local/bin/claude",
-				"/usr/bin/claude",
-			];
+		: [join(homedir(), ".local", "bin", "claude"), "/usr/local/bin/claude", "/usr/bin/claude"];
 
 	for (const candidate of candidates) {
 		if (candidate && existsSync(candidate)) {

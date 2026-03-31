@@ -13,6 +13,9 @@ interface AggregateReport {
 	errorCount: number;
 	gitErrorCount: number;
 	lockedCount: number;
+	budgetExceededCount: number;
+	mergeConflictCount: number;
+	needsReviewCount: number;
 	totalCost: number;
 	avgDurationMs: number;
 	prsCreated: number;
@@ -27,6 +30,9 @@ function aggregateLogs(logs: RunLogEntry[]): Omit<AggregateReport, "title" | "re
 	let errorCount = 0;
 	let gitErrorCount = 0;
 	let lockedCount = 0;
+	let budgetExceededCount = 0;
+	let mergeConflictCount = 0;
+	let needsReviewCount = 0;
 	let totalCost = 0;
 	let totalDuration = 0;
 	let prsCreated = 0;
@@ -49,7 +55,17 @@ function aggregateLogs(logs: RunLogEntry[]): Omit<AggregateReport, "title" | "re
 				gitErrorCount++;
 				break;
 			case "locked":
+			case "paused":
 				lockedCount++;
+				break;
+			case "budget-exceeded":
+				budgetExceededCount++;
+				break;
+			case "merge-conflict":
+				mergeConflictCount++;
+				break;
+			case "needs-human-review":
+				needsReviewCount++;
 				break;
 		}
 
@@ -78,6 +94,9 @@ function aggregateLogs(logs: RunLogEntry[]): Omit<AggregateReport, "title" | "re
 		errorCount,
 		gitErrorCount,
 		lockedCount,
+		budgetExceededCount,
+		mergeConflictCount,
+		needsReviewCount,
 		totalCost,
 		avgDurationMs: logs.length > 0 ? Math.round(totalDuration / logs.length) : 0,
 		prsCreated,
@@ -115,6 +134,19 @@ function formatReport(report: AggregateReport): string {
 		`  Errors:     ${report.errorCount + report.gitErrorCount} (${pct(report.errorCount + report.gitErrorCount)}%)`,
 	);
 	lines.push(`  Locked:     ${report.lockedCount} (${pct(report.lockedCount)}%)`);
+	if (report.budgetExceededCount > 0) {
+		lines.push(
+			`  Budget exceeded: ${report.budgetExceededCount} (${pct(report.budgetExceededCount)}%)`,
+		);
+	}
+	if (report.mergeConflictCount > 0) {
+		lines.push(
+			`  Merge conflicts: ${report.mergeConflictCount} (${pct(report.mergeConflictCount)}%)`,
+		);
+	}
+	if (report.needsReviewCount > 0) {
+		lines.push(`  Needs review: ${report.needsReviewCount} (${pct(report.needsReviewCount)}%)`);
+	}
 
 	lines.push("");
 	lines.push(`PRs created: ${report.prsCreated}`);
